@@ -1,0 +1,9 @@
+alias purgedocker="docker ps -a | grep Exit | cut -d ' ' -f 1 | xargs docker rm"
+alias createdatacontainer="docker create -v /tmp --name datacontainer ubuntu"
+
+# Security Tools
+alias kali="docker run -t -i --volumes-from kali-datacontainer kali"
+alias postgres="docker run -d --name=postgres postgres"
+alias msfconsole="docker run -it --link postgres:db pandrew/metasploit"
+alias dvwa="docker run -d -p 80:80 citizenstig/dvwa"
+alias sqlmap="docker run -it pandrew/sqlmap"

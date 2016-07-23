@@ -1,0 +1,3 @@
+alias randommacaddy="sudo spoof-mac randomize wi-fi"
+alias leaving="guard-my-macbook-when-i-am-away"
+alias diff="colordiff"
