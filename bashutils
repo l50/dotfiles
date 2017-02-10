@@ -26,3 +26,6 @@ alias diff="colordiff"
 alias pgstart='pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log start'
 # Stop postgres locally
 alias pgstop='pg_ctl -D /usr/local/var/postgres stop -s -m fast'
+
+# Used to clone a web site - takes a website as the parameter
+alias cloneSite="wget --mirror --convert-links --adjust-extension --page-requisites --no-parent"
