@@ -46,7 +46,6 @@ set mouse=a
 # Haskell
 export PATH="$HOME/Library/Haskell/bin:$PATH"
 
-source ~/.sensitive
 source ~/.dotfiles/docker
 source ~/.dotfiles/bashutils
 source ~/.dotfiles/aws
