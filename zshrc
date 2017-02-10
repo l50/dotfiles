@@ -49,6 +49,7 @@ export PATH="$HOME/Library/Haskell/bin:$PATH"
 source ~/.sensitive
 source ~/.dotfiles/docker
 source ~/.dotfiles/bashutils
+source ~/.dotfiles/aws
 if [[ `uname` == 'Darwin' ]]
 then
   source ~/.dotfiles/osx

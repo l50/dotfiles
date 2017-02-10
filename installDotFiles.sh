@@ -13,7 +13,7 @@
 
 dotdir=~/.dotfiles
 oldDotDir="${dotdir}.old"
-declare -a files=("bashutils" "docker" "osx")
+declare -a files=("bashutils" "docker" "osx" "aws")
 
 # Backup old zshrc (if one exists)
 if [ -f ~/.zshrc ]
