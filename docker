@@ -1,0 +1,16 @@
+# Various docker functions
+alias cleansedocker="docker ps -a | grep Exit | cut -d ' ' -f 1 | xargs docker rm"
+alias createdatacontainer="docker create -v /tmp --name datacontainer ubuntu"
+
+# Security Tools
+alias kali="docker run -t -i --name=kali kalilinux/kali-linux-docker"
+#alias kali="docker run -t -i --volumes-from kali-datacontainer kali"
+alias postgres="docker run -d --name=postgres postgres"
+alias msfconsole="docker run -it --link postgres:db --name=metasploit pandrew/metasploit"
+alias dvwa="docker run -d -p 80:80 --name=dvwa citizenstig/dvwa"
+alias sqlmap="docker run -it --name=sqlmap pandrew/sqlmap"
+alias beef="docker run -d -p 3000:3000 --name=beef fcolista/alpine-beef"
+
+# Development
+alias kalipuppet="docker run -t -i --name=kalipuppet l50/kalipuppet"
+alias ubuntu="docker run -t -i --name=ubuntu ubuntu"

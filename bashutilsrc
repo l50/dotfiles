@@ -1,4 +1,0 @@
-alias randommacaddy="sudo spoof-mac randomize wi-fi"
-alias leaving="guard-my-macbook-when-i-am-away"
-alias diff="colordiff"
-alias cleancontainers="docker ps -a | grep Exit | cut -d ' ' -f 1 | xargs sudo docker rm"

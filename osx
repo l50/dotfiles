@@ -1,0 +1,4 @@
+alias remountSD='sudo kextunload -b com.apple.driver.AppleSDXC; sudo kextload -b com.apple.driver.AppleSDXC'
+alias ipaddr='ifconfig |egrep "inet "'
+alias leaving="guard-my-macbook-when-i-am-away"
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
