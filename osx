@@ -11,3 +11,5 @@ alias pgstart='pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/serv
 # Stop postgres locally
 alias pgstop='pg_ctl -D /usr/local/var/postgres stop -s -m fast'
 
+# List open ports OS X
+alias openPortsOSX='sudo lsof -iTCP -sTCP:LISTEN -n -P'
