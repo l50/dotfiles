@@ -1,4 +1,13 @@
 alias remountSD='sudo kextunload -b com.apple.driver.AppleSDXC; sudo kextload -b com.apple.driver.AppleSDXC'
 alias ipaddr='ifconfig |egrep "inet "'
 alias leaving="guard-my-macbook-when-i-am-away"
+
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
+alias updatebrew='brew update && brew upgrade --all && brew cleanup && brew prune && brew doctor'
+
+# Start postgres locally
+alias pgstart='pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log start'
+# Stop postgres locally
+alias pgstop='pg_ctl -D /usr/local/var/postgres stop -s -m fast'
+

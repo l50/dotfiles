@@ -41,6 +41,7 @@ eval $(thefuck --alias)
 alias mvim="/Applications/MacVim.app/contents/MacOS/MacVim"
 # Fix set paste formatting issues - http://superuser.com/questions/437730/always-use-set-paste-is-it-a-good-idea
 alias vim='gvim -v'
+# Enable mouse use in all modes for vim
 set mouse=a
 
 # Haskell
@@ -53,3 +54,5 @@ if [[ `uname` == 'Darwin' ]]
 then
   source ~/.dotfiles/osx
 fi
+
+export "EDITOR=vim"
