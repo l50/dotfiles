@@ -8,12 +8,12 @@
 #
 # Jayson Grace, jayson.e.grace@gmail.com, 2/9/2017
 #
-# Last update 2/9/2017 by Jayson Grace, jayson.e.grace@gmail.com
+# Last update 2/17/2017 by Jayson Grace, jayson.e.grace@gmail.com
 # ----------------------------------------------------------------------------
 
 dotdir=~/.dotfiles
 oldDotDir="${dotdir}.old"
-declare -a files=("bashutils" "docker" "osx" "aws")
+declare -a files=("bashutils" "docker" "osx" "aws" "python")
 
 # Backup old zshrc (if one exists)
 if [ -f ~/.zshrc ]
