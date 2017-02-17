@@ -57,6 +57,6 @@ then
 fi
 
 # For work specific configurations
-source ~/.dotfiles/work
+source ~/.work
 
 export "EDITOR=vim"
