@@ -40,7 +40,7 @@ eval $(thefuck --alias)
 # mvim stuff
 alias mvim="/Applications/MacVim.app/contents/MacOS/MacVim"
 # Fix set paste formatting issues - http://superuser.com/questions/437730/always-use-set-paste-is-it-a-good-idea
-alias vim='gvim -v'
+#alias vim='gvim -v'
 # Enable mouse use in all modes for vim
 set mouse=a
 
@@ -54,5 +54,8 @@ if [[ `uname` == 'Darwin' ]]
 then
   source ~/.dotfiles/osx
 fi
+
+# For work specific configurations
+source ~/.dotfiles/work
 
 export "EDITOR=vim"
