@@ -44,9 +44,6 @@ alias mvim="/Applications/MacVim.app/contents/MacOS/MacVim"
 # Enable mouse use in all modes for vim
 set mouse=a
 
-# Haskell
-export PATH="$HOME/Library/Haskell/bin:$PATH"
-
 source ~/.dotfiles/docker
 source ~/.dotfiles/bashutils
 source ~/.dotfiles/aws

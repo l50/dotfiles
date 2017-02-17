@@ -12,3 +12,6 @@ alias pgstart='pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/serv
 alias pgstop='pg_ctl -D /usr/local/var/postgres stop -s -m fast'
 
 alias openPorts='sudo lsof -iTCP -sTCP:LISTEN -n -P'
+
+# Haskell
+export PATH="$HOME/Library/Haskell/bin:$PATH"
