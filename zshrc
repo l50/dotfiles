@@ -54,6 +54,9 @@ then
 fi
 
 # For work specific configurations
-source ~/.work
+if [ -f $HOME/.work ]
+then
+  source ~/.work
+fi
 
 export "EDITOR=vim"
