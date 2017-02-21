@@ -12,6 +12,8 @@ alias dvwa="docker run -d -p 85:80 --name=dvwa citizenstig/dvwa"
 alias sqlmap="docker run -it --name=sqlmap pandrew/sqlmap"
 alias beef="docker run -d -p 3000:3000 --name=beef fcolista/alpine-beef"
 alias nowasp="docker run -d -p 86:80 -p 3306:3306 -e MYSQL_PASS="Chang3ME!" citizenstig/nowasp"
+# Does not work if you change the port, which is really annoying
+alias webgoat="docker run -p 8080:8080 --name=webgoat webgoat/webgoat-7.1"
 
 # Development
 alias kalipuppet="docker run -t -i --name=kalipuppet l50/kalipuppet"
