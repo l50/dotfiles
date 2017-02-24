@@ -13,6 +13,7 @@
 
 dotdir=~/.dotfiles
 oldDotDir="${dotdir}.old"
+installDir=$(pwd)
 declare -a files=("bashutils" "docker" "osx" "aws" "python")
 
 # Backup old zshrc (if one exists)
@@ -45,3 +46,5 @@ for file in "${files[@]}"
 do
   cp $file $dotdir
 done
+
+echo $installDir >> $dotdir/.dotinstalldir
