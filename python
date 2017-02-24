@@ -1,3 +1,6 @@
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
+
+# Utilities
+alias str_len="python -c 'import sys; print(len(sys.argv[1]))'"
