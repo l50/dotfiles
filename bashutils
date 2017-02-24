@@ -26,7 +26,7 @@ alias diff="colordiff"
 alias cloneSite="wget --mirror --convert-links --adjust-extension --page-requisites --no-parent"
 
 # Show hidden files in the current directory
-alias showHidden="ls -a | egrep '^\.'"
+alias l.='ls -d .* --color=auto'
 alias listAllHiddenFiles='find /dir/to/search/ -name ".*" -ls'
 
 if [[ `uname` != 'Darwin' ]]
