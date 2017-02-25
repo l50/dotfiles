@@ -1,6 +1,7 @@
 # Various docker functions
-alias cleansedocker="docker ps -a | grep Exit | cut -d ' ' -f 1 | xargs docker rm"
-alias createdatacontainer="docker create -v /tmp --name datacontainer ubuntu"
+alias cleanseDocker="docker ps -a | grep Exit | cut -d ' ' -f 1 | xargs docker rm"
+alias createDataContainer="docker create -v /tmp --name datacontainer ubuntu"
+alias updateDockerImages="docker images | cut -d ' ' -f 1 | xargs -I {} docker pull {} 2>&1"
 
 # Security Tools
 alias kali="docker run -t -i --name=kali kalilinux/kali-linux-docker"
