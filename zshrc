@@ -63,5 +63,5 @@ export "EDITOR=vim"
 
 if [ -f $HOME/.dotfiles/.dotinstalldir ]
 then
-  alias dot-update="(cd $(cat ~/.dotfiles/.dotinstalldir) && bash installDotFiles.sh)"
+  alias dot-update="(cd $(cat ~/.dotfiles/.dotinstalldir) && git pull origin master &> /dev/null && bash installDotFiles.sh)"
 fi
