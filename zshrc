@@ -3,7 +3,7 @@ export ZSH=$HOME/.oh-my-zsh
 
 ZSH_THEME="norm"
 
-plugins=(git docker docker-compose nmap)
+plugins=(git docker docker-compose nmap tmux)
 # User configuration
 export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin:/usr/local/git/bin:/Users/l/.rvm/bin:/usr/local/packer:/Applications/Racket\ v6.3/bin/
 
