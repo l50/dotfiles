@@ -1,11 +1,11 @@
-# Various docker functions
+# Various Docker functions
 alias cleanseDocker="docker ps -a | grep Exit | cut -d ' ' -f 1 | xargs docker rm"
 alias createDataContainer="docker create -v /tmp --name datacontainer ubuntu"
 alias updateDockerImages="docker images | cut -d ' ' -f 1 | xargs -I {} docker pull {} 2>&1"
 alias cleanseImages="docker rmi $(docker images | grep "^<none>" | awk '{print $3}')"
 
 # Security Tools
-alias kali="docker run -t -i --name=kali kalilinux/kali-linux-docker"
+alias kali="docker run -it --name=kali kalilinux/kali-linux-docker"
 #alias kali="docker run -it -p 80:80 -p 443:443 -v <path to persistent share>:/kaliData kalilinux/kali-linux-docker"
 #alias kali="docker run -t -i --volumes-from kali-datacontainer kali"
 alias postgres="docker run -d --name=postgres postgres"
@@ -13,6 +13,9 @@ alias msfconsole="docker run -it --link postgres:db --name=metasploit pandrew/me
 alias dvwa="docker run -d -p 85:80 --name=dvwa infoslack/dvwa"
 alias sqlmap="docker run -it --name=sqlmap pandrew/sqlmap"
 alias beef="docker run -d -p 3000:3000 --name=beef fcolista/alpine-beef"
+alias wpscan="docker run -it --name=wpscan wpscanteam/wpscan"
+
+# Vulnerable Containers
 alias nowasp="docker run -d -p 86:80 -p 3306:3306 -e MYSQL_PASS="Chang3ME!" --name=mutillidae citizenstig/nowasp"
 # Does not work if you change the port, which is really annoying
 alias webgoat="docker run -p 8080:8080 --name=webgoat webgoat/webgoat-7.1"
