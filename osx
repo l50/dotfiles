@@ -39,3 +39,6 @@ alias hideHiddenFinder="defaults write com.apple.finder AppleShowAllFiles -bool 
 
 # Flush Directory Service cache
 alias flush="dscacheutil -flushcache && killall -HUP mDNSResponder"
+
+# Colorized output and add symbols to directories, executables, symlinks, etc.
+alias ls='ls -FG'
