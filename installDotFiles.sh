@@ -8,13 +8,20 @@
 #
 # Jayson Grace, jayson.e.grace@gmail.com, 2/9/2017
 #
-# Last update 2/17/2017 by Jayson Grace, jayson.e.grace@gmail.com
+# Last update 4/3/2017 by Jayson Grace, jayson.e.grace@gmail.com
 # ----------------------------------------------------------------------------
 
 dotdir=~/.dotfiles
 oldDotDir="${dotdir}.old"
 installDir=$(pwd)
 declare -a files=("bashutils" "docker" "osx" "aws" "python")
+
+# Used by the docker msfconsole and msfvenom containers
+installMetasploit(){
+    if [ ! -d "$HOME/metasploit-framework" ]; then
+        git clone git://github.com/rapid7/metasploit-framework.git $HOME/metasploit-framework
+    fi
+}
 
 # Backup old zshrc (if one exists)
 if [ -f ~/.zshrc ]
@@ -48,3 +55,5 @@ do
 done
 
 echo $installDir >> $dotdir/.dotinstalldir
+
+installMetasploit
