@@ -42,3 +42,6 @@ alias flush="dscacheutil -flushcache && killall -HUP mDNSResponder"
 
 # Colorized output and add symbols to directories, executables, symlinks, etc.
 alias ls='ls -FG'
+
+# Insecure Chrome for security testing
+alias chromeInsecure="'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --disable-xss-auditor --enable-devtools-experiments --disable-features=enable-automatic-password-saving"
