@@ -8,10 +8,10 @@ alias cleanseImages="docker rmi $(docker images | grep "^<none>" | awk '{print $
 alias kali="docker run -it --name=kali kalilinux/kali-linux-docker"
 #alias kali="docker run -it -p 80:80 -p 443:443 -v <path to persistent share>:/kaliData kalilinux/kali-linux-docker"
 #alias kali="docker run -t -i --volumes-from kali-datacontainer kali"
-alias postgres="docker run -d --name=postgres postgres"
-alias msfconsole="docker run -it --link postgres:db --name=metasploit pandrew/metasploit"
+alias msfconsole="cd ~/metasploit-framework/docker && docker-compose run --rm --service-ports ms"
+alias msfvenom="cd ~/metasploit-framework/docker && docker-compose run --rm ms ./msfvenom"
 alias dvwa="docker run -d -p 85:80 --name=dvwa infoslack/dvwa"
-alias sqlmap="docker run -it --name=sqlmap pandrew/sqlmap"
+alias sqlmap="docker run --rm -it k0st/alpine-sqlmap-git"
 alias beef="docker run -d -p 3000:3000 --name=beef fcolista/alpine-beef"
 if [ -d "$HOME/SecLists" ]; then
   alias wpscan="docker run --rm -v ~/SecLists/Passwords:/passwords wpscanteam/wpscan"
@@ -23,8 +23,10 @@ fi
 alias nowasp="docker run -d -p 86:80 -p 3306:3306 -e MYSQL_PASS="Chang3ME!" --name=mutillidae citizenstig/nowasp"
 # Does not work if you change the port, which is really annoying
 alias webgoat="docker run -p 8080:8080 --name=webgoat webgoat/webgoat-7.1"
+alias jenkins="docker run -p 8080:8080 -p 50000:50000 jenkins"
 
 # Development
-alias kalipuppet="docker run -t -i --name=kalipuppet l50/kalipuppet"
-alias ubuntu="docker run -t -i --name=ubuntu ubuntu"
-alias debian="docker run -t -i --name=debian debian"
+alias kalipuppet="docker run -it --name=kalipuppet l50/kalipuppet"
+alias ubuntu="docker run -it --name=ubuntu ubuntu"
+alias debian="docker run -it --name=debian debian"
+alias postgres="docker run -d --name=postgres postgres"
