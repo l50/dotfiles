@@ -4,3 +4,7 @@ eval "$(pyenv init -)"
 
 # Utilities
 alias str_len="python -c 'import sys; print(len(sys.argv[1]))'"
+
+# venv
+alias venv_activate="source .venv/bin/activate"
+alias venv_deactivate="deactivate"
