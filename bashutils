@@ -49,4 +49,6 @@ if [[ `uname` != 'Darwin' ]]
 then
   alias open="xdg-open"
   alias openPorts="netstat -ntlp | grep LISTEN"
+  # Largest files in the current directory and below
+  alias largestFilesHere="du -a | sort -n -r | head -n 5"
 fi
