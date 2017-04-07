@@ -11,7 +11,7 @@ alias kali="docker run -it --name=kali kalilinux/kali-linux-docker"
 alias msfconsole="cd ~/metasploit-framework/docker && docker-compose run --rm --service-ports ms"
 alias msfvenom="cd ~/metasploit-framework/docker && docker-compose run --rm ms ./msfvenom"
 alias dvwa="docker run -d -p 85:80 --name=dvwa infoslack/dvwa"
-alias sqlmap="docker run --rm -it k0st/alpine-sqlmap"
+alias sqlmap="docker run --rm -it -v ~/.sqlmap:/home/user/.sqlmap k0st/alpine-sqlmap"
 alias beef="docker run -d -p 3000:3000 --name=beef fcolista/alpine-beef"
 # Use dictionaries from Seclists if installed
 if [ -d "$HOME/SecLists" ]; then
