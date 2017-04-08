@@ -50,5 +50,5 @@ then
   alias open="xdg-open"
   alias openPorts="netstat -ntlp | grep LISTEN"
   # Largest files in the current directory and below
-  alias largestFilesHere="du -a | sort -n -r | head -n 5"
+  alias largestFilesAndFolders="du -Sh | sort -rh | head -5"
 fi
