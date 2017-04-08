@@ -8,7 +8,7 @@
 #
 # Jayson Grace, jayson.e.grace@gmail.com, 2/9/2017
 #
-# Last update 4/3/2017 by Jayson Grace, jayson.e.grace@gmail.com
+# Last update 4/7/2017 by Jayson Grace, jayson.e.grace@gmail.com
 # ----------------------------------------------------------------------------
 
 dotdir=~/.dotfiles
