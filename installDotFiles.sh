@@ -8,7 +8,7 @@
 #
 # Jayson Grace, jayson.e.grace@gmail.com, 2/9/2017
 #
-# Last update 4/3/2017 by Jayson Grace, jayson.e.grace@gmail.com
+# Last update 4/7/2017 by Jayson Grace, jayson.e.grace@gmail.com
 # ----------------------------------------------------------------------------
 
 dotdir=~/.dotfiles
@@ -18,9 +18,16 @@ declare -a files=("bashutils" "docker" "osx" "aws" "python")
 
 # Used by the docker msfconsole and msfvenom containers
 installMetasploit(){
-    if [ ! -d "$HOME/metasploit-framework" ]; then
-        git clone git://github.com/rapid7/metasploit-framework.git $HOME/metasploit-framework
-    fi
+  if [ ! -d "$HOME/metasploit-framework" ]; then
+    git clone git://github.com/rapid7/metasploit-framework.git $HOME/metasploit-framework
+  fi
+}
+
+# Creates sqlmap folder if it doesn't already exist
+sqlmapFolder(){
+  if [ ! -d "$HOME/.sqlmap" ]; then
+    mkdir $HOME/.sqlmap
+  fi
 }
 
 # Backup old zshrc (if one exists)
@@ -57,3 +64,4 @@ done
 echo $installDir >> $dotdir/.dotinstalldir
 
 installMetasploit
+sqlmapFolder
