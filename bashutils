@@ -1,4 +1,4 @@
-extract () {
+extract() {
   if [ -f $1 ] ; then
       case $1 in
           *.tar.bz2)   tar xvjf $1    ;;
@@ -33,6 +33,8 @@ fs() {
   fi;
 }
 
+icmpMonitor() { tcpdump -i "$1" 'icmp and icmp[icmptype]=icmp-echo' }
+
 alias randommacaddrwifi="sudo spoof-mac randomize wi-fi"
 alias diff="colordiff"
 
@@ -52,3 +54,4 @@ then
   # Largest files in the current directory and below
   alias largestFilesAndFolders="du -Sh | sort -rh | head -5"
 fi
+
