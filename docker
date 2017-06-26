@@ -24,7 +24,10 @@ fi
 alias nowasp="docker run -d -p 86:80 -p 3306:3306 -e MYSQL_PASS="Chang3ME!" --name=mutillidae citizenstig/nowasp"
 # Does not work if you change the port, which is really annoying
 alias webgoat="docker run -p 8080:8080 --name=webgoat webgoat/webgoat-7.1"
+
+# Services
 alias jenkins="docker run -p 8080:8080 -p 50000:50000 jenkins"
+alias redis="docker run -d -p 6379:6379 --name vuln_redis redis"
 
 # Development
 alias kalipuppet="docker run -it --name=kalipuppet l50/kalipuppet"
