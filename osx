@@ -1,5 +1,5 @@
 alias remountSD='sudo kextunload -b com.apple.driver.AppleSDXC; sudo kextload -b com.apple.driver.AppleSDXC'
-alias ipaddr='ifconfig |egrep "inet "'
+alias ipaddr="ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1'"
 alias infipaddr='while true; do; sleep 1; ipaddr; done'
 alias leaving="guard-my-macbook-when-i-am-away"
 
