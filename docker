@@ -29,6 +29,7 @@ alias webgoat="docker run -p 8080:8080 --name=webgoat webgoat/webgoat-7.1"
 alias jenkins="docker run -p 8080:8080 -p 50000:50000 jenkins"
 alias redis="docker run -d -p 6379:6379 --name vuln_redis redis"
 alias plone="docker run -p 8080:8080 --name=plone plone"
+alias coldfusion2016="docker run -d --name="mycf2016" -p 80:80 -p 8500:8500 accent/coldfusion2016"
 
 # Development
 alias kalipuppet="docker run -it --name=kalipuppet l50/kalipuppet"
