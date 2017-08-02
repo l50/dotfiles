@@ -47,6 +47,11 @@ alias listAllHiddenFiles='find /dir/to/search/ -name ".*" -ls'
 
 alias publicIP="dig +short myip.opendns.com @resolver1.opendns.com"
 
+# Find alias with zsh
+if test $(which zsh); then
+  alias zshAliasLocation="PS4='+%x:%I>' zsh -i -x -c '' |& grep"
+fi
+
 if [[ `uname` != 'Darwin' ]]
 then
   alias open="xdg-open"
