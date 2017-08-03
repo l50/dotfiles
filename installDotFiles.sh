@@ -56,7 +56,7 @@ if [ -d $dotdir ]; then
   # If really old dotfiles exist, nuke them
   if [ -d $oldDotDir ]
   then
-    echo "${BOLD}Nuking old dotfile backups. Nothing is sacred.${RESET}"
+    echo -e "${BOLD}Nuking old dotfile backups. Nothing is sacred.${RESET}"
     rm -rf $oldDotDir
   fi
   mv $dotdir $oldDotDir
