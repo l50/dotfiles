@@ -18,6 +18,7 @@ dotdir="$HOME/.dotfiles"
 oldDotDir="${dotdir}.old"
 installDir=$(pwd)
 declare -a files=("bashutils" "docker" "osx" "aws" "python")
+metasploit=true
 
 ##### (Cosmetic) Color output
 RED="\033[01;31m"      # Issues/Errors
@@ -77,5 +78,7 @@ done
 
 echo $installDir >> $dotdir/.dotinstalldir
 
-installMetasploit
+if [[ $metasploit == true ]]; then
+  installMetasploit
+fi
 sqlmapFolder
