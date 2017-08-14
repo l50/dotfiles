@@ -28,9 +28,9 @@ export PATH=$PATH:$GOPATH/bin
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
+export PATH=$PATH:$HOME/.pyenv/bin
 eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
 
 # Only for OSX
 #alias emacs='/Applications/Emacs.app/Contents/MacOS/Emacs'
