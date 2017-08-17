@@ -71,7 +71,7 @@ mkdir -p $dotdir
 cp ./zshrc ~/.zshrc
 
 # Move tmux config into place
-cp ./tmux.conf ~/tmux.conf
+cp ./tmux.conf $HOME/.tmux.conf
 
 # Put dotfiles in their place in the dotdir
 for file in "${files[@]}"
