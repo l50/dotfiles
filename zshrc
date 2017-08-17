@@ -28,7 +28,7 @@ export PATH=$PATH:$GOPATH/bin
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 
-export PATH="~/.pyenv/bin:$PATH"
+export PATH=$PATH:$HOME/.pyenv/bin
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
 

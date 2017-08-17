@@ -23,8 +23,7 @@ fi
 # Vulnerable Containers
 alias nowasp="docker run -d -p 86:80 -p 3306:3306 -e MYSQL_PASS="Chang3ME!" --name=mutillidae citizenstig/nowasp"
 # Does not work if you change the port, which is really annoying
-alias webgoat="docker run -p 8080:8080 --name=webgoat webgoat/webgoat-7.1"
-
+alias webgoat="docker run -p 8080:8080 -t webgoat/webgoat-8.0"
 
 # Services
 alias jenkins="docker run -p 8080:8080 -p 50000:50000 jenkins"
