@@ -70,6 +70,9 @@ mkdir -p $dotdir
 # Move zshrc in place
 cp ./zshrc ~/.zshrc
 
+# Move tmux config into place
+cp ./tmux.conf ~/tmux.conf
+
 # Put dotfiles in their place in the dotdir
 for file in "${files[@]}"
 do
