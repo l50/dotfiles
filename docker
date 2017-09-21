@@ -10,7 +10,6 @@ alias kali="docker run -it --name=kali kalilinux/kali-linux-docker"
 #alias kali="docker run -t -i --volumes-from kali-datacontainer kali"
 alias msfconsole="cd ~/metasploit-framework/docker && docker-compose run --rm --service-ports ms"
 alias msfvenom="cd ~/metasploit-framework/docker && docker-compose run --rm ms ./msfvenom"
-alias dvwa="docker run -d -p 85:80 --name=dvwa infoslack/dvwa"
 alias sqlmap="docker run --rm -it -v ~/.sqlmap:/home/user/.sqlmap k0st/alpine-sqlmap"
 alias beef="docker run -d -p 3000:3000 --name=beef fcolista/alpine-beef"
 # Use dictionaries from Seclists if installed
@@ -27,6 +26,8 @@ alias webgoat7="docker run -p 8080:8080 --name=webgoat webgoat/webgoat-7.1"
 # Does not work if you change the port, which is really annoying
 alias webgoat8="docker run -p 8080:8080 -t webgoat/webgoat-8.0"
 alias bricks="docker run -d -p 80:80 citizenstig/owaspbricks"
+alias bwapp="docker run -d -p 86:80 feltsecure/owasp-bwapp"
+alias dvwa="docker run -d -p 85:80 --name=dvwa infoslack/dvwa"
 
 # Services
 alias jenkins="docker run -p 8080:8080 -p 50000:50000 jenkins"
