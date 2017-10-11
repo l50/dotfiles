@@ -26,7 +26,7 @@ alias webgoat7="docker run -d -p 8080:8080 --name=webgoat webgoat/webgoat-7.1"
 # Does not work if you change the port, which is really annoying
 alias webgoat8="docker run -d -p 8080:8080 -t webgoat/webgoat-8.0"
 alias bricks="docker run -d -p 80:80 citizenstig/owaspbricks"
-alias bwapp="docker run -d -p 86:80 feltsecure/owasp-bwapp"
+alias bwapp="docker run -d -p 86:80 raesene/bwapp"
 alias dvwa="docker run -d -p 85:80 --name=dvwa infoslack/dvwa"
 alias vulnwp="docker run -d -p 80:80 -p 3306:3306 wpscanteam/vulnerablewordpress"
 alias juice-shop="docker run -d -p 3000:3000 bkimminich/juice-shop"
@@ -37,6 +37,7 @@ alias redis="docker run -d -p 6379:6379 --name vuln_redis redis"
 alias redis3="docker run -d -p 6379:6379 --name vuln_redis redis:3.0"
 alias plone="docker run -p 8080:8080 --name=plone plone"
 alias coldfusion2016="docker run -d --name="mycf2016" -p 80:80 -p 8500:8500 accent/coldfusion2016"
+alias laverna="docker run -d -p 5000:80 elliotjreed/laverna"
 
 # Development
 alias kalipuppet="docker run -it --name=kalipuppet l50/kalipuppet"
