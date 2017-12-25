@@ -61,3 +61,5 @@ then
   alias totalDisk='fdisk -l | grep Disk'
 fi
 
+alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
+
