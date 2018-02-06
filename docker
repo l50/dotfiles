@@ -2,7 +2,7 @@
 alias cleanseDocker="docker ps -a | grep Exit | cut -d ' ' -f 1 | xargs docker rm"
 alias createDataContainer="docker create -v /tmp --name datacontainer ubuntu"
 alias updateDockerImages="docker images | cut -d ' ' -f 1 | xargs -I {} docker pull {} 2>&1"
-alias cleanseImages='docker images | grep '\''<none>'\'' | grep -P '\''[1234567890abcdef]{12}'\'' -o | xargs -L1 docker rmi'
+alias cleanseImages='docker image prune -f'
 
 # Security Tools
 alias kali="docker run -it --name=kali kalilinux/kali-linux-docker"
