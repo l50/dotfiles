@@ -85,3 +85,7 @@ if [[ $metasploit == true ]]; then
   installMetasploit
 fi
 sqlmapFolder
+
+# move files into place
+cp -r $installDir/files $dotdir/files
+

@@ -59,7 +59,14 @@ then
   # Largest files in the current directory and below
   alias largestFilesAndFolders="du -Sh | sort -rh | head -5"
   alias totalDisk='fdisk -l | grep Disk'
+  # Evolve your vocabulary with cowsay (good prep for gre)
+  # https://www.quora.com/What-is-the-most-interesting-shell-script-you-have-ever-written
+  shuf -n 1 ~/.dotfiles/files/gre | cowsay
 fi
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
+
+# Evolve your vocabulary with cowsay (good prep for gre)
+# https://www.quora.com/What-is-the-most-interesting-shell-script-you-have-ever-written
+gshuf -n 1 ~/.dotfiles/files/gre | cowsay
 
