@@ -33,6 +33,15 @@ fs() {
   fi;
 }
 
+tmuxSessionsList() {
+  for s in `tmux list-sessions -F '#{session_name}'` ; do
+    echo -e "\ntmux session name: $s\n--------------------"
+    for p in `tmux list-panes -s -F '#{pane_pid}' -t "$s"` ; do
+      pstree -p -a $p
+    done
+  done
+}
+
 icmpMonitor() { tcpdump -i "$1" 'icmp and icmp[icmptype]=icmp-echo' }
 
 alias randommacaddrwifi="sudo spoof-mac randomize wi-fi"
@@ -49,19 +58,19 @@ alias publicIP="dig +short myip.opendns.com @resolver1.opendns.com"
 
 # Find alias with zsh
 if test $(which zsh); then
-  alias zshAliasLocation="PS4='+%x:%I>' zsh -i -x -c '' |& grep"
+alias zshAliasLocation="PS4='+%x:%I>' zsh -i -x -c '' |& grep"
 fi
 
 if [[ `uname` != 'Darwin' ]]
 then
-  alias open="xdg-open"
-  alias openPorts="netstat -ntlp | grep LISTEN"
-  # Largest files in the current directory and below
-  alias largestFilesAndFolders="du -Sh | sort -rh | head -5"
-  alias totalDisk='fdisk -l | grep Disk'
-  # Evolve your vocabulary with cowsay (good prep for gre)
-  # https://www.quora.com/What-is-the-most-interesting-shell-script-you-have-ever-written
-  shuf -n 1 ~/.dotfiles/files/gre | cowsay
+alias open="xdg-open"
+alias openPorts="netstat -ntlp | grep LISTEN"
+# Largest files in the current directory and below
+alias largestFilesAndFolders="du -Sh | sort -rh | head -5"
+alias totalDisk='fdisk -l | grep Disk'
+# Evolve your vocabulary with cowsay (good prep for gre)
+# https://www.quora.com/What-is-the-most-interesting-shell-script-you-have-ever-written
+shuf -n 1 ~/.dotfiles/files/gre | cowsay
 fi
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
