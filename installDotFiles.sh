@@ -46,6 +46,15 @@ sqlmapFolder()
   fi
 }
 
+# Docker projects which require docker-compose
+cloneDockerProjects()
+{
+  targetDir="${dotdir}/files/docker"
+
+  # hackmd for collaborative md editing
+  git clone git://github.com/hackmdio/docker-hackmd.git $targetDir/docker-hackmd
+}
+
 # Backup old zshrc (if one exists)
 if [ -f ~/.zshrc ]; then
     echo -e "${YELLOW}Backup up old zshrc, please wait...${RESET}"
@@ -89,3 +98,4 @@ sqlmapFolder
 # move files into place
 cp -r $installDir/files $dotdir/files
 
+cloneDockerProjects
