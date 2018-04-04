@@ -32,7 +32,7 @@ alias dvwa="docker run --rm -it -p 85:80 vulnerables/web-dvwa"
 # Run as a daemon:
 #alias dvwa="docker run -d -p 85:80 vulnerables/web-dvwa"
 alias vulnwp="docker run -d -p 80:80 -p 3306:3306 wpscanteam/vulnerablewordpress"
-alias juice-shop="docker run -d -p 3000:3000 bkimminich/juice-shop"
+alias juice-shop="docker run -d -p 3005:3000 bkimminich/juice-shop"
 
 # Services
 alias jenkins="docker run -p 8080:8080 -p 50000:50000 jenkins"
