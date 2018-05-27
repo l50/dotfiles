@@ -6,8 +6,8 @@ alias updateDockerImages="docker images | cut -d ' ' -f 1 | xargs -I {} docker p
 
 # Security Tools
 alias kali="docker run -it --name=kali kalilinux/kali-linux-docker"
-alias msfconsole="cd ~/metasploit-framework/docker && docker-compose run --rm --service-ports ms"
-alias msfvenom="cd ~/metasploit-framework/docker && docker-compose run --rm ms ./msfvenom"
+alias msfconsole="~/metasploit-framework/docker/bin/msfconsole"
+alias msfvenom="~/metasploit-framework/docker/bin/msfvenom"
 alias sqlmap="docker run --rm -it -v ~/.sqlmap:/home/user/.sqlmap k0st/alpine-sqlmap"
 alias beef="docker run -d -p 3000:3000 --name=beef fcolista/alpine-beef"
 alias oxml_xxe="docker run -p 4567:4567 -it --name=oxml_xxe devalias/oxml_xxe"
