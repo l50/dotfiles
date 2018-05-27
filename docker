@@ -6,8 +6,6 @@ alias updateDockerImages="docker images | cut -d ' ' -f 1 | xargs -I {} docker p
 
 # Security Tools
 alias kali="docker run -it --name=kali kalilinux/kali-linux-docker"
-#alias kali="docker run -it -p 80:80 -p 443:443 -v <path to persistent share>:/kaliData kalilinux/kali-linux-docker"
-#alias kali="docker run -t -i --volumes-from kali-datacontainer kali"
 alias msfconsole="cd ~/metasploit-framework/docker && docker-compose run --rm --service-ports ms"
 alias msfvenom="cd ~/metasploit-framework/docker && docker-compose run --rm ms ./msfvenom"
 alias sqlmap="docker run --rm -it -v ~/.sqlmap:/home/user/.sqlmap k0st/alpine-sqlmap"
@@ -21,18 +19,16 @@ alias oxml_xxe="docker run -p 4567:4567 -it --name=oxml_xxe devalias/oxml_xxe"
 #fi
 
 # Vulnerable Containers
-alias nowasp="docker run -d -p 86:80 -p 3306:3306 -e MYSQL_PASS="Chang3ME!" --name=mutillidae citizenstig/nowasp"
-# Does not work if you change the port, which is really annoying
-alias webgoat7="docker run -d -p 8080:8080 --name=webgoat webgoat/webgoat-7.1"
-# Does not work if you change the port, which is really annoying
-alias webgoat8="docker run -d -p 8080:8080 -t webgoat/webgoat-8.0"
-alias bricks="docker run -d -p 80:80 citizenstig/owaspbricks"
-alias bwapp="docker run -d -p 86:80 raesene/bwapp"
-alias dvwa="docker run --rm -it -p 85:80 vulnerables/web-dvwa"
+alias nowasp="docker run --rm -d -p 86:80 -p 3306:3306 -e MYSQL_PASS="Chang3ME!" --name=mutillidae citizenstig/nowasp"
+alias webgoat7="docker run --rm -d -p 8086:8080 --name=webgoat7 webgoat/webgoat-7.1"
+alias webgoat8="docker run --rm -d -p 8085:8080 --name=webgoat8 -t webgoat/webgoat-8.0"
+alias bricks="docker run --rm -d -p 80:80 --name=bricks citizenstig/owaspbricks"
+alias bwapp="docker run --rm -d -p 86:80 --name=bwapp raesene/bwapp"
+alias dvwa="docker run --rm -it -p 85:80 --name=dvwa vulnerables/web-dvwa"
 # Run as a daemon:
 #alias dvwa="docker run -d -p 85:80 vulnerables/web-dvwa"
-alias vulnwp="docker run -d -p 80:80 -p 3306:3306 wpscanteam/vulnerablewordpress"
-alias juice-shop="docker run -d -p 3000:3000 bkimminich/juice-shop"
+alias vulnwp="docker run --rm -d -p 80:80 -p 3306:3306 --name=vulnwp wpscanteam/vulnerablewordpress"
+alias juice-shop="docker run --rm -d -p 3000:3000 --name=juice bkimminich/juice-shop"
 
 # Services
 alias jenkins="docker run -p 8080:8080 -p 50000:50000 jenkins"
@@ -43,10 +39,9 @@ alias coldfusion2016="docker run -d --name="mycf2016" -p 80:80 -p 8500:8500 acce
 alias laverna="docker run -d -p 5000:80 elliotjreed/laverna"
 
 # Development
-alias kalipuppet="docker run -it --name=kalipuppet l50/kalipuppet"
-alias ubuntu="docker run -it --name=ubuntu ubuntu"
-alias debian="docker run -it --name=debian debian"
+alias ubuntu="docker run -it --rm --name=ubuntu ubuntu"
+alias debian="docker run -it --rm --name=debian debian"
 alias postgres="docker run -d --name=postgres postgres"
-alias stretch="docker run -it --name=stretch debian:stretch"
-alias centos="docker run -it --name=centos centos"
-
+alias stretch="docker run -it --rm --name=stretch debian:stretch"
+alias centos="docker run -it --rm --name=centos centos"
+alias hackermd="cd ~/.dotfiles/files/docker/docker-hackmd && docker-compose up -d"
