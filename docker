@@ -24,11 +24,9 @@ alias webgoat7="docker run --rm -d -p 8086:8080 --name=webgoat7 webgoat/webgoat-
 alias webgoat8="docker run --rm -d -p 8085:8080 --name=webgoat8 -t webgoat/webgoat-8.0"
 alias bricks="docker run --rm -d -p 80:80 --name=bricks citizenstig/owaspbricks"
 alias bwapp="docker run --rm -d -p 86:80 --name=bwapp raesene/bwapp"
-alias dvwa="docker run --rm -it -p 85:80 --name=dvwa vulnerables/web-dvwa"
-# Run as a daemon:
-#alias dvwa="docker run -d -p 85:80 vulnerables/web-dvwa"
+alias dvwa="docker run --rm -d -p 85:80 --name=dvwa vulnerables/web-dvwa"
 alias vulnwp="docker run --rm -d -p 80:80 -p 3306:3306 --name=vulnwp wpscanteam/vulnerablewordpress"
-alias juice-shop="docker run --rm -d -p 3000:3000 --name=juice bkimminich/juice-shop"
+alias juice-shop="docker run --rm -d -p 3005:3000 --name=juice bkimminich/juice-shop"
 
 # Services
 alias jenkins="docker run -p 8080:8080 -p 50000:50000 jenkins"
@@ -44,4 +42,6 @@ alias debian="docker run -it --rm --name=debian debian"
 alias postgres="docker run -d --name=postgres postgres"
 alias stretch="docker run -it --rm --name=stretch debian:stretch"
 alias centos="docker run -it --rm --name=centos centos"
-alias hackermd="cd ~/.dotfiles/files/docker/docker-hackmd && docker-compose up -d"
+
+# Miscellaneous
+alias hackmd="cd ~/.dotfiles/files/docker/docker-hackmd && docker-compose up -d"
