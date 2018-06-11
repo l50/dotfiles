@@ -27,6 +27,7 @@ alias bwapp="docker run --rm -d -p 86:80 --name=bwapp raesene/bwapp"
 alias dvwa="docker run --rm -d -p 85:80 --name=dvwa vulnerables/web-dvwa"
 alias vulnwp="docker run --rm -d -p 80:80 -p 3306:3306 --name=vulnwp wpscanteam/vulnerablewordpress"
 alias juice-shop="docker run --rm -d -p 3005:3000 --name=juice bkimminich/juice-shop"
+alias gruyere="docker run -d -p 8008:8008 karthequian/gruyere"
 
 # Services
 alias jenkins="docker run -p 8080:8080 -p 50000:50000 jenkins"
