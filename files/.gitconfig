@@ -1,0 +1,14 @@
+[alias]
+    c = commit -S --edit
+    d = diff
+    m = merge -S --no-ff --edit
+    s = status
+    b = branch
+    p = push origin master
+    pu = pull origin master
+[core]
+    editor = vim
+[include]
+    path = ~/.gitconfig.userparams
+[push]
+    default = matching

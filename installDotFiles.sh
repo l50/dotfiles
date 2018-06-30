@@ -103,4 +103,7 @@ if [[ -d $HOME/.vim/janus ]]; then
     cp $dotdir/files/.vimrc.after $HOME/.vimrc.after
 fi
 
+# Move .gitconfig into place
+cp $dotdir/files/.gitconfig $HOME/.gitconfig
+
 cloneDockerProjects

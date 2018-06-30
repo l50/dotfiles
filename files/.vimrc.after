@@ -17,3 +17,6 @@ set softtabstop=4
 set expandtab
 set shiftround
 
+" Add autowrap with left/right cursor keys -
+" http://vim.wikia.com/wiki/Automatically_wrap_left_and_right
+set whichwrap+=<,>,h,l,[,]
