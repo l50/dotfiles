@@ -98,4 +98,9 @@ sqlmapFolder
 # move files into place
 cp -r $installDir/files $dotdir/files
 
+# If janus is installed, move our .vimrc.after into place
+if [[ -d $HOME/.vim/janus ]]; then
+    cp $dotdir/files/.vimrc.after $HOME/.vimrc.after
+fi
+
 cloneDockerProjects
