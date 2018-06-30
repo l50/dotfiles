@@ -50,27 +50,21 @@ alias diff="colordiff"
 # Used to clone a web site - takes a website as the parameter
 alias cloneSite="wget --mirror --convert-links --adjust-extension --page-requisites --no-parent"
 
-# Show hidden files in the current directory
-alias l.='ls -d .* --color=auto'
-alias listAllHiddenFiles='find /dir/to/search/ -name ".*" -ls'
-
 alias publicIP="dig +short myip.opendns.com @resolver1.opendns.com"
 
-# Find alias with zsh
-if test $(which zsh); then
-alias zshAliasLocation="PS4='+%x:%I>' zsh -i -x -c '' |& grep"
-fi
-
-if [[ `uname` != 'Darwin' ]]
-then
-alias open="xdg-open"
-alias openPorts="netstat -ntlp | grep LISTEN"
-# Largest files in the current directory and below
-alias largestFilesAndFolders="du -Sh | sort -rh | head -5"
-alias totalDisk='fdisk -l | grep Disk'
-# Evolve your vocabulary with cowsay (good prep for gre)
-# https://www.quora.com/What-is-the-most-interesting-shell-script-you-have-ever-written
-shuf -n 1 ~/.dotfiles/files/gre | cowsay
+# If we are not on an OSX system
+if [[ `uname` != 'Darwin' ]]; then
+  alias open="xdg-open"
+  alias openPorts="netstat -ntlp | grep LISTEN"
+  # Largest files in the current directory and below
+  alias largestFilesAndFolders="du -Sh | sort -rh | head -5"
+  alias totalDisk='fdisk -l | grep Disk'
+  alias ipaddr='ip addr'
+  # Find alias with zsh
+  if test $(which zsh); then
+    alias zshAliasLocation="PS4='+%x:%I>' zsh -i -x -c '' |& grep"
+  fi
+  alias l.='ls -d .* --color=auto'
 fi
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
