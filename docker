@@ -19,15 +19,16 @@ alias oxml_xxe="docker run -p 4567:4567 -it --name=oxml_xxe devalias/oxml_xxe"
 #fi
 
 # Vulnerable Containers
-alias nowasp="docker run --rm -d -p 86:80 -p 3306:3306 -e MYSQL_PASS="Chang3ME!" --name=mutillidae citizenstig/nowasp"
-alias webgoat7="docker run --rm -d -p 8086:8080 --name=webgoat7 webgoat/webgoat-7.1"
-alias webgoat8="docker run --rm -d -p 8085:8080 --name=webgoat8 -t webgoat/webgoat-8.0"
 alias bricks="docker run --rm -d -p 80:80 --name=bricks citizenstig/owaspbricks"
 alias bwapp="docker run --rm -d -p 86:80 --name=bwapp raesene/bwapp"
 alias dvwa="docker run --rm -d -p 85:80 --name=dvwa vulnerables/web-dvwa"
-alias vulnwp="docker run --rm -d -p 80:80 -p 3306:3306 --name=vulnwp wpscanteam/vulnerablewordpress"
-alias juice-shop="docker run --rm -d -p 3005:3000 --name=juice bkimminich/juice-shop"
 alias gruyere="docker run -d -p 8008:8008 karthequian/gruyere"
+alias juice-shop="docker run --rm -d -p 3005:3000 --name=juice bkimminich/juice-shop"
+alias nowasp="docker run --rm -d -p 86:80 -p 3306:3306 -e MYSQL_PASS="Chang3ME!" --name=mutillidae citizenstig/nowasp"
+alias vulnwp="docker run --rm -d -p 80:80 -p 3306:3306 --name=vulnwp wpscanteam/vulnerablewordpress"
+alias shellshock="docker run -d -p 8080:80 hmlio/vaas-cve-2014-6271"
+alias webgoat7="docker run --rm -d -p 8086:8080 --name=webgoat7 webgoat/webgoat-7.1"
+alias webgoat8="docker run --rm -d -p 8085:8080 --name=webgoat8 -t webgoat/webgoat-8.0"
 
 # Services
 alias jenkins="docker run -p 8080:8080 -p 50000:50000 jenkins"
