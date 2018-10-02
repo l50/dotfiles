@@ -21,7 +21,7 @@ alias oxml_xxe="docker run -p 4567:4567 -it --name=oxml_xxe devalias/oxml_xxe"
 # Vulnerable Containers
 alias bricks="docker run --rm -d -p 80:80 --name=bricks citizenstig/owaspbricks"
 alias bwapp="docker run --rm -d -p 86:80 --name=bwapp raesene/bwapp && echo 'Go to /install.php to configure'"
-alias dvwa="docker run --rm -d -p 85:80 --name=dvwa vulnerables/web-dvwa"
+alias dvwa="docker run --rm -d -p 85:80 --name=dvwa citizenstig/dvwa"
 alias gruyere="docker run -d -p 8008:8008 karthequian/gruyere"
 alias juice-shop="docker run --rm -d -p 3005:3000 --name=juice bkimminich/juice-shop"
 alias nowasp="docker run --rm -d -p 86:80 -p 3306:3306 -e MYSQL_PASS="Chang3ME!" --name=mutillidae citizenstig/nowasp"
