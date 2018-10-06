@@ -4,7 +4,7 @@
     m = merge -S --no-ff --edit
     s = status
     b = branch
-    p = push origin master
+    pom = push origin master
     pu = pull origin master
 [core]
     editor = vim
