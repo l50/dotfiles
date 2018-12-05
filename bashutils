@@ -69,7 +69,9 @@ fi
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
 
-# Evolve your vocabulary with cowsay (good prep for gre)
-# https://www.quora.com/What-is-the-most-interesting-shell-script-you-have-ever-written
-gshuf -n 1 ~/.dotfiles/files/gre | cowsay
-
+# If gshuf is installed
+if hash gshuf 2>/dev/null; then
+  # Evolve your vocabulary with cowsay (good prep for gre)
+  # https://www.quora.com/What-is-the-most-interesting-shell-script-you-have-ever-written
+  gshuf -n 1 ~/.dotfiles/files/gre | cowsay
+fi

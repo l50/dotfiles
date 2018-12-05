@@ -5,7 +5,7 @@ ZSH_THEME="norm"
 
 plugins=(git docker docker-compose nmap tmux)
 # User configuration
-export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin:/usr/local/git/bin:/Users/l/.rvm/bin:/usr/local/packer:/Applications/Racket\ v6.3/bin/
+export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin:/usr/local/git/bin:/Users/l/.rvm/bin:/usr/local/packer
 
 source $ZSH/oh-my-zsh.sh
 
@@ -32,10 +32,10 @@ export PATH=$PATH:$HOME/.pyenv/bin
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
 
-# Only for OSX
-#alias emacs='/Applications/Emacs.app/Contents/MacOS/Emacs'
-
-eval $(thefuck --alias)
+# If thefuck is installed, use it
+if hash thefuck 2>/dev/null; then
+  eval $(thefuck --alias)
+fi
 
 # mvim stuff
 alias mvim="/Applications/MacVim.app/contents/MacOS/MacVim"
