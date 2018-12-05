@@ -1,3 +1,8 @@
-export AWS_ACCESS_KEY_ID=$(ruby -ne 'print $1 if ~/.*key_id = (.*)/' < ~/.aws/credentials | rev | cut -c 1- | rev)
-export AWS_SECRET_ACCESS_KEY=$(ruby -ne 'print $1 if ~/.*access_key = (.*)/' < ~/.aws/credentials | rev | cut -c 1- | rev)
-export AWS_DEFAULT_REGION=$(ruby -ne 'print $1 if ~/region = (.*)/' < ~/.aws/config | rev | cut -c 1- | rev)
+if [[ -f $HOME/.aws/credentials ]]; then
+  export AWS_ACCESS_KEY_ID=$(ruby -ne 'print $1 if ~/.*key_id = (.*)/' < ~/.aws/credentials | rev | cut -c 1- | rev)
+  export AWS_SECRET_ACCESS_KEY=$(ruby -ne 'print $1 if ~/.*access_key = (.*)/' < ~/.aws/credentials | rev | cut -c 1- | rev)
+fi
+
+if [[ -f $HOME/.aws/config ]]; then
+  export AWS_DEFAULT_REGION=$(ruby -ne 'print $1 if ~/region = (.*)/' < ~/.aws/config | rev | cut -c 1- | rev)
+fi
