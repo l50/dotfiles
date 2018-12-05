@@ -18,7 +18,6 @@ dotdir="$HOME/.dotfiles"
 oldDotDir="${dotdir}.old"
 installDir=$(pwd)
 declare -a files=("bashutils" "docker" "osx" "aws" "python")
-metasploit=true
 
 ##### (Cosmetic) Color output
 RED="\033[01;31m"      # Issues/Errors
@@ -29,8 +28,9 @@ BOLD="\033[01;01m"     # Highlight
 RESET="\033[00m"       # Normal
 
 # Used by the docker msfconsole and msfvenom containers
-installMetasploit()
+install_metasploit()
 {
+  # Make sure it's not already there
   if [ ! -d "$HOME/metasploit-framework" ]; then
     echo -e "${BLUE}Installing metasploit, please wait...${RESET}"
     git clone git://github.com/rapid7/metasploit-framework.git $HOME/metasploit-framework
@@ -90,9 +90,11 @@ done
 
 echo $installDir >> $dotdir/.dotinstalldir
 
-if [[ $metasploit == true ]]; then
-  installMetasploit
+# If we're not on kali, install metasploit to the user's home directory
+if [[ ! -d "/usr/share/metasploit-framework" ]]; then
+  install_metasploit
 fi
+
 sqlmapFolder
 
 # move files into place
