@@ -1,13 +1,22 @@
-# Various Docker functions
+### Various Docker functions ###
 alias cleanseDocker='docker system prune'
 alias cleanseImages=cleanseDocker
 alias createDataContainer="docker create -v /tmp --name datacontainer ubuntu"
 alias updateDockerImages="docker images | cut -d ' ' -f 1 | xargs -I {} docker pull {} 2>&1"
 
-# Security Tools
+### Security Tools ###
+
+# Don't clobber kali's msfconsole
+if [ ! -f "/usr/share/metasploit-framework/msfconsole" ]; then
+  alias msfconsole="~/metasploit-framework/docker/bin/msfconsole"
+fi
+
+# Don't clobber kali's msfvenom
+if [ ! -f "/usr/share/metasploit-framework/msfvenom" ]; then
+  alias msfvenom="~/metasploit-framework/docker/bin/msfvenom"
+fi
+
 alias kali="docker run -it --name=kali kalilinux/kali-linux-docker"
-alias msfconsole="~/metasploit-framework/docker/bin/msfconsole"
-alias msfvenom="~/metasploit-framework/docker/bin/msfvenom"
 alias sqlmap="docker run --rm -it -v ~/.sqlmap:/home/user/.sqlmap k0st/alpine-sqlmap"
 alias beef="docker run -d -p 3000:3000 --name=beef fcolista/alpine-beef"
 alias oxml_xxe="docker run -p 4567:4567 -it --name=oxml_xxe devalias/oxml_xxe"
@@ -18,7 +27,7 @@ alias oxml_xxe="docker run -p 4567:4567 -it --name=oxml_xxe devalias/oxml_xxe"
 #  alias wpscan="docker run --rm wpscanteam/wpscan"
 #fi
 
-# Vulnerable Containers
+### Vulnerable Containers ###
 alias bricks="docker run --rm -d -p 80:80 --name=bricks citizenstig/owaspbricks"
 alias bwapp="docker run --rm -d -p 86:80 --name=bwapp raesene/bwapp && echo 'Go to /install.php to configure'"
 alias dvwa="docker run --rm -d -p 85:80 --name=dvwa citizenstig/dvwa"
@@ -30,7 +39,7 @@ alias shellshock="docker run -d -p 8080:80 hmlio/vaas-cve-2014-6271"
 alias webgoat7="docker run --rm -d -p 8086:8080 --name=webgoat7 webgoat/webgoat-7.1"
 alias webgoat8="docker run --rm -d -p 8085:8080 --name=webgoat8 -t webgoat/webgoat-8.0"
 
-# Services
+### Services ###
 alias jenkins="docker run -p 8080:8080 -p 50000:50000 jenkins"
 alias redis="docker run -d -p 6379:6379 --name vuln_redis redis"
 alias redis3="docker run -d -p 6379:6379 --name vuln_redis redis:3.0"
@@ -38,12 +47,12 @@ alias plone="docker run -p 8080:8080 --name=plone plone"
 alias coldfusion2016="docker run -d --name="mycf2016" -p 80:80 -p 8500:8500 accent/coldfusion2016"
 alias laverna="docker run -d -p 5000:80 elliotjreed/laverna"
 
-# Development
+### Development ###
 alias ubuntu="docker run -it --rm --name=ubuntu ubuntu"
 alias debian="docker run -it --rm --name=debian debian"
 alias postgres="docker run -d --name=postgres postgres"
 alias stretch="docker run -it --rm --name=stretch debian:stretch"
 alias centos="docker run -it --rm --name=centos centos"
 
-# Miscellaneous
+### Miscellaneous ###
 alias hackmd="cd ~/.dotfiles/files/docker/docker-hackmd && docker-compose up -d"
