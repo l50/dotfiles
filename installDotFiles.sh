@@ -58,7 +58,7 @@ cloneDockerProjects()
 get_custom_zsh_theme(){
   if [ ! -f ~/.oh-my-zsh/themes/craig-magic.zsh-theme ]; then
     # Craig's theme is pretty rad
-    wget https://raw.githubusercontent.com/wunderhund/dotfiles/master/craig-magic.zsh-theme -O ~/.oh-my-zsh/themes/craig-magic.zsh-theme
+    wget https://raw.githubusercontent.com/l50/dotfiles-1/master/craig-magic.zsh-theme -O ~/.oh-my-zsh/themes/craig-magic.zsh-theme
   fi
 }
 
