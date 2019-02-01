@@ -55,6 +55,11 @@ cloneDockerProjects()
   git clone git://github.com/hackmdio/docker-hackmd.git $targetDir/docker-hackmd
 }
 
+get_custom_zsh_theme(){
+  # Craig's theme is pretty rad
+  wget https://raw.githubusercontent.com/wunderhund/dotfiles/master/craig-magic.zsh-theme -O ~/.oh-my-zsh/themes/craig-magic.zsh-theme
+}
+
 # Backup old zshrc (if one exists)
 if [ -f ~/.zshrc ]; then
     echo -e "${YELLOW}Backup up old zshrc, please wait...${RESET}"
@@ -109,3 +114,4 @@ fi
 cp $dotdir/files/.gitconfig $HOME/.gitconfig
 
 cloneDockerProjects
+get_custom_zsh_theme
