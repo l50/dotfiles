@@ -4,6 +4,7 @@ export ZSH=$HOME/.oh-my-zsh
 ZSH_THEME="wh-magic"
 
 plugins=(git docker docker-compose nmap tmux)
+
 # User configuration
 export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin:/usr/local/git/bin:/Users/l/.rvm/bin:/usr/local/packer
 
@@ -49,20 +50,21 @@ source ~/.dotfiles/docker
 source ~/.dotfiles/bashutils
 source ~/.dotfiles/aws
 source ~/.dotfiles/python
-if [[ `uname` == 'Darwin' ]]
-then
+if [[ `uname` == 'Darwin' ]]; then
   source ~/.dotfiles/osx
+  # Set GOROOT installed with brew
+  export GOROOT="$(brew --prefix golang)/libexec"
+  # Add GOROOT to PATH
+  export PATH="$PATH:${GOROOT}/bin"
 fi
 
 # For work specific configurations
-if [ -f $HOME/.work ]
-then
+if [ -f $HOME/.work ]; then
   source ~/.work
 fi
 
 export EDITOR='vim'
 
-if [ -f $HOME/.dotfiles/.dotinstalldir ]
-then
+if [[ -f $HOME/.dotfiles/.dotinstalldir ]]; then
   alias dot-update="(cd $(cat ~/.dotfiles/.dotinstalldir) && git pull origin master &> /dev/null && bash installDotFiles.sh)"
 fi
