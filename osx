@@ -54,3 +54,5 @@ if [[ -f '/usr/local/bin/ggrep' ]]; then
   alias grep='/usr/local/bin/ggrep'
 fi
 
+# Find files larger than 100MB - https://www.fonepaw.com/eraser/find-large-files-mac.html
+alias largestFiles="sudo find / -type f -size +100000k -exec ls -lh {} \; | awk '{ print \$9 \": \" \$5 }'"
