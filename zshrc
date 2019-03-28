@@ -6,7 +6,7 @@ ZSH_THEME="wh-magic"
 plugins=(git docker docker-compose nmap tmux)
 
 # User configuration
-export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin:/usr/local/git/bin:/Users/l/.rvm/bin:/usr/local/packer
+export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin:/usr/local/git/bin:/usr/local/sbin:/Users/l/.rvm/bin:/usr/local/packer
 
 source $ZSH/oh-my-zsh.sh
 
