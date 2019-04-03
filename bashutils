@@ -60,7 +60,6 @@ if [[ `uname` != 'Darwin' ]]; then
   # Largest files in the current directory and below
   alias largestFilesAndFolders="du -Sh | sort -rh | head -5"
   alias totalDisk='fdisk -l | grep Disk'
-  alias ipaddr='ip addr'
   # Find alias with zsh
   if test $(which zsh); then
     alias zshAliasLocation="PS4='+%x:%I>' zsh -i -x -c '' |& grep"
@@ -81,3 +80,5 @@ fi
 if hash nmap 2>/dev/null; then
   alias nmap="nmap --reason --open --stats-every 3m --max-retries 1 --max-scan-delay 20 --defeat-rst-ratelimit"
 fi
+
+alias ipaddr="ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1'"
