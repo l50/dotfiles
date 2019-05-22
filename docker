@@ -49,6 +49,7 @@ alias laverna="docker run -d -p 5000:80 elliotjreed/laverna"
 
 ### Development ###
 alias d_python2.7.16="docker run -it --rm --name=python2.7.16 python:2.7.16"
+alias d_python3.7.3="docker run -it --rm --name=python3.7.3 python:3.7.3"
 
 ### Various OS's ###
 alias ubuntu="docker run -it --rm --name=ubuntu ubuntu"
