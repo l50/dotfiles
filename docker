@@ -48,6 +48,9 @@ alias coldfusion2016="docker run -d --name="mycf2016" -p 80:80 -p 8500:8500 acce
 alias laverna="docker run -d -p 5000:80 elliotjreed/laverna"
 
 ### Development ###
+alias d_python2.7.16="docker run -it --rm --name=python2.7.16 python:2.7.16"
+
+### Various OS's ###
 alias ubuntu="docker run -it --rm --name=ubuntu ubuntu"
 alias debian="docker run -it --rm --name=debian debian"
 alias postgres="docker run -d --name=postgres postgres"
