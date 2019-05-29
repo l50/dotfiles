@@ -29,10 +29,6 @@ export PATH=$PATH:$GOPATH/bin
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 
-export PATH=$PATH:$HOME/.pyenv/bin
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
-
 # If thefuck is installed, use it
 if hash thefuck 2>/dev/null; then
   eval $(thefuck --alias)
