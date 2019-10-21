@@ -98,9 +98,9 @@ done
 echo $installDir >> $dotdir/.dotinstalldir
 
 # If we're not on kali, install metasploit to the user's home directory
-if [[ ! -d "/usr/share/metasploit-framework" ]]; then
-  install_metasploit
-fi
+#if [[ ! -d "/usr/share/metasploit-framework" ]]; then
+#  install_metasploit
+#fi
 
 sqlmapFolder
 
@@ -115,5 +115,5 @@ fi
 # Move .gitconfig into place
 cp $dotdir/files/.gitconfig $HOME/.gitconfig
 
-cloneDockerProjects
-get_custom_zsh_theme
+#cloneDockerProjects
+#get_custom_zsh_theme
