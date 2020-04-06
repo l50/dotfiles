@@ -46,6 +46,15 @@ sqlmapFolder()
   fi
 }
 
+# Creates kali folder if it doesn't already exist
+kaliFolder()
+{
+  if [ ! -d "$HOME/.kali" ]; then
+    echo -e "${BLUE}Creating kali folder at $HOME/.kali, please wait...${RESET}"
+    mkdir $HOME/.kali
+  fi
+}
+
 # Docker projects which require docker-compose
 cloneDockerProjects()
 {
@@ -103,6 +112,7 @@ echo $installDir >> $dotdir/.dotinstalldir
 #fi
 
 sqlmapFolder
+kaliFolder
 
 # move files into place
 cp -r $installDir/files $dotdir/files

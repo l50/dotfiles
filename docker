@@ -15,7 +15,10 @@ if [ ! -f "/usr/share/metasploit-framework/msfvenom" ]; then
   alias msfvenom="~/metasploit-framework/docker/bin/msfvenom"
 fi
 
-alias kali="docker run -p 4444:4444 --rm -it --name=kali kalilinux/kali-linux-docker"
+# This can be used if we don't want to persist:
+#alias kali="docker run -p 4444:4444 --rm -it --name=kali kalilinux/kali"
+alias kalibase="docker run --rm -it -v ~/.kali/root:/root -v ~/.kali/postgres:/var/lib/postgresql -p 4444:4444 --name=kali kalilinux/kali"
+alias kali="docker run --rm -it -v ~/.kali/root:/root -v ~/.kali/postgres:/var/lib/postgresql -p 4444:4444 --name=kali --privileged --sysctl net.ipv6.conf.all.disable_ipv6=0 l50/kali-provisioned"
 alias sqlmap="docker run --rm -it -v ~/.sqlmap:/home/user/.sqlmap k0st/alpine-sqlmap"
 alias beef="docker run -d -p 3000:3000 --name=beef fcolista/alpine-beef"
 alias oxml_xxe="docker run -p 4567:4567 -it --name=oxml_xxe devalias/oxml_xxe"
