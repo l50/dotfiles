@@ -1,3 +1,6 @@
+# Pipenv
+export PATH="${HOME}/.local/bin:$PATH"
+
 # If pyenv is installed, configure it
 if hash pyenv 2>/dev/null; then
   export PYENV_ROOT="$HOME/.pyenv"
@@ -12,4 +15,3 @@ alias venv_create="virtualenv .venv"
 
 # Utilities
 alias str_len="python -c 'import sys; print(len(sys.argv[1]))'"
-
