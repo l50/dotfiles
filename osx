@@ -1,3 +1,13 @@
+capture() {
+	sudo dtrace -p "$1" -qn '
+		syscall::write*:entry
+		/pid == $target && arg0 == 1/ {
+			printf("%s", copyinstr(arg1, arg2));
+		}
+	'
+}
+
+
 alias remountSD='sudo kextunload -b com.apple.driver.AppleSDXC; sudo kextload -b com.apple.driver.AppleSDXC'
 alias leaving="guard-my-macbook-when-i-am-away"
 
@@ -49,7 +59,7 @@ alias firefox="open -a /Applications/Firefox.app"
 
 # Use GNU grep
 if [[ -f '/usr/local/bin/ggrep' ]]; then
-  alias grep='/usr/local/bin/ggrep'
+alias grep='/usr/local/bin/ggrep'
 fi
 
 # Find files larger than 100MB - https://www.fonepaw.com/eraser/find-large-files-mac.html
