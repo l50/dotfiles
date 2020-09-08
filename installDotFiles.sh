@@ -8,7 +8,7 @@
 #
 # Jayson Grace, jayson.e.grace@gmail.com, 2/9/2017
 #
-# Last update 8/3/2017 by Jayson Grace, jayson.e.grace@gmail.com
+# Last update 9/8/2020 by Jayson Grace, jayson.e.grace@gmail.com
 # ----------------------------------------------------------------------------
 
 # Stop execution of script if an error occurs
@@ -17,7 +17,7 @@ set -e
 dotdir="$HOME/.dotfiles"
 oldDotDir="${dotdir}.old"
 installDir=$(pwd)
-declare -a files=("bashutils" "docker" "osx" "aws" "python")
+declare -a files=("bashutils" "docker" "osx" "aws" "python" "android")
 
 ##### (Cosmetic) Color output
 RED="\033[01;31m"      # Issues/Errors
@@ -38,7 +38,7 @@ install_metasploit()
 }
 
 # Creates sqlmap folder if it doesn't already exist
-sqlmapFolder()
+sqlmap_folder()
 {
   if [ ! -d "$HOME/.sqlmap" ]; then
     echo -e "${BLUE}Creating sqlmap folder at $HOME/.sqlmap, please wait...${RESET}"
@@ -47,11 +47,20 @@ sqlmapFolder()
 }
 
 # Creates kali folder if it doesn't already exist
-kaliFolder()
+kali_folder()
 {
   if [ ! -d "$HOME/.kali" ]; then
     echo -e "${BLUE}Creating kali folder at $HOME/.kali, please wait...${RESET}"
     mkdir $HOME/.kali
+  fi
+}
+
+# Creates android security tools folder if it doesn't already exist
+android_sec_tools_folder()
+{
+  if [ ! -d "$HOME/.android_sec_tools" ]; then
+    echo -e "${BLUE}Creating android_sec_tools folder at $HOME/.android_sec_tools, please wait...${RESET}"
+    mkdir $HOME/.android_sec_tools
   fi
 }
 
@@ -64,12 +73,7 @@ cloneDockerProjects()
   git clone git://github.com/hackmdio/docker-hackmd.git $targetDir/docker-hackmd
 }
 
-get_custom_zsh_theme(){
-  if [ ! -f ~/.oh-my-zsh/themes/wh-magic.zsh-theme ]; then
-    # Craig's theme is pretty rad
-    wget https://raw.githubusercontent.com/l50/dotfiles-1/master/wh-magic.zsh-theme -O ~/.oh-my-zsh/themes/wh-magic.zsh-theme
-  fi
-}
+### MAIN ###
 
 # Backup old zshrc (if one exists)
 if [ -f ~/.zshrc ]; then
@@ -111,8 +115,9 @@ echo $installDir >> $dotdir/.dotinstalldir
 #  install_metasploit
 #fi
 
-sqlmapFolder
-kaliFolder
+sqlmap_folder
+kali_folder
+android_sec_tools_folder
 
 # move files into place
 cp -r $installDir/files $dotdir/files
@@ -126,4 +131,3 @@ fi
 cp $dotdir/files/.gitconfig $HOME/.gitconfig
 
 #cloneDockerProjects
-#get_custom_zsh_theme

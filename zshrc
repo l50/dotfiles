@@ -21,6 +21,7 @@ source ~/.dotfiles/docker
 source ~/.dotfiles/bashutils
 source ~/.dotfiles/aws
 source ~/.dotfiles/python
+source ~/.dotfiles/android
 if [[ `uname` == 'Darwin' ]]; then
   source ~/.dotfiles/osx
   # Used for brew to specify the path Brew uses before the path for the default system packages
@@ -46,6 +47,6 @@ if [[ -f $HOME/.dotfiles/.dotinstalldir ]]; then
 fi
 
 # Load RVM into a shell session *as a function*
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" 
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH="$PATH:$HOME/.rvm/bin"
