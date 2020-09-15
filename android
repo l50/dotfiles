@@ -1,2 +1,5 @@
 alias autoapk="bash $HOME/.android_sec_tools/autoapk.sh"
 alias start_app='bash $HOME/.android_sec_tools/start_app.sh'
+
+# ADB Shortcuts
+alias adbpkgs="adb shell pm list packages | awk -F':' '{print \$2}'"
