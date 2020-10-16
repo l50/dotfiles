@@ -1,12 +1,18 @@
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
 
-ZSH_THEME="norm"
+ZSH_THEME="af-magic"
 
-plugins=(git docker docker-compose nmap tmux)
+plugins=(
+  git
+  docker
+  docker-compose
+  nmap
+  tmux
+)
 
 # User configuration
-export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin:/usr/local/git/bin:/usr/local/sbin:/usr/local/packer
+export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin:/usr/local/git/bin:/usr/local/sbin
 
 source $ZSH/oh-my-zsh.sh
 
@@ -40,8 +46,10 @@ if [ -f $HOME/.work ]; then
   source ~/.work
 fi
 
+# Set default editor to vim
 export EDITOR='vim'
 
+# Add the dot-update command
 if [[ -f $HOME/.dotfiles/.dotinstalldir ]]; then
   alias dot-update="(cd $(cat ~/.dotfiles/.dotinstalldir) && git pull origin master &> /dev/null && bash installDotFiles.sh)"
 fi
