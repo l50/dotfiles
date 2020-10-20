@@ -8,7 +8,7 @@
 #
 # Jayson Grace, jayson.e.grace@gmail.com, 2/9/2017
 #
-# Last update 9/8/2020 by Jayson Grace, jayson.e.grace@gmail.com
+# Last update 10/20/2020 by Jayson Grace, jayson.e.grace@gmail.com
 # ----------------------------------------------------------------------------
 
 # Stop execution of script if an error occurs
@@ -64,15 +64,6 @@ android_sec_tools_folder()
   fi
 }
 
-# Docker projects which require docker-compose
-cloneDockerProjects()
-{
-  targetDir="${dotdir}/files/docker"
-
-  # hackmd for collaborative md editing
-  git clone git://github.com/hackmdio/docker-hackmd.git $targetDir/docker-hackmd
-}
-
 ### MAIN ###
 
 # Backup old zshrc (if one exists)
@@ -122,12 +113,6 @@ android_sec_tools_folder
 # move files into place
 cp -r $installDir/files $dotdir/files
 
-# If janus is installed, move our .vimrc.after into place
-if [[ -d $HOME/.vim/janus ]]; then
-  cp $dotdir/files/.vimrc.after $HOME/.vimrc.after
-fi
-
 # Move .gitconfig into place
 cp $dotdir/files/.gitconfig $HOME/.gitconfig
-
-#cloneDockerProjects
+echo -e "${YELLOW}Be sure to populate ~/.gitconfig/userparam!${RESET}"
