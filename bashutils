@@ -63,6 +63,13 @@ tmuxSessionsList() {
 
 icmpMonitor() { tcpdump -i "$1" 'icmp and icmp[icmptype]=icmp-echo' }
 
+# get a line from a particular file
+# input line number and file
+# example: get_line 200 output.txt
+get_line() {
+  sed "$1q;d" $2
+}
+
 alias randommacaddrwifi="sudo spoof-mac randomize wi-fi"
 alias diff="colordiff"
 
@@ -101,3 +108,4 @@ if hash nmap 2>/dev/null; then
 fi
 
 alias ipaddr="ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1'"
+
