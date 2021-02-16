@@ -115,4 +115,4 @@ cp -r $installDir/files $dotdir/files
 
 # Move .gitconfig into place
 cp $dotdir/files/.gitconfig $HOME/.gitconfig
-echo -e "${YELLOW}Be sure to populate ~/.gitconfig/userparam!${RESET}"
+echo -e "${YELLOW}Be sure to populate ~/.gitconfig/userparams!${RESET}"
