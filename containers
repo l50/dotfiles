@@ -62,3 +62,9 @@ alias centos="docker run -it --rm --name=centos centos"
 
 ### Miscellaneous ###
 alias hackmd="cd ~/.dotfiles/files/docker/docker-hackmd && docker-compose up -d"
+
+### K8s ###
+alias k=kubectl
+# Autocomplete
+if [ $commands[kubectl] ]; then source <(kubectl completion zsh); fi
+

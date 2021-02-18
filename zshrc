@@ -23,7 +23,7 @@ alias sd='cd /Volumes/SD && ls'
 # Enable mouse use in all modes for vim
 set mouse=a
 
-source ~/.dotfiles/docker
+source ~/.dotfiles/containers
 source ~/.dotfiles/bashutils
 source ~/.dotfiles/aws
 source ~/.dotfiles/python

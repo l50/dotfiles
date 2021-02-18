@@ -17,7 +17,7 @@ set -e
 dotdir="$HOME/.dotfiles"
 oldDotDir="${dotdir}.old"
 installDir=$(pwd)
-declare -a files=("bashutils" "docker" "osx" "aws" "python" "android")
+declare -a files=("bashutils" "containers" "osx" "aws" "python" "android")
 
 ##### (Cosmetic) Color output
 RED="\033[01;31m"      # Issues/Errors
