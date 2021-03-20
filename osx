@@ -7,13 +7,12 @@ capture() {
 	'
 }
 
-
 alias remountSD='sudo kextunload -b com.apple.driver.AppleSDXC; sudo kextload -b com.apple.driver.AppleSDXC'
 alias leaving="guard-my-macbook-when-i-am-away"
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
-alias updatebrew='brew update && brew cleanup && brew doctor'
+alias updatebrew='brew update && brew upgrade && brew cleanup && brew doctor'
 
 # Start postgres locally
 alias pgstart='pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log start'
@@ -21,9 +20,6 @@ alias pgstart='pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/serv
 alias pgstop='pg_ctl -D /usr/local/var/postgres stop -s -m fast'
 
 alias openPorts='sudo lsof -iTCP -sTCP:LISTEN -n -P'
-
-# Haskell
-export PATH="$HOME/Library/Haskell/bin:$PATH"
 
 # The following were stolen from https://github.com/blacktop/
 
@@ -40,7 +36,7 @@ alias dsCleanup.="find . -type f -name '*.DS_Store' -ls -delete"
 
 # Empty the Trash on all mounted volumes and the main HDD
 # Also, clear Apple’s System Logs to improve shell startup speed
-alias emptytrash="sudo rm -rfv /Volumes/*/.Trashes; sudo rm -rfv ~/.Trash; sudo rm -rfv /private/var/log/asl/*.asl"
+alias emptytrash="sudo rm -rfv /Volumes/*/.Trashes; sudo rm -rfv $HOME/.Trash; sudo rm -rfv /private/var/log/asl/*.asl"
 
 # Show/hide hidden files in Finder
 alias showHiddenFinder="defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder"
@@ -59,7 +55,7 @@ alias firefox="open -a /Applications/Firefox.app"
 
 # Use GNU grep
 if [[ -f '/usr/local/bin/ggrep' ]]; then
-alias grep='/usr/local/bin/ggrep'
+	alias grep='/usr/local/bin/ggrep'
 fi
 
 # Find files larger than 100MB - https://www.fonepaw.com/eraser/find-large-files-mac.html

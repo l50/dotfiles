@@ -1,49 +1,34 @@
-# Path to your oh-my-zsh installation.
+# PATH setup
+export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
+
+# oh-my-zsh components
 export ZSH=$HOME/.oh-my-zsh
-
 ZSH_THEME="af-magic"
-
-plugins=(
-  git
-  docker
-  docker-compose
-  nmap
-  tmux
-)
-
-# User configuration
-export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin:/usr/local/git/bin:/usr/local/sbin
-
 source $ZSH/oh-my-zsh.sh
 
-[[ -s "$HOME/.profile" ]] && source "$HOME/.profile" # Load the default .profile
+plugins=(
+  # auto-completion for docker
+  docker
+  # bunch of great nmap aliases -> https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/nmap
+  nmap
+)
 
-alias sd='cd /Volumes/SD && ls'
+# Other dotfiles
+source $HOME/.dotfiles/android
+source $HOME/.dotfiles/aws
+source $HOME/.dotfiles/bashutils
+source $HOME/.dotfiles/containers
+source $HOME/.dotfiles/go
+source $HOME/.dotfiles/python
 
-# Enable mouse use in all modes for vim
-set mouse=a
-
-source ~/.dotfiles/containers
-source ~/.dotfiles/bashutils
-source ~/.dotfiles/aws
-source ~/.dotfiles/python
-source ~/.dotfiles/android
+# Mac OS specific dotfile
 if [[ `uname` == 'Darwin' ]]; then
-  source ~/.dotfiles/osx
-  # Used for brew to specify the path Brew uses before the path for the default system packages
-  export PATH="/usr/local/bin:$PATH"
-  export GOPATH=$HOME/programs/go
-  export GOROOT=/usr/local/opt/go/libexec
-  # Add go to PATH - so we can run executables from anywhere
-  export PATH=$PATH:$GOPATH/bin
-  export PATH=$PATH:$GOROOT/bin
-  # Set bin directory for go executables
-  export GOBIN=$HOME/programs/go/bin
+  source $HOME/.dotfiles/osx
 fi
 
-# For work specific configurations
+# Work specific configurations
 if [ -f $HOME/.work ]; then
-  source ~/.work
+  source $HOME/.work
 fi
 
 # Set default editor to vim
@@ -51,13 +36,8 @@ export EDITOR='vim'
 
 # Add the dot-update command
 if [[ -f $HOME/.dotfiles/.dotinstalldir ]]; then
-  alias dot-update="(cd $(cat ~/.dotfiles/.dotinstalldir) && git pull origin master &> /dev/null && bash installDotFiles.sh)"
+  alias dot-update="(cd $(cat $HOME/.dotfiles/.dotinstalldir) && git pull origin master &> /dev/null && bash installDotFiles.sh)"
 fi
-
-# Load RVM into a shell session *as a function*
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
-# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
-export PATH="$PATH:$HOME/.rvm/bin"
 
 # Remove the % from the end of terminal output 
 export PROMPT_EOL_MARK=''

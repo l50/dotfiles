@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>Label</key>
+        <string>net.techvomit.l-dotfile-update</string>
+
+        <key>EnvironmentVariables</key>
+        <dict>
+            <key>PATH</key>
+            <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:</string>
+        </dict>
+
+        <key>StandardErrorPath</key>
+        <string>STDERRLOG</string>
+
+        <key>StandardOutPath</key>
+        <string>STDOUTLOG</string>
+
+        <key>WorkingDirectory</key>
+        <string>WORKINGDIR</string>
+
+        <key>ProgramArguments</key>
+        <array>
+            <string>bash</string>
+            <string>DOTUPDATECOMMAND</string>
+        </array>
+
+        <!-- Run every day at 10:00 AM -->
+        <key>startcalendarinterval</key>
+        <dict>
+            <key>hour</key>
+            <integer>10</integer>
+            <key>minute</key>
+            <integer>00</integer>
+        </dict>
+    </dict>
+</plist>
