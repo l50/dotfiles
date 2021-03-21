@@ -63,33 +63,28 @@ setup_auto_update() {
     launchd_path="${HOME}/Library/LaunchAgents"
     plist_name="net.techvomit.l.${file_name}"
 
-    # vars to populate template
-    std_err_log="${HOME}/Library/Logs/${plist_name}-err.log"
-    std_out_log="${HOME}/Library/Logs/${plist_name}.log"
-    working_dir=$(cat "${DOT_DIR}/.dotinstalldir")
+    # Only run this if we haven't already created the job
+    if [[ ! -f "${launchd_path}/${plist_name}.plist" ]]; then 
+      # vars to populate template
+      working_dir=$(cat "${DOT_DIR}/.dotinstalldir")
+      plist_command="installDotFiles.sh"
 
-    plist_command="installDotFiles.sh"
+      cp templates/${file_name}.tmpl "${launchd_path}/${plist_name}.plist"
 
-    cp templates/${file_name}.tmpl "${launchd_path}/${plist_name}.plist"
+      # WORKINGDIR
+      sed -i '' "s|WORKINGDIR|${working_dir}|" "${launchd_path}/${plist_name}.plist"
 
-    # ERRLOG
-    sed -i '' "s|STDERRLOG|${std_err_log}|" "${launchd_path}/${plist_name}.plist"
+      # DOTUPDATECOMMAND
+      sed -i '' "s|DOTUPDATECOMMAND|${plist_command}|" "${launchd_path}/${plist_name}.plist"
 
-    # STDOUTLOG
-    sed -i '' "s|STDOUTLOG|${std_out_log}|" "${launchd_path}/${plist_name}.plist"
-
-    # WORKINGDIR
-    sed -i '' "s|WORKINGDIR|${working_dir}|" "${launchd_path}/${plist_name}.plist"
-
-    # DOTUPDATECOMMAND
-    sed -i '' "s|DOTUPDATECOMMAND|${plist_command}|" "${launchd_path}/${plist_name}.plist"
-
-    # Enable it
-    launchctl load "${launchd_path}/${plist_name}.plist"
+      # Enable it
+      launchctl load "${launchd_path}/${plist_name}.plist"
+    fi
   fi
 }
 
 ### MAIN ###
+# Start by getting the latest and greatest
 git pull origin master &> /dev/null
 
 # Backup old zshrc (if one exists)
