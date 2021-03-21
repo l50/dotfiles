@@ -11,12 +11,6 @@
             <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:</string>
         </dict>
 
-        <key>StandardErrorPath</key>
-        <string>STDERRLOG</string>
-
-        <key>StandardOutPath</key>
-        <string>STDOUTLOG</string>
-
         <key>WorkingDirectory</key>
         <string>WORKINGDIR</string>
 
@@ -26,7 +20,11 @@
             <string>DOTUPDATECOMMAND</string>
         </array>
 
-        <!-- Run every day at 10:00 AM -->
+        <!-- Run on startup -->
+        <key>RunAtLoad</key>
+        <true/>
+
+        <!-- Also run every day at 10:00 AM -->
         <key>startcalendarinterval</key>
         <dict>
             <key>hour</key>
