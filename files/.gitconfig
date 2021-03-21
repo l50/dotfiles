@@ -9,6 +9,6 @@
 [core]
     editor = vim
 [include]
-    path = $HOME/.gitconfig.userparams
+    path = ~/.gitconfig.userparams
 [push]
     default = matching
