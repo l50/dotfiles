@@ -61,7 +61,7 @@ setup_auto_update() {
   if [[ `uname` == 'Darwin' ]]; then
     file_name='dotfile-update'
     launchd_path="${HOME}/Library/LaunchAgents"
-    plist_name="net.techvomit.l.${file_name}"
+    plist_name="net.techvomit.$(whoami).${file_name}"
 
     # Only run this if we haven't already created the job
     if [[ ! -f "${launchd_path}/${plist_name}.plist" ]]; then 
