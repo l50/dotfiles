@@ -20,16 +20,26 @@
             <string>DOTUPDATECOMMAND</string>
         </array>
 
+        <!-- Log STDERR -->
+        <!-- DEBUG
+       <key>StandardErrorPath</key>
+       <string>/Users/l/Library/Logs/com.l.dotfile-update-err.log</string> -->
+
+        <!-- Log STDOUT -->
+        <!-- DEBUG
+        <key>StandardOutPath</key>
+        <string>/Users/l/Library/Logs/com.l.dotfile-update.log</string> -->
+        
         <!-- Run on startup -->
         <key>RunAtLoad</key>
         <true/>
 
         <!-- Also run every day at 10:00 AM -->
-        <key>startcalendarinterval</key>
+        <key>StartCalendarInterval</key>
         <dict>
-            <key>hour</key>
+            <key>Hour</key>
             <integer>10</integer>
-            <key>minute</key>
+            <key>Minute</key>
             <integer>00</integer>
         </dict>
     </dict>
