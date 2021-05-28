@@ -23,7 +23,7 @@ source $HOME/.dotfiles/python
 
 # Mac OS specific dotfile
 if [[ `uname` == 'Darwin' ]]; then
-  source $HOME/.dotfiles/osx
+  source $HOME/.dotfiles/macos
 fi
 
 # Work specific configurations

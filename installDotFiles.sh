@@ -21,7 +21,7 @@ declare -a files=(
   "containers"
   "go"
   "python"
-  "osx"
+  "macos"
 )
 
 ##### (Cosmetic) Color output
