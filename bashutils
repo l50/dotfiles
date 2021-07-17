@@ -76,8 +76,8 @@ alias diff="colordiff"
 # Used to clone a web site - takes a website as the parameter
 alias cloneSite="wget --mirror --convert-links --adjust-extension --page-requisites --no-parent"
 
-# Stolen from https://unix.stackexchange.com/questions/22615/how-can-i-get-my-external-ip-address-in-a-shell-script
-alias publicIP="dig @resolver1.opendns.com A myip.opendns.com +short -4"
+# Get Public IP and Geolocation data
+alias publicIP="curl -s https://ipapi.co/$(curl -s ifconfig.me)/json | jq"
 
 # If we are not on an OSX system
 if [[ `uname` != 'Darwin' ]]; then
@@ -108,4 +108,3 @@ if hash nmap 2>/dev/null; then
 fi
 
 alias ipaddr="ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1'"
-
