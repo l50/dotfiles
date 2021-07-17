@@ -1,0 +1,36 @@
+name: Dotfiles tester
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  tests:
+    name: Run tests
+    runs-on: ${{  matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Set up git repository
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+         if [ "$RUNNER_OS" == "Linux" ]; then
+              sudo apt-get update
+              sudo apt-get install -y curl zsh
+         fi
+         # Get ohmyzsh
+         bash -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+      - name: Run dotfiles installation script
+        run: bash installDotFiles.sh  
+      - name: Confirm dotfiles are installed and working
+        run: |
+          ls -lart ~/.dotfiles
+          source ~/.zshrc
+          ipaddr
+        shell: zsh {0}
