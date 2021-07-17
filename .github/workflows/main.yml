@@ -23,6 +23,18 @@ jobs:
          if [ "$RUNNER_OS" == "Linux" ]; then
               sudo apt-get update
               sudo apt-get install -y curl zsh
+              # Fix permissions to avoid annoying message
+              sudo chmod -R 755 /usr/share/zsh
+              sudo chmod -R 755 /usr/share/zsh/vendor-completions
+         # Resource: https://stackoverflow.com/questions/57946173/github-actions-run-step-on-specific-os
+         elif [ "$RUNNER_OS" == "macOS" ]; then
+              # Install homebrew
+              bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+              # Needed for gcloud dotfile
+              brew install cask google-cloud-sdk
+         else
+              echo "$RUNNER_OS not supported"
+              exit 1
          fi
          # Get ohmyzsh
          bash -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
@@ -33,4 +45,7 @@ jobs:
           ls -lart ~/.dotfiles
           source ~/.zshrc
           ipaddr
+          source ~/.gvm/scripts/gvm
+          go version
         shell: zsh {0}
+
