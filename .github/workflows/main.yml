@@ -1,4 +1,4 @@
-name: Dotfiles tester
+name: dotfiles tester
 on:
   push:
     branches: [ master ]
