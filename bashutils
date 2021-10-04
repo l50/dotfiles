@@ -70,6 +70,13 @@ get_line() {
   sed "$1q;d" $2
 }
 
+# Check spelling of markdown files in the current directory
+spell-check-md() {
+  for file in *.md; do
+      aspell check --mode=markdown --lang=en "${file}"
+  done
+}
+
 alias randommacaddrwifi="sudo spoof-mac randomize wi-fi"
 alias diff="colordiff"
 
