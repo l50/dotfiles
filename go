@@ -1,3 +1,27 @@
+go_create() {
+  PROJECT_NAME="${1}"
+  FILES="${HOME}/.dotfiles/files"
+
+  if [[ -z "${PROJECT_NAME}" ]]; then
+    echo "Usage: $0 projectName"
+    exit 1
+  fi
+
+  mkdir "${PROJECT_NAME}"
+  pushd "${PROJECT_NAME}"
+    PROJECT_PATH="$(pwd | grep -oE 'github.*')"
+    git init -b main
+    go mod init "${PROJECT_PATH}"
+    cp -r "${FILES}"/{.pre-commit-config.yaml,.hooks,.github} .
+    pre-commit autoupdate
+    pre-commit install
+    
+    if hash mage 2>/dev/null; then
+      mage -init
+    fi
+  popd
+}
+
 if hash go 2>/dev/null; then
   GVM_BIN=$HOME/.gvm/scripts/gvm
   export GOPATH=$HOME/programs/go
