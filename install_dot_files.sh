@@ -83,7 +83,7 @@ setup_auto_update() {
 
 ### MAIN ###
 # Start by getting the latest and greatest
-git pull origin master &>/dev/null
+git pull origin main &>/dev/null
 
 # Backup old zshrc (if one exists)
 if [[ -f "${HOME}/.zshrc" ]]; then

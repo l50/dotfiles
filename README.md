@@ -1,7 +1,8 @@
 # dotfiles
 
 [![Dotfiles tester](https://github.com/l50/dotfiles/actions/workflows/main.yml/badge.svg)](https://github.com/l50/dotfiles/actions/workflows/main.yml)
-[![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/l50/dotfiles/blob/master/LICENSE)
+[![Run Pre-Commit hooks](https://github.com/l50/dotfiles/actions/workflows/pre-commit.yaml/badge.svg)](https://github.com/l50/dotfiles/actions/workflows/pre-commit.yaml)
+[![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/l50/dotfiles/blob/main/LICENSE)
 
 These are my dotfiles. Please feel free to check them out
 and see if anything can be adopted for your own.
@@ -18,6 +19,7 @@ sudo chmod -R 755 /usr/share/zsh
 sudo chmod -R 755 /usr/share/zsh/vendor-completions
 # If you need to change your shell manually, run this command:
 sudo chsh -s /bin/zsh
+brew install shfmt
 ```
 
 ### MacOS Dependencies

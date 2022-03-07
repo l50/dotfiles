@@ -33,7 +33,7 @@ export EDITOR='vim'
 # Add the dot-update command
 if [[ -f "${HOME}/.dotfiles/.dotinstalldir" ]]; then
   alias dot-update="(cd $(cat ${HOME}/.dotfiles/.dotinstalldir) \
-    && git pull origin master &> /dev/null && bash install_dot_files.sh)"
+    && git pull origin main &> /dev/null && bash install_dot_files.sh)"
 fi
 
 # Remove the % from the end of terminal output

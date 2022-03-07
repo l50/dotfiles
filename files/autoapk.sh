@@ -16,5 +16,5 @@ fi
 
 # Open in JADX-GUI if you specify
 if [[ "${2}" == "--jadx" ]] || [[ "${2}" == "-j" ]]; then
-	"$(which jadx-gui) ${1}.apk"
+	"$(command -v jadx-gui) ${1}.apk"
 fi
