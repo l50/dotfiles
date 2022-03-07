@@ -21,32 +21,14 @@ repos:
       - id: prettier
         files: \.(json|md|yaml|yml)$
 
-  - repo: https://github.com/dnephin/pre-commit-golang
-    rev: v0.5.0
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 2.1.6
     hooks:
-      - id: go-fmt
-      - id: go-vet
-      - id: go-lint
-      - id: go-imports
-      - id: go-cyclo
-        args: [-over=15]
-      - id: golangci-lint
-      - id: go-critic
-      - id: go-build
-      - id: go-mod-tidy
-
-  - repo: local
-    hooks:
-      - id: go-no-replacement
-        name: Avoid committing a go module replacement
-        entry: .hooks/go-no-replacement.sh
-        language: script
-        files: go.mod
-      - id: go-unit-tests
-        name: Go unit tests
-        language: script
-        entry: .hooks/go-unit-tests.sh
-        files: '\.go$'
+      - id: script-must-have-extension
+        name: Ensure shell scripts end with .sh
+        types: [shell]
+      - id: shellcheck
+      - id: shfmt
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.31.1

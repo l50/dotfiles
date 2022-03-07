@@ -1,4 +1,4 @@
-# Usage: 
+# Usage:
 # countdown "00:00:10" 10 seconds
 # countdown "01:00:00" 1 hour
 # Resource: https://www.cyberciti.biz/faq/how-to-display-countdown-timer-in-bash-shell-script-running-on-linuxunix/

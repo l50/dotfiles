@@ -1,12 +1,16 @@
 # dotfiles
+
 [![Dotfiles tester](https://github.com/l50/dotfiles/actions/workflows/main.yml/badge.svg)](https://github.com/l50/dotfiles/actions/workflows/main.yml)
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/l50/dotfiles/blob/master/LICENSE)
 
-These are my dotfiles. Please feel free to check them out and see if anything can be adopted for your own.
+These are my dotfiles. Please feel free to check them out
+and see if anything can be adopted for your own.
 
 ## Installation
+
 ### Linux Dependencies
-```
+
+```bash
 sudo apt-get update
 sudo apt-get install -y curl zsh
 # Fix permissions to avoid annoying message
@@ -17,17 +21,21 @@ sudo chsh -s /bin/zsh
 ```
 
 ### MacOS Dependencies
-```
+
+```bash
 # Install homebrew
 brew install cask google-cloud-sdk
 ```
 
 ### oh-my-zsh
-```
-bash -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+```bash
+bash -c "$(curl -fsSL \
+    https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 ```
 
 ### Dotfiles
-```
-bash installDotFiles.sh
+
+```bash
+bash install_dot_files.sh
 ```

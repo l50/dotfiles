@@ -15,7 +15,7 @@ go_create() {
     cp -r "${FILES}"/{.pre-commit-config.yaml,.hooks,.github} .
     pre-commit autoupdate
     pre-commit install
-    
+
     if hash mage 2>/dev/null; then
       mage -init
     fi

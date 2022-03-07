@@ -9,6 +9,6 @@ download_bucket() {
     if [[ -z "${dest}" ]]; then
         dest='.'
     fi
-        
-    aws s3 sync "s3://${1}" "${dest}" 
+
+    aws s3 sync "s3://${1}" "${dest}"
 }
