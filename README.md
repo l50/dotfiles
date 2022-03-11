@@ -1,6 +1,6 @@
 # dotfiles
 
-[![Dotfiles tester](https://github.com/l50/dotfiles/actions/workflows/main.yml/badge.svg)](https://github.com/l50/dotfiles/actions/workflows/main.yml)
+[![dotfiles tester](https://github.com/l50/dotfiles/actions/workflows/test.yaml/badge.svg)](https://github.com/l50/dotfiles/actions/workflows/test.yaml)
 [![Run Pre-Commit hooks](https://github.com/l50/dotfiles/actions/workflows/pre-commit.yaml/badge.svg)](https://github.com/l50/dotfiles/actions/workflows/pre-commit.yaml)
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/l50/dotfiles/blob/main/LICENSE)
 
