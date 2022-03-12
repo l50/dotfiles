@@ -99,7 +99,6 @@ if [[ -d "${DOT_DIR}" ]]; then
 		rm -rf "${OLD_DOT_DIR}"
 	fi
 	mv "${DOT_DIR}" "${OLD_DOT_DIR}"
-	rm -rf "${DOT_DIR}"
 fi
 
 # create dotfiles directory in homedir
