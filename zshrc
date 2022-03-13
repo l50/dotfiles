@@ -1,8 +1,5 @@
 # PATH setup
-export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
-
-# Add fig
-[[ -s "${HOME}/.fig/shell/pre.sh" ]] && source "${HOME}/.fig/shell/pre.sh"
+export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin
 
 # oh-my-zsh components
 export ZSH="${HOME}/.oh-my-zsh"
