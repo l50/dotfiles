@@ -5,9 +5,7 @@ alias updateDockerImages="docker images | cut -d ' ' -f 1 | xargs -I {} docker p
 
 ### Security Tools ###
 # This can be used if we don't want to persist:
-#alias kali="docker run -p 4444:4444 --rm -it --name=kali kalilinux/kali"
-alias kali="docker run --rm -it -v $HOME/.kali/root:/root -v $HOME/.kali/postgres:/var/lib/postgresql -p 4444:4444 --name=kali --privileged --sysctl net.ipv6.conf.all.disable_ipv6=0 l50/kali-provisioned"
-alias kalibase="docker run --rm -it -v $HOME/.kali/root:/root -v $HOME/.kali/postgres:/var/lib/postgresql -p 4444:4444 --name=kali kalilinux/kali"
+alias kali="docker run --rm -it -v $HOME/.kali/root:/root -v $HOME/.kali/postgres:/var/lib/postgresql -p 4444:4444 --name=kali kalilinux/kali-last-release"
 alias sqlmap="docker run --rm -it -v $HOME/.sqlmap:/home/user/.sqlmap k0st/alpine-sqlmap"
 alias beef="docker run -d -p 3000:3000 --name=beef fcolista/alpine-beef"
 alias oxml_xxe="docker run -p 4567:4567 -it --name=oxml_xxe devalias/oxml_xxe"
