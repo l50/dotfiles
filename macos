@@ -29,7 +29,7 @@ alias sudo='sudo '
 # Lock the screen (when going AFK)
 alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
 
-alias update='sudo softwareupdate -i -a; brew update; brew upgrade; brew cleanup'
+alias update='sudo softwareupdate -ia; brew update; brew upgrade; brew cleanup'
 
 # Recursively delete .DS_Store files
 alias dsCleanup.="find . -type f -name '*.DS_Store' -ls -delete"
