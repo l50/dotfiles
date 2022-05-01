@@ -1,6 +1,15 @@
+FILES="${HOME}/.dotfiles/files"
+
+addCobraInit() {
+  COB_CONF_PATH="${HOME}/.cobra.yaml"
+  if [[ ! -f "${COB_CONF_PATH}" ]]; then
+      cp "${FILES}/cobra.yaml" \
+          "${COB_CONF_PATH}"
+  fi
+}
+
 go_create() {
   PROJECT_NAME="${1}"
-  FILES="${HOME}/.dotfiles/files"
 
   if [[ -z "${PROJECT_NAME}" ]]; then
     echo "Usage: $0 projectName"
@@ -36,3 +45,5 @@ if hash go 2>/dev/null; then
   # Add go to PATH - so we can run executables from anywhere
   export PATH="${PATH}:${GOPATH}/bin"
 fi
+
+addCobraInit
