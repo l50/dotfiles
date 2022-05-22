@@ -1,0 +1,4 @@
+alias k=kubectl
+
+# Autocomplete
+if [ $commands[kubectl] ]; then source <(kubectl completion zsh); fi
