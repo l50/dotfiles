@@ -19,7 +19,9 @@ declare -a files=(
 	'aws'
 	'bashutils'
 	'containers'
+	'docker'
 	'go'
+	'k8s'
 	'python'
 	'macos'
 )
