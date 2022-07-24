@@ -12,3 +12,5 @@
     path = ~/.gitconfig.userparams
 [push]
     default = matching
+[pull]
+	rebase = true
