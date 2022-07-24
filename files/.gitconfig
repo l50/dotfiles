@@ -6,11 +6,17 @@
     b = branch
     pom = push origin main
     pu = pull origin main
+# Set manually:
+# git config --global core.editor vim
 [core]
     editor = vim
 [include]
     path = ~/.gitconfig.userparams
+# Set manually:
+# git config --global push.default matching
 [push]
     default = matching
+# Set manually:
+# git config --global pull.rebase true
 [pull]
 	rebase = true
