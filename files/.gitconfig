@@ -1,11 +1,11 @@
 [alias]
     c = commit -S --edit
     d = diff
+    l = log
     m = merge -S --no-ff --edit
     s = status
     b = branch
     pom = push origin main
-    pu = pull origin main
 # Set manually:
 # git config --global core.editor vim
 [core]
@@ -19,4 +19,4 @@
 # Set manually:
 # git config --global pull.rebase true
 [pull]
-	rebase = true
+    rebase = true
