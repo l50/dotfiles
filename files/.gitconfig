@@ -1,10 +1,13 @@
 [alias]
-    c = commit -S --edit
-    d = diff
-    l = log
-    m = merge -S --no-ff --edit
-    s = status
-    b = branch
+    c   = commit -S --edit
+    d   = diff
+    l   = log
+    m   = merge -S --no-ff --edit
+    s   = status
+    b   = branch
+    r   = restore
+    re  = rebase
+    t   = tag
     pom = push origin main
 # Set manually:
 # git config --global core.editor vim
