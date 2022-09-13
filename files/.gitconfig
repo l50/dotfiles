@@ -22,4 +22,10 @@
 # Set manually:
 # git config --global pull.rebase true
 [pull]
-    rebase = true
+  rebase = true
+
+# Authentication for gh cli
+[credential "https://github.com"]
+        helper = !/usr/local/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+        helper = !/usr/local/bin/gh auth git-credential
