@@ -1,8 +1,8 @@
 # dotfiles
 
-[![dotfiles tester](https://github.com/l50/dotfiles/actions/workflows/test.yaml/badge.svg)](https://github.com/l50/dotfiles/actions/workflows/test.yaml)
+[![Test dotfiles](https://github.com/l50/dotfiles/actions/workflows/test.yaml/badge.svg)](https://github.com/l50/dotfiles/actions/workflows/test.yaml)
 [![Run Pre-Commit hooks](https://github.com/l50/dotfiles/actions/workflows/pre-commit.yaml/badge.svg)](https://github.com/l50/dotfiles/actions/workflows/pre-commit.yaml)
-[![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/l50/dotfiles/blob/main/LICENSE)
+[![License](https://img.shields.io/github/license/l50/dotfiles?label=license&style=flat&color=blue&logo=github)](https://github.com/l50/dotfiles/blob/master/LICENSE)
 
 These are my dotfiles. Please feel free to check them out
 and see if anything can be adopted for your own.

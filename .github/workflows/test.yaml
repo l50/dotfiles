@@ -1,5 +1,5 @@
 ---
-name: dotfiles tester
+name: Test dotfiles
 on:
   push:
     branches: [main]
@@ -45,6 +45,7 @@ jobs:
                echo "${RUNNER_OS} not supported"
                exit 1
           fi
+
           # Get ohmyzsh
           bash -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
