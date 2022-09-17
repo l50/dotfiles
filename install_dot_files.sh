@@ -87,6 +87,21 @@ setup_auto_update()
     fi
 }
 
+# Downloads and installs my Brewfile to $HOME/.brewfile/Brewfile
+setup_brewfile()
+                 {
+    if [[ "$(uname)" == 'Darwin' ]]; then
+        brewfile_path="${HOME}/.config/brewfile"
+        brewfile_dl='https://raw.githubusercontent.com/l50/homebrew-brewfile/main/Brewfile'
+        # Create $brewfile_path if it doesn't already exist.
+        if [[ ! -d "${brewfile_path}" ]]; then
+            mkdir "${brewfile_path}"
+        fi
+        echo -e "${YELLOW}Attempting to get latest Brewfile, please wait...${RESET}"
+        wget "${brewfile_dl}" -O "${brewfile_path}/Brewfile"
+    fi
+}
+
 ### MAIN ###
 # Start by getting the latest and greatest
 git pull origin main &> /dev/null
@@ -135,3 +150,4 @@ cp "${DOT_DIR}/files/.gitconfig" "${HOME}/.gitconfig"
 echo -e "${YELLOW}Be sure to populate ${HOME}/.gitconfig.userparams!${RESET}"
 
 setup_auto_update
+setup_brewfile
