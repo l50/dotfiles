@@ -98,7 +98,7 @@ setup_brewfile()
             mkdir "${brewfile_path}"
         fi
         echo -e "${YELLOW}Attempting to get latest Brewfile, please wait...${RESET}"
-        wget "${brewfile_dl}" -O "${brewfile_path}/Brewfile"
+        wget -q "${brewfile_dl}" -O "${brewfile_path}/Brewfile"
     fi
 }
 
