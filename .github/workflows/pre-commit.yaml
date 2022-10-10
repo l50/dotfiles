@@ -32,6 +32,9 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
 
+      - name: Set up homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
