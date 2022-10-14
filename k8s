@@ -1,5 +1,5 @@
-# Resource: https://github.com/ahmetb/kubectl-aliases
 alias k='kubectl'
+alias ksn='kubectl config set-context --current --namespace '
 alias kg='kubectl get'
 alias kgpo='kubectl get pod'
 alias ksysgpo='kubectl --namespace=kube-system get pod'
@@ -15,3 +15,7 @@ alias kgwf='kubectl get --watch -f'
 
 # Autocomplete
 if [ $commands[kubectl] ]; then source <(kubectl completion zsh); fi
+
+# Resources:
+# https://github.com/ahmetb/kubectl-aliases
+# https://stackoverflow.com/questions/55373686/how-to-switch-namespace-in-kubernetes
