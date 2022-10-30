@@ -35,3 +35,8 @@ fi
 
 # Remove the % from the end of terminal output
 export PROMPT_EOL_MARK=''
+
+# Load bash completion functions
+# https://stackoverflow.com/questions/69675174/bash-completion-does-not-work-in-zsh-oh-my-zsh-because-comp-words-is-not-an-arra
+autoload -Uz +X compinit && compinit
+autoload -Uz +X bashcompinit && bashcompinit
