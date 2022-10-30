@@ -1,4 +1,4 @@
-FILES="${HOME}/.dotfiles/files"
+export FILES="${HOME}/.dotfiles/files"
 
 add_cobra_init() {
   COB_CONF_PATH="${HOME}/.cobra.yaml"
@@ -37,6 +37,8 @@ _get_comp_words_by_ref () {
 }
 __ltrim_colon_completions() {
 }
+
+source "${FILES}/mage_completion.sh"
 
 # Install go with GVM
 #
