@@ -1,5 +1,28 @@
+# Get events in an input namespace
+kge() {
+  NS=${1:-default}
+  if [[ $NS == 'all' ]]; then
+    kubectl get events --all-namespaces \
+      --sort-by='.metadata.creationTimestamp'
+  else
+    kubectl get events -n "${NS}" \
+      --sort-by='.metadata.creationTimestamp'
+  fi
+}
+
+# Get Load Balancer IP addresses in an input namespace
+kglbip() {
+  NS=${1:-default}
+  if [[ $NS == 'all' ]]; then
+    kubectl get svc --all-namespaces \
+      -o jsonpath='{range .items[?(@.spec.type=="LoadBalancer")]}{.metadata.name}:{.status.loadBalancer.ingress[0].ip}{"\n"}{end}'
+  else
+    kubectl get svc -n "${NS}" \
+      -o jsonpath='{range .items[?(@.spec.type=="LoadBalancer")]}{.metadata.name}:{.status.loadBalancer.ingress[0].ip}{"\n"}{end}'
+  fi
+}
+
 alias k='kubectl'
-alias ksn='kubectl config set-context --current --namespace '
 alias kgp='kubectl get pod'
 alias krm='kubectl delete'
 alias krmf='kubectl delete -f'
@@ -10,7 +33,6 @@ alias kgsvcoyaml='kubectl get service -o=yaml'
 alias kgsvcwn='kubectl get service --watch --namespace'
 alias kgsvcslwn='kubectl get service --show-labels --watch --namespace'
 alias kgwf='kubectl get --watch -f'
-alias kglb="kubectl get svc --all-namespaces -o jsonpath='{range .items[?(@.spec.type==\"LoadBalancer\")]}{.metadata.name}:{.status.loadBalancer.ingress[0].ip}{\"\n\"}{end}'"
 
 # Autocomplete
 if [ $commands[kubectl] ]; then source <(kubectl completion zsh); fi
