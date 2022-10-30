@@ -10,6 +10,7 @@ alias kgsvcoyaml='kubectl get service -o=yaml'
 alias kgsvcwn='kubectl get service --watch --namespace'
 alias kgsvcslwn='kubectl get service --show-labels --watch --namespace'
 alias kgwf='kubectl get --watch -f'
+alias kglb="kubectl get svc --all-namespaces -o jsonpath='{range .items[?(@.spec.type==\"LoadBalancer\")]}{.metadata.name}:{.status.loadBalancer.ingress[0].ip}{\"\n\"}{end}'"
 
 # Autocomplete
 if [ $commands[kubectl] ]; then source <(kubectl completion zsh); fi
