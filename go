@@ -31,6 +31,13 @@ go_create() {
   popd
 }
 
+# Setup autocomplete for mage
+source "${FILES}/mage_completion.sh"
+
+# Install go with GVM
+#
+# Note that this needs a base version
+# of go already installed on the system.
 if hash go 2>/dev/null; then
   GO_VER='1.19.2'
   GVM_BIN="${HOME}/.gvm/scripts/gvm"
