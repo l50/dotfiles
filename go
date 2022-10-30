@@ -32,7 +32,7 @@ go_create() {
 }
 
 if hash go 2>/dev/null; then
-  GO_VER='1.18.2'
+  GO_VER='1.19.2'
   GVM_BIN="${HOME}/.gvm/scripts/gvm"
   if [[ ! -f "${GVM_BIN}" ]]; then
     # Install gvm if it isn't installed
