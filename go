@@ -31,8 +31,12 @@ go_create() {
   popd
 }
 
-# Setup autocomplete for mage
-source "${FILES}/mage_completion.sh"
+# For mage completion
+# https://github.com/magefile/mage/issues/113
+_get_comp_words_by_ref () {
+}
+__ltrim_colon_completions() {
+}
 
 # Install go with GVM
 #
