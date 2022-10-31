@@ -1,5 +1,7 @@
 export FILES="${HOME}/.dotfiles/files"
 
+# Add Cobra init adds a cobra init file
+# for the system to $COB_CONF_PATH
 add_cobra_init() {
   COB_CONF_PATH="${HOME}/.cobra.yaml"
   if [[ ! -f "${COB_CONF_PATH}" ]]; then
@@ -8,6 +10,12 @@ add_cobra_init() {
   fi
 }
 
+# go_create creates a project
+# with the input param.
+#
+# This involves configuring
+# go mod, pre-commit, github actions,
+# and setting up a basic mage file.
 go_create() {
   PROJECT_NAME="${1}"
 
@@ -31,19 +39,19 @@ go_create() {
   popd
 }
 
-# For mage completion
+### For mage completion
 # https://github.com/magefile/mage/issues/113
 _get_comp_words_by_ref () {
 }
 __ltrim_colon_completions() {
 }
-
 source "${FILES}/mage_completion.sh"
 
-# Install go with GVM
+### Install go with GVM
 #
 # Note that this needs a base version
-# of go already installed on the system.
+# of go needs to be installed on the system
+# for this to work.
 if hash go 2>/dev/null; then
   GO_VER='1.19.2'
   GVM_BIN="${HOME}/.gvm/scripts/gvm"
