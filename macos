@@ -1,3 +1,5 @@
+# capture provides strace like functionality for
+# an input PID.
 capture() {
 	sudo dtrace -p "$1" -qn '
 		syscall::write*:entry
@@ -6,6 +8,25 @@ capture() {
 		}
 	'
 }
+
+# join_wifi attempts to join an input $SSID
+# using the specified $PW.
+# Resource: https://www.mattcrampton.com/blog/managing_wifi_connections_using_the_mac_osx_terminal_command_line/
+join_wifi() {
+  SSID=$1
+  PW=$2
+  if [[ ! -z $SSID && ! -z $PW ]]; then
+    networksetup -setairportnetwork en0 $SSID $PW
+  else
+    echo "error: you must provide an SSID and PW"
+    echo "example: join_wifi somessid somepassword"
+  fi
+}
+
+# WiFi utils
+alias wifils='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport scan'
+alias wifidown='networksetup -setairportpower en0 off'
+alias wifiup='networksetup -setairportpower en0 on'
 
 alias remountSD='sudo kextunload -b com.apple.driver.AppleSDXC; sudo kextload -b com.apple.driver.AppleSDXC'
 alias leaving="guard-my-macbook-when-i-am-away"
