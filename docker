@@ -1,5 +1,5 @@
 # Docker utilities
-alias cleanseDocker='docker system prune'
+alias cleanseDocker='docker system prune -f'
 alias createDataContainer="docker create -v /tmp --name datacontainer ubuntu"
 alias updateDockerImages="docker images | \
     cut -d ' ' -f 1 | xargs -I {} docker pull {} 2>&1"
