@@ -4,6 +4,8 @@ alias createDataContainer="docker create -v /tmp --name datacontainer ubuntu"
 alias updateDockerImages="docker images | \
     cut -d ' ' -f 1 | xargs -I {} docker pull {} 2>&1"
 alias docker_ports='docker container ls --format "table {{.ID}}\t{{.Names}}\t{{.Ports}}" -a'
+# Run docker ps indefinitely every 30 seconds.
+alias inf-docker-ps='while true; do docker ps; sleep 30; done'
 
 # Programming languages
 alias python2.7.16="docker run -it --rm --name=python2.7.16 python:2.7.16"
