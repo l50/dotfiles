@@ -1,3 +1,8 @@
+# Fix zshrc autocomplete with exec
+# https://github.com/moby/moby/issues/31216#issuecomment-281397184
+zstyle ':completion:*:*:docker:*' option-stacking yes
+zstyle ':completion:*:*:docker-*:*' option-stacking yes
+
 # Docker utilities
 alias cleanseDocker='docker system prune -f'
 alias createDataContainer="docker create -v /tmp --name datacontainer ubuntu"
