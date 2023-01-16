@@ -14,6 +14,7 @@ source "${HOME}/.dotfiles/bashutils"
 source "${HOME}/.dotfiles/containers"
 source "${HOME}/.dotfiles/go"
 source "${HOME}/.dotfiles/python"
+source "${HOME}/.dotfiles/ruby"
 
 # Mac OS specific dotfile
 if [[ "$(uname)" == 'Darwin' ]]; then

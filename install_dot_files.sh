@@ -23,6 +23,7 @@ declare -a files=(
     'go'
     'k8s'
     'python'
+    'ruby'
     'macos'
 )
 
