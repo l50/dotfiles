@@ -27,6 +27,9 @@ jobs:
       - name: Set up git repository
         uses: actions/checkout@v3.3.0
 
+      - name: Install homebrew
+        uses: homebrew/actions/setup-homebrew@master
+
       - name: Install dependencies
         run: |
           if [[ "${RUNNER_OS}" == "Linux" ]]; then
@@ -37,8 +40,6 @@ jobs:
                sudo chmod -R 755 /usr/share/zsh/vendor-completions
           # Resource: https://stackoverflow.com/questions/57946173/github-actions-run-step-on-specific-os
           elif [ "${RUNNER_OS}" == "macOS" ]; then
-               # Install homebrew
-               bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
                # Needed for gcloud dotfile
                brew install cask google-cloud-sdk
           else
