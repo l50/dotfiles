@@ -39,6 +39,20 @@ go_create() {
   popd
 }
 
+# Get build path from executable
+#
+# Example: import-path godoc
+# golang.org/x/tools/cmd/godoc
+#
+# https://forum.golangbridge.org/t/your-best-shell-aliases/1335/11
+import-path() {
+[[ -z "$1" ]] && { echo "usage: import-path EXECUTABLE" >&2; return 1; }
+go tool objdump -s main.main "$(which $1)" |
+grep -E '^TEXT main.main' | cut -d' ' -f3 |
+sed -e 's/./src/(.)/[^\/]*/\1/'
+}
+
+
 ### For mage completion
 # https://github.com/magefile/mage/issues/113
 _get_comp_words_by_ref () {
