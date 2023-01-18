@@ -1,25 +1,25 @@
 # Get events in an input namespace
 kge() {
-  NS=${1:-default}
-  if [[ $NS == 'all' ]]; then
-    kubectl get events --all-namespaces \
-      --sort-by='.metadata.creationTimestamp'
-  else
-    kubectl get events -n "${NS}" \
-      --sort-by='.metadata.creationTimestamp'
-  fi
+	NS=${1:-default}
+	if [[ $NS == 'all' ]]; then
+		kubectl get events --all-namespaces \
+			--sort-by='.metadata.creationTimestamp'
+	else
+		kubectl get events -n "${NS}" \
+			--sort-by='.metadata.creationTimestamp'
+	fi
 }
 
 # Get Load Balancer IP addresses in an input namespace
 kglbip() {
-  NS=${1:-default}
-  if [[ $NS == 'all' ]]; then
-    kubectl get svc --all-namespaces \
-      -o jsonpath='{range .items[?(@.spec.type=="LoadBalancer")]}{.metadata.name}:{.status.loadBalancer.ingress[0].ip}{"\n"}{end}'
-  else
-    kubectl get svc -n "${NS}" \
-      -o jsonpath='{range .items[?(@.spec.type=="LoadBalancer")]}{.metadata.name}:{.status.loadBalancer.ingress[0].ip}{"\n"}{end}'
-  fi
+	NS=${1:-default}
+	if [[ $NS == 'all' ]]; then
+		kubectl get svc --all-namespaces \
+			-o jsonpath='{range .items[?(@.spec.type=="LoadBalancer")]}{.metadata.name}:{.status.loadBalancer.ingress[0].ip}{"\n"}{end}'
+	else
+		kubectl get svc -n "${NS}" \
+			-o jsonpath='{range .items[?(@.spec.type=="LoadBalancer")]}{.metadata.name}:{.status.loadBalancer.ingress[0].ip}{"\n"}{end}'
+	fi
 }
 
 alias k='kubectl'

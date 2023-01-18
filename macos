@@ -13,14 +13,14 @@ capture() {
 # using the specified $PW.
 # Resource: https://www.mattcrampton.com/blog/managing_wifi_connections_using_the_mac_osx_terminal_command_line/
 join_wifi() {
-  SSID=$1
-  PW=$2
-  if [[ ! -z $SSID && ! -z $PW ]]; then
-    networksetup -setairportnetwork en0 $SSID $PW
-  else
-    echo "error: you must provide an SSID and PW"
-    echo "example: join_wifi somessid somepassword"
-  fi
+	SSID=$1
+	PW=$2
+	if [[ ! -z $SSID && ! -z $PW ]]; then
+		networksetup -setairportnetwork en0 $SSID $PW
+	else
+		echo "error: you must provide an SSID and PW"
+		echo "example: join_wifi somessid somepassword"
+	fi
 }
 
 # WiFi utils
@@ -87,14 +87,14 @@ alias gw="route -n get default | grep gateway | awk '{print \$2}'"
 
 # Use brew ruby if it's installed
 if [ -d "/usr/local/opt/ruby/bin" ]; then
-  export PATH=/usr/local/opt/ruby/bin:$PATH
-  export PATH=$(gem environment gemdir)/bin:$PATH
+	export PATH=/usr/local/opt/ruby/bin:$PATH
+	export PATH=$(gem environment gemdir)/bin:$PATH
 fi
 
 # Fix brew on ARM
 # https://dev.to/saschaeggi/fix-brew-homebrew-on-m1-macs-c9g
-if [[ $(uname -a |grep -i arm) ]]; then
-  alias brew='arch -x86_64 brew'
+if [[ $(uname -a | grep -i arm) ]]; then
+	alias brew='arch -x86_64 brew'
 fi
 
 # Kill all instances of chrome

@@ -18,12 +18,12 @@ source "${HOME}/.dotfiles/ruby"
 
 # Mac OS specific dotfile
 if [[ "$(uname)" == 'Darwin' ]]; then
-  source "${HOME}/.dotfiles/macos"
+	source "${HOME}/.dotfiles/macos"
 fi
 
 # Work specific configurations
 if [ -f "${HOME}/.work" ]; then
-  source "${HOME}/.work"
+	source "${HOME}/.work"
 fi
 
 # Set default editor to vim
@@ -31,7 +31,7 @@ export EDITOR='vim'
 
 # Add the dot-update command
 if [[ -f "${HOME}/.dotfiles/.dotinstalldir" ]]; then
-  alias dot-update="(cd $(cat ${HOME}/.dotfiles/.dotinstalldir) \
+	alias dot-update="(cd $(cat ${HOME}/.dotfiles/.dotinstalldir) \
     && git pull origin main &> /dev/null && bash install_dot_files.sh)"
 fi
 
