@@ -23,7 +23,8 @@ kglbip() {
 }
 
 alias k='kubectl'
-alias kgp='kubectl get pod'
+alias kgp='kubectl get pods'
+alias kgn='kubectl get nodes'
 alias krm='kubectl delete'
 alias krmf='kubectl delete -f'
 alias krming='kubectl delete ingress'
