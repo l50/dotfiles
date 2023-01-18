@@ -77,6 +77,16 @@ spell-check-md() {
   done
 }
 
+# Run tmux source-file ~/.tmux.conf on all panes
+source_tmux_conf() {
+    session=`tmux display-message -p "#S"`
+
+    for pane in $(tmux list-panes -s -F "#{pane_id}"); do
+        tmux send-keys -t $session.$pane "tmux source-file ~/.tmux.conf" C-m
+    done
+}
+
+
 alias randommacaddrwifi="sudo spoof-mac randomize wi-fi"
 alias diff="colordiff"
 
