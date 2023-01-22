@@ -99,3 +99,5 @@ fi
 
 # Kill all instances of chrome
 alias die-chrome='pkill Chrome'
+
+alias restart-ssh='sudo systemsetup -setremotelogin off; sudo systemsetup -setremotelogin on'
