@@ -1,34 +1,51 @@
 # Fix pods stuck in a terminating state
-unstick_term_pods() {
-  kubectl get pods --all-namespaces | grep Terminating | while read line; do
-    pod_name=$(echo $line | awk '{print $2}' ) \
-    ns=$(echo $line | awk '{print $1}' ); \
-    kubectl delete pods $pod_name -n $ns --grace-period=0 --force
-  done
+# across an input namespace.
+unstick_term_pods()
+                     {
+    NS=${1:-default}
+    if [[ "${NS}" == 'all' ]]; then
+        kubectl get pods --all-namespaces \
+                                      | grep Terminating | while read line; do
+            pod_name=$(echo $line | awk '{print $2}') \
+            ns=$(echo $line | awk '{print $1}')
+            kubectl delete pods $pod_name -n $ns --grace-period=0 --force
+        done
+    elif [[ "${NS}" != '' ]]; then
+        kubectl get pods -n "${NS}" \
+                                | grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox} Terminating \
+                                                                                      | while read line; do
+                pod_name=$(echo $line | awk '{print $1}')
+                kubectl delete pods $pod_name -n "${NS}" --grace-period=0 --force
+            done
+    else
+        echo 'Invalid namespace input'
+    fi
 }
 
 # Get events in an input namespace
-kge() {
-	NS=${1:-default}
-	if [[ $NS == 'all' ]]; then
-		kubectl get events --all-namespaces \
-			--sort-by='.metadata.creationTimestamp'
-	else
-		kubectl get events -n "${NS}" \
-			--sort-by='.metadata.creationTimestamp'
-	fi
+kge()
+      {
+    NS=${1:-default}
+    if [[ $NS == 'all' ]]; then
+        kubectl get events --all-namespaces \
+            --sort-by='.metadata.creationTimestamp'
+    else
+        kubectl get events -n "${NS}" \
+            --sort-by='.metadata.creationTimestamp'
+    fi
 }
 
 # Get Load Balancer IP addresses in an input namespace
-kglbip() {
-	NS=${1:-default}
-	if [[ $NS == 'all' ]]; then
-		kubectl get svc --all-namespaces \
-			-o jsonpath='{range .items[?(@.spec.type=="LoadBalancer")]}{.metadata.name}:{.status.loadBalancer.ingress[0].ip}{"\n"}{end}'
-	else
-		kubectl get svc -n "${NS}" \
-			-o jsonpath='{range .items[?(@.spec.type=="LoadBalancer")]}{.metadata.name}:{.status.loadBalancer.ingress[0].ip}{"\n"}{end}'
-	fi
+kglbip()
+         {
+    NS=${1:-default}
+    if [[ $NS == 'all' ]]; then
+        kubectl get svc --all-namespaces \
+            -o jsonpath='{range .items[?(@.spec.type=="LoadBalancer")]}{.metadata.name}:{.status.loadBalancer.ingress[0].ip}{"\n"}{end}'
+    else
+        kubectl get svc -n "${NS}" \
+            -o jsonpath='{range .items[?(@.spec.type=="LoadBalancer")]}{.metadata.name}:{.status.loadBalancer.ingress[0].ip}{"\n"}{end}'
+    fi
 }
 
 alias k='kubectl'
