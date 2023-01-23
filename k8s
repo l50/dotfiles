@@ -1,3 +1,12 @@
+# Fix pods stuck in a terminating state
+unstick_term_pods() {
+  kubectl get pods --all-namespaces | grep Terminating | while read line; do
+    pod_name=$(echo $line | awk '{print $2}' ) \
+    ns=$(echo $line | awk '{print $1}' ); \
+    kubectl delete pods $pod_name -n $ns --grace-period=0 --force
+  done
+}
+
 # Get events in an input namespace
 kge() {
 	NS=${1:-default}
