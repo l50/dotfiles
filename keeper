@@ -1,0 +1,2 @@
+# Set keeper config location on disk
+alias keeper="keeper --config=${HOME}/.keeper/config.json"

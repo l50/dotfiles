@@ -21,6 +21,7 @@ declare -a files=(
     'containers'
     'docker'
     'go'
+    'keeper'
     'k8s'
     'python'
     'ruby'
