@@ -1,0 +1,14 @@
+#!/usr/bin/expect
+
+spawn keeper shell --config=$env(HOME)/.keeper/config.json
+expect "My Vault>"
+send "this-device register\r"
+expect "My Vault>"
+send "this-device persistent-login on\r"
+expect "My Vault>"
+send "this-device ip-auto-approve on\r"
+expect "My Vault>"
+send "this-device timeout 365d\r"
+expect "My Vault>"
+send "quit\r"
+interact
