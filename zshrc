@@ -7,14 +7,12 @@ ZSH_THEME="af-magic"
 source "${ZSH}/oh-my-zsh.sh"
 plugins=(git docker helm kubectl)
 
-# Other dotfiles
-source "${HOME}/.dotfiles/android"
-source "${HOME}/.dotfiles/aws"
-source "${HOME}/.dotfiles/bashutils"
-source "${HOME}/.dotfiles/containers"
-source "${HOME}/.dotfiles/go"
-source "${HOME}/.dotfiles/python"
-source "${HOME}/.dotfiles/ruby"
+# Source other dotfiles
+for file in "${HOME}/.dotfiles"/*; do
+  if [[ -f "${file}" && -r "${file}" ]]; then
+    source "${file}"
+  fi
+done
 
 # Mac OS specific dotfile
 if [[ "$(uname)" == 'Darwin' ]]; then
