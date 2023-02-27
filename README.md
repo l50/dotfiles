@@ -29,6 +29,12 @@ brew install shfmt
 brew install cask google-cloud-sdk
 ```
 
+### Ubuntu Dependencies
+
+```bash
+sudo apt-get install -y xclip expect
+```
+
 ### oh-my-zsh
 
 ```bash
