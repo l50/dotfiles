@@ -1,6 +1,6 @@
 #!/usr/bin/expect
 
-spawn keeper shell --config=$env(HOME)/.keeper/config.json
+spawn keeper shell --config $env(HOME)/.keeper/config.json
 expect "My Vault>"
 send "this-device register\r"
 expect "My Vault>"
