@@ -1,5 +1,5 @@
 # Set keeper config location on disk
-alias keeper="keeper --config=${HOME}/.keeper/config.json"
+#alias keeper="keeper --config=${HOME}/.keeper/config.json"
 
 # Configure persistent login for easier automation
 expect "${HOME}/.dotfiles/files/keeper_persistent_login.expect"
