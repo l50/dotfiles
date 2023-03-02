@@ -1,5 +1,21 @@
 export FILES="${HOME}/.dotfiles/files"
 
+# get_exported_go_funcs prints a list of all exported functions in the current Go project.
+#
+# This function uses the `go doc` command to generate a list of exported functions in the project, and then
+# searches all `.go` files in the project for the file containing each function. The function then prints
+# a message for each function indicating its name and the file where it is defined.
+#
+# Usage: get_exported_go_funcs
+get_exported_go_funcs() {
+    funcs=$(go doc -short | grep -E -o '^[A-Za-z]+\s[A-Za-z]+\(' | gsed 's/func //; s/(//')
+    for func_name in $funcs
+    do
+        file=$(find . -type f -name '*.go' -print0 | xargs -0 grep -l "func $func_name")
+        printf "Function: %s\nFile: %s\n" "$func_name" "$file"
+    done
+}
+
 # Add Cobra init adds a cobra init file
 # for the system to $COB_CONF_PATH
 add_cobra_init() {
