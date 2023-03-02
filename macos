@@ -6,6 +6,36 @@ nocomment() {
     pbpaste | sed -e 's://.*$::g' -e 's/#.*$//g' -e 's:/\*.*\*/::g' | pbcopy
 }
 
+
+# sanitize() replaces all provided strings found in the clipboard
+# contents with random strings that have the same length.
+#
+# Usage:
+#   cat sysutils.go | pbcopy
+#   sanitize "CheckRoot" "timeout" "gopsutil"
+#
+# Output:
+#   If the clipboard is populated, the contents of the clipboard
+#   will be modified so that any of the input strings are replaced
+#   with random strings that have the same length as the original.
+sanitize() {
+  # Get clipboard contents and store in a variable
+  input="$(pbpaste)"
+
+  # Loop through arguments and replace wildcard entries with a random string
+  for func_name in "$@"
+  do
+    # Generate random string
+    random=$(cat /dev/urandom | LC_ALL=C tr -dc 'A-Za-z' | head -c ${#func_name})
+
+    # Replace all occurrences of the function name with the random string
+    input=$(echo "$input" | gsed "s/\<$func_name\>/$random/gI")
+  done
+
+  # Copy modified input back to clipboard
+  echo "$input" | pbcopy
+}
+
 # capture provides strace like functionality for
 # an input PID.
 capture() {
