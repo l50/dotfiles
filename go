@@ -6,7 +6,8 @@ export FILES="${HOME}/.dotfiles/files"
 # searches all `.go` files in the project for the file containing each function. The function then prints
 # a message for each function indicating its name and the file where it is defined.
 #
-# Usage: get_exported_go_funcs
+# Usage:
+#   get_exported_go_funcs
 get_exported_go_funcs() {
     find . -name "*.go" | \
     xargs grep -E -o 'func [A-Z][a-zA-Z0-9_]+\(' | \
