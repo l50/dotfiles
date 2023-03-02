@@ -16,6 +16,40 @@ get_exported_go_funcs() {
     awk -F: '{printf "Function: %s\nFile: %s\n", $2, $1}'
 }
 
+# get_missing_tests() function checks the exported functions in a Go project and
+# prints out the names of any exported function that does not have a corresponding
+# unit test defined. It uses the `get_exported_go_funcs()` function to obtain a list
+# of all exported functions in the project, then looks for unit tests whose names
+# match the expected pattern. The function excludes any function whose name contains
+# the word "Test" to avoid including test functions themselves in the output.
+#
+# Usage:
+#   get_missing_tests
+#
+# Output:
+#   If there are no missing unit tests, the function prints "All exported functions
+#   have corresponding unit tests.". If there are missing unit tests, the function
+#   prints "The following exported functions are missing unit tests:" followed by
+#   the names of the missing functions.
+get_missing_tests() {
+    funcs=($(get_exported_go_funcs | awk '/^Function:/ { print $2 }' | sort -u))
+    missing_tests=()
+    for func_name in "${funcs[@]}"
+    do
+		if ! grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox} -rnw . -e "^func Test${func_name}" | grep -v -E '^./.*_test.go:.*func Test'
+        then
+            missing_tests+=("$func_name")
+        fi
+    done
+    if [ ${#missing_tests[@]} -eq 0 ]
+    then
+        echo "All exported functions have corresponding unit tests."
+    else
+        echo "The following exported functions are missing unit tests:"
+        printf "%s\n" "${missing_tests[@]}"
+    fi
+}
+
 # Add Cobra init adds a cobra init file
 # for the system to $COB_CONF_PATH
 add_cobra_init() {
