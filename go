@@ -2,19 +2,48 @@ export FILES="${HOME}/.dotfiles/files"
 
 # get_exported_go_funcs prints a list of all exported functions in the current Go project.
 #
-# This function uses the `go doc` command to generate a list of exported functions in the project, and then
-# searches all `.go` files in the project for the file containing each function. The function then prints
-# a message for each function indicating its name and the file where it is defined.
+# This function uses the Gosh tool to execute a Go one-liner that imports the
+# goutils package and calls the FindExportedFunctionsInPackage function on the
+# current project directory. It then loops through the results and prints each
+# function name and file path.
 #
-# Usage: get_exported_go_funcs
+# Usage:
+#   get_exported_go_funcs [filepath]
+# Example(s):
+#   get_exported_go_funcs $PWD
+#   get_exported_go_funcs ../somegopackage
+#   get_exported_go_funcs /Users/someuser/path/to/go/github/someowner/somegorepo
 get_exported_go_funcs() {
-    find . -name "*.go" | \
-    xargs grep -E -o 'func [A-Z][a-zA-Z0-9_]+\(' | \
-    grep -v '_test.go' | \
-    grep -v -E 'func [A-Z][a-zA-Z0-9_]+Test\(' | \
-    sed -e 's/func //' -e 's/(//' | \
-    awk -F: '{printf "Function: %s\nFile: %s\n", $2, $1}'
+    if [[ $# -eq 0 ]]; then
+        filepath="."
+    else
+        filepath="$1"
+    fi
+
+	# Search for go.mod file in the directory and its parent directories
+    while [[ ! -e "$filepath/go.mod" && "$filepath" != "/" ]]; do
+        filepath="$(dirname "$filepath")"
+    done
+
+    # Get the package path from the go.mod file
+    if [[ -e "$filepath/go.mod" ]]; then
+        package_path="$(grep -E "^module " "$filepath/go.mod" | awk '{ print $2 }')"
+    fi
+
+  # Change to the specified filepath and detect the package path
+  pushd "$1" > /dev/null || return 1
+
+    # Print the exported functions
+    if [[ -n "$package_path" ]]; then
+        gosh -import="$package_path" -e 'funcs, _ := utils.FindExportedFunctionsInPackage("."); for _, f := range funcs { fmt.Printf("Function: %s\nFile: %s\n", f.FuncName, f.FilePath) }'
+    else
+        echo "Error: go.mod not found in specified directory or its parent directories"
+    fi
+
+  # Change back to the original directory
+  popd > /dev/null || return 1
 }
+
 
 # get_missing_tests() function checks the exported functions in a Go project and
 # prints out the names of any exported function that does not have a corresponding
@@ -32,11 +61,11 @@ get_exported_go_funcs() {
 #   prints "The following exported functions are missing unit tests:" followed by
 #   the names of the missing functions.
 get_missing_tests() {
-    funcs=($(get_exported_go_funcs | awk '/^Function:/ { print $2 }' | sort -u))
+    funcs=($(get_exported_go_funcs $1 | awk '{print $2}' | sort -u))
     missing_tests=()
     for func_name in "${funcs[@]}"
     do
-		if ! grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox} -rnw . -e "^func Test${func_name}" | grep -v -E '^./.*_test.go:.*func Test'
+        if ! grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox} -rnw . -e "^func Test${func_name}" | grep -v -E '^./.*_test.go:.*func Test'
         then
             missing_tests+=("$func_name")
         fi
