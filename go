@@ -1,5 +1,15 @@
 export FILES="${HOME}/.dotfiles/files"
 
+# Get all exported functions in the current go project
+get_exported_go_funcs() {
+    find . -name "*.go" | \
+    xargs grep -E -o 'func [A-Z][a-zA-Z0-9_]+\(' | \
+    grep -v '_test.go' | \
+    grep -v -E 'func [A-Z][a-zA-Z0-9_]+Test\(' | \
+    sed -e 's/func //' -e 's/(//' | \
+    awk -F: '{printf "Function: %s\nFile: %s\n", $2, $1}'
+}
+
 # Add Cobra init adds a cobra init file
 # for the system to $COB_CONF_PATH
 add_cobra_init() {
