@@ -1,3 +1,11 @@
+# nocomment() removes all comments from the contents of the clipboard.
+# It supports removing single-line comments that start with // or #, as well
+# as multi-line comments that start with /* and end with */. The modified
+# contents are then copied back to the clipboard.
+nocomment() {
+    pbpaste | sed -e 's://.*$::g' -e 's/#.*$//g' -e 's:/\*.*\*/::g' | pbcopy
+}
+
 # capture provides strace like functionality for
 # an input PID.
 capture() {
