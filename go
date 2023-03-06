@@ -14,35 +14,30 @@ export FILES="${HOME}/.dotfiles/files"
 #   get_exported_go_funcs $PWD
 #   get_exported_go_funcs ../somegopackage
 #   get_exported_go_funcs /Users/someuser/path/to/go/github/someowner/somegorepo
-get_exported_go_funcs() {
-    if [[ $# -eq 0 ]]; then
+get_exported_go_funcs () {
+    if [[ $# -eq 0 ]]
+    then
         filepath="."
     else
         filepath="$1"
     fi
-
-	# Search for go.mod file in the directory and its parent directories
-    while [[ ! -e "$filepath/go.mod" && "$filepath" != "/" ]]; do
+    while [[ ! -e "$filepath/go.mod" && "$filepath" != "/" ]]
+    do
         filepath="$(dirname "$filepath")"
     done
-
-    # Get the package path from the go.mod file
-    if [[ -e "$filepath/go.mod" ]]; then
+    if [[ -e "$filepath/go.mod" ]]
+    then
         package_path="$(grep -E "^module " "$filepath/go.mod" | awk '{ print $2 }')"
     fi
-
-  # Change to the specified filepath and detect the package path
-  pushd "$1" > /dev/null || return 1
-
-    # Print the exported functions
-    if [[ -n "$package_path" ]]; then
-        gosh -import="$package_path" -e 'funcs, _ := utils.FindExportedFunctionsInPackage("."); for _, f := range funcs { fmt.Printf("Function: %s\nFile: %s\n", f.FuncName, f.FilePath) }'
+    current_dir="$(pwd)"
+    cd "$filepath" || return 1
+    if [[ -n "$package_path" ]]
+    then
+        goeval -i .=github.com/l50/goutils@v1.2.1 -i github.com/l50/goutils 'funcs, _ := utils.FindExportedFunctionsInPackage("."); for _, f := range funcs { fmt.Printf("Function: %s\nFile: %s\n", f.FuncName, f.FilePath) }'
     else
         echo "Error: go.mod not found in specified directory or its parent directories"
     fi
-
-  # Change back to the original directory
-  popd > /dev/null || return 1
+    cd "$current_dir" || return 1
 }
 
 # get_missing_tests() function checks the exported functions in a Go project and
