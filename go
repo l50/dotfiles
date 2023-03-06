@@ -48,13 +48,18 @@ get_exported_go_funcs () {
 # the word "Test" to avoid including test functions themselves in the output.
 #
 # Usage:
-#   get_missing_tests
+#   get_missing_tests [filepath]
 #
 # Output:
 #   If there are no missing unit tests, the function prints "All exported functions
 #   have corresponding unit tests.". If there are missing unit tests, the function
 #   prints "The following exported functions are missing unit tests:" followed by
 #   the names of the missing functions.
+#
+# Example(s):
+#   get_missing_tests $PWD
+#   get_missing_tests ../somegopackage
+#   get_missing_tests /Users/someuser/path/to/go/github/someowner/somegorepo
 get_missing_tests() {
     funcs=($(get_exported_go_funcs $1 | awk '{print $2}' | sort -u))
     missing_tests=()
