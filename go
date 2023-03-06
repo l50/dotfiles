@@ -61,17 +61,21 @@ get_exported_go_funcs () {
 #   get_missing_tests ../somegopackage
 #   get_missing_tests /Users/someuser/path/to/go/github/someowner/somegorepo
 get_missing_tests() {
-    funcs=($(get_exported_go_funcs $1 | awk '{print $2}' | sort -u))
-    missing_tests=()
-    for func_name in "${funcs[@]}"
-    do
-        if ! grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox} -rnw . -e "^func Test${func_name}" | grep -v -E '^./.*_test.go:.*func Test'
-        then
-            missing_tests+=("$func_name")
-        fi
-    done
-    if [ ${#missing_tests[@]} -eq 0 ]
-    then
+    if [[ $# -eq 0 ]]; then
+        filepath="."
+    else
+        filepath="$1"
+    fi
+
+    # Get the list of exported functions without corresponding tests
+    commit=8d8f800fbba1101d5a98bfe5f612372c630bb115
+    missing=$(goeval -i goutils=github.com/l50/goutils@$commit "fmt.Println(goutils.FindExportedFuncsWithoutTests(\"$filepath\"))")
+
+    # Extract function names from output using awk
+    missing_tests=($(awk -F '[][]' '{print $2}' <<< "$missing"))
+
+    # Print results
+    if [ ${#missing_tests[@]} -eq 0 ]; then
         echo "All exported functions have corresponding unit tests."
     else
         echo "The following exported functions are missing unit tests:"
