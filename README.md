@@ -47,3 +47,14 @@ bash -c "$(curl -fsSL \
 ```bash
 bash install_dot_files.sh
 ```
+
+### Git user config
+
+Create `~/.gitconfig.userparams` with the following:
+
+```bash
+[user]
+        name = Jayson Grace
+        email = jayson.e.grace@gmail.com
+        username = l50
+```
