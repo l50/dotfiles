@@ -54,7 +54,7 @@ Create `~/.gitconfig.userparams` with the following:
 
 ```bash
 [user]
-        name = Jayson Grace
-        email = jayson.e.grace@gmail.com
-        username = l50
+    name = Jayson Grace
+    email = jayson.e.grace@gmail.com
+    username = l50
 ```
