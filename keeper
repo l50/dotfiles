@@ -3,3 +3,29 @@ alias keeper="keeper --config ${HOME}/.keeper/config.json"
 
 # Configure persistent login for easier automation
 expect "${HOME}/.dotfiles/files/keeper_persistent_login.expect"
+
+# get_keeper_record() function retrieves a specific Keeper record using the provided UID.
+#
+# Usage:
+#   get_keeper_record [record_UID]
+#
+# Output:
+#   A JSON object representing the Keeper record with the specified UID, including
+#   UID, title, URL, username, password, TOTP, and note fields.
+#
+# Example(s):
+#   get_keeper_record hfLu-IbhTTVhE3DjWsS-Eg # test record
+#   get_keeper_record d2MxKXQpWWhjEPCDz6JKOQ # test note
+get_keeper_record() {
+  if [[ $# -eq 0 ]]; then
+    echo "You need to provide a keeper record UID"
+    return
+  else
+    uid="$1"
+  fi
+
+  commit=7a6dc20938456aa864a57bf328b15d64393d699d
+
+  goeval -i goutils=github.com/l50/goutils@$commit \
+    'record, err := goutils.RetrieveKeeperRecord("'"$uid"'"); if err != nil { fmt.Println(err) } else { jsonData, _ := json.MarshalIndent(record, "", "  "); fmt.Println(string(jsonData)) }'
+}
