@@ -1,3 +1,8 @@
+# Check if the $HOME/.keeper directory exists, and create it if it doesn't
+if [ ! -d "${HOME}/.keeper" ]; then
+    mkdir -p "${HOME}/.keeper"
+fi
+
 # Set keeper config location on disk
 alias keeper="keeper --config ${HOME}/.keeper/config.json"
 
