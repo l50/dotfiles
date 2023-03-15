@@ -1,11 +1,26 @@
-# nocomment() removes all comments from the contents of the clipboard.
+# nocomment() function removes all comments from the contents of the specified file or from stdin.
 # It supports removing single-line comments that start with // or #, as well
 # as multi-line comments that start with /* and end with */. The modified
-# contents are then copied back to the clipboard.
+# contents are then printed to stdout.
+#
+# Usage:
+#   nocomment [file_path]
+#   echo 'code with // comments' | nocomment
+#
+# Output:
+#   The contents of the file or stdin without comments.
+#
+# Example(s):
+#   nocomment "file.go"
+#   echo 'code with // comments' | nocomment
 nocomment() {
-    pbpaste | sed -e 's://.*$::g' -e 's/#.*$//g' -e 's:/\*.*\*/::g' | pbcopy
+    if [ $# -eq 0 ]; then
+        sed -e 's://.*$::g' -e 's/#.*$//g' -e 's:/\*.*\*/::g'
+    else
+        file_path="$1"
+        sed -e 's://.*$::g' -e 's/#.*$//g' -e 's:/\*.*\*/::g' "$file_path"
+    fi
 }
-
 
 # sanitize() replaces all provided strings found in the clipboard
 # contents with random strings that have the same length.
