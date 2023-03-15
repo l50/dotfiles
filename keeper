@@ -29,3 +29,28 @@ get_keeper_record() {
   goeval -i goutils=github.com/l50/goutils@$commit \
     'record, err := goutils.RetrieveKeeperRecord("'"$uid"'"); if err != nil { fmt.Println(err) } else { jsonData, _ := json.MarshalIndent(record, "", "  "); fmt.Println(string(jsonData)) }'
 }
+
+# search_keeper_records() function searches for Keeper records that match the provided search term.
+#
+# Usage:
+#   search_keeper_records [search term]
+#
+# Output:
+#   A record UID that corresponds to the Keeper record that matches the search term.
+#
+# Example(s):
+#   search_keeper_records "Container"
+#   search_keeper_records "TEST.*RD"
+search_keeper_records() {
+  if [[ $# -eq 0 ]]; then
+    echo "You need to provide a search term corresponding to a Keeper record"
+    return
+  else
+    search_term="$1"
+  fi
+
+  commit=7a6dc20938456aa864a57bf328b15d64393d699d
+
+  goeval -i goutils=github.com/l50/goutils@$commit \
+    'record, err := goutils.SearchKeeperRecords("'"$search_term"'"); if err != nil { fmt.Println(err) } else { jsonData, _ := json.MarshalIndent(record, "", "  "); fmt.Println(string(jsonData)) }'
+}
