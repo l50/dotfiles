@@ -42,6 +42,12 @@ bash -c "$(curl -fsSL \
     https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 ```
 
+### go-eval
+
+```bash
+go install github.com/dolmen-go/goeval@latest
+```
+
 ### Dotfiles
 
 ```bash
