@@ -1,4 +1,5 @@
 export FILES="${HOME}/.dotfiles/files"
+export GO_VER='1.20'
 
 # get_exported_go_funcs prints a list of all exported functions in the current Go project.
 #
@@ -15,6 +16,8 @@ export FILES="${HOME}/.dotfiles/files"
 #   get_exported_go_funcs ../somegopackage
 #   get_exported_go_funcs /Users/someuser/path/to/go/github/someowner/somegorepo
 get_exported_go_funcs () {
+    goutils_ver="v1.2.1"
+
     if [[ $# -eq 0 ]]
     then
         filepath="."
@@ -33,7 +36,7 @@ get_exported_go_funcs () {
     cd "$filepath" || return 1
     if [[ -n "$package_path" ]]
     then
-        goeval -i .=github.com/l50/goutils@v1.2.1 -i github.com/l50/goutils 'funcs, _ := utils.FindExportedFunctionsInPackage("."); for _, f := range funcs { fmt.Printf("Function: %s\nFile: %s\n", f.FuncName, f.FilePath) }'
+        goeval -i goutils=github.com/l50/goutils@$goutils_ver 'funcs, _ := goutils.FindExportedFunctionsInPackage("."); for _, f := range funcs { fmt.Printf("Function: %s\nFile: %s\n", f.FuncName, f.FilePath) }'
     else
         echo "Error: go.mod not found in specified directory or its parent directories"
     fi
@@ -61,6 +64,8 @@ get_exported_go_funcs () {
 #   get_missing_tests ../somegopackage
 #   get_missing_tests /Users/someuser/path/to/go/github/someowner/somegorepo
 get_missing_tests() {
+    goutils_ver="v1.2.1"
+
     if [[ $# -eq 0 ]]; then
         filepath="."
     else
@@ -68,8 +73,7 @@ get_missing_tests() {
     fi
 
     # Get the list of exported functions without corresponding tests
-    commit=8d8f800fbba1101d5a98bfe5f612372c630bb115
-    missing=$(goeval -i goutils=github.com/l50/goutils@$commit "fmt.Println(goutils.FindExportedFuncsWithoutTests(\"$filepath\"))")
+    missing=$(goeval -i goutils=github.com/l50/goutils@$goutils_ver "fmt.Println(goutils.FindExportedFuncsWithoutTests(\"$filepath\"))")
 
     # Extract function names from output using awk
     missing_tests=($(awk -F '[][]' '{print $2}' <<< "$missing"))
@@ -152,7 +156,6 @@ source "${FILES}/mage_completion.sh"
 # of go needs to be installed on the system
 # for this to work.
 if hash go 2>/dev/null; then
-	GO_VER='1.19.2'
 	GVM_BIN="${HOME}/.gvm/scripts/gvm"
 	if [[ ! -f "${GVM_BIN}" ]]; then
 		# Install gvm if it isn't installed
