@@ -1,6 +1,34 @@
 export FILES="${HOME}/.dotfiles/files"
 export GO_VER='1.20'
 
+# pull_repos updates all git repositories found in the given directory by pulling changes from the upstream branch.
+# It looks for repositories by finding directories with a ".git" subdirectory.
+# If a repository is not on the default branch, it will switch to the default branch before pulling changes.
+#
+# Usage:
+#   pull_repos [dir]
+#
+# Example(s):
+#   pull_repos
+#   pull_repos .
+#   pull_repos $PWD
+pull_repos() {
+    goutils_ver="v1.2.1"
+
+    if [[ $# -eq 0 ]]
+    then
+        filepath="."
+        goeval -i goutils=github.com/l50/goutils@latest 'fmt.Println(goutils.PullRepos("'"${PWD}"'"))'
+    else
+        filepath="$1"
+        pushd $filepath || return 1
+        goeval -i goutils=github.com/l50/goutils@latest 'fmt.Println(goutils.PullRepos("'"${PWD}"'"))'
+        popd || return 1
+    fi
+
+    echo "All repositories successfully updated."
+}
+
 # get_exported_go_funcs prints a list of all exported functions in the current Go project.
 #
 # This function uses the Gosh tool to execute a Go one-liner that imports the
@@ -64,7 +92,7 @@ get_exported_go_funcs () {
 #   get_missing_tests ../somegopackage
 #   get_missing_tests /Users/someuser/path/to/go/github/someowner/somegorepo
 get_missing_tests() {
-    goutils_ver="v1.2.1"
+    commit=8d8f800fbba1101d5a98bfe5f612372c630bb115
 
     if [[ $# -eq 0 ]]; then
         filepath="."
@@ -73,7 +101,6 @@ get_missing_tests() {
     fi
 
     # Get the list of exported functions without corresponding tests
-	commit=8d8f800fbba1101d5a98bfe5f612372c630bb115
 	missing=$(goeval -i goutils=github.com/l50/goutils@$commit "fmt.Println(goutils.FindExportedFuncsWithoutTests(\"$filepath\"))")
 
     # Extract function names from output using awk
@@ -96,35 +123,6 @@ add_cobra_init() {
 		cp "${FILES}/cobra.yaml" \
 			"${COB_CONF_PATH}"
 	fi
-}
-
-# go_create creates a project
-# with the input param.
-#
-# This involves configuring
-# go mod, pre-commit, github actions,
-# and setting up a basic mage file.
-go_create() {
-	PROJECT_NAME="${1}"
-
-	if [[ -z "${PROJECT_NAME}" ]]; then
-		echo "Usage: $0 projectName"
-		return
-	fi
-
-	mkdir "${PROJECT_NAME}"
-	pushd "${PROJECT_NAME}"
-	PROJECT_PATH="$(pwd | grep -oE 'github.*')"
-	git init -b main
-	go mod init "${PROJECT_PATH}"
-	cp -r "${FILES}"/{.pre-commit-config.yaml,.hooks,.github} .
-	pre-commit autoupdate
-	pre-commit install
-
-	if hash mage 2>/dev/null; then
-		mage -init
-	fi
-	popd
 }
 
 # Get build path from executable
