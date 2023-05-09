@@ -1,3 +1,8 @@
+# destroy_proc kills the input proc
+destroy_proc() {
+  sudo kill -9 $(pgrep "$1")
+}
+
 # extract is an abstraction to get stuff from compressed files.
 extract() {
 	if [ -f $1 ]; then
