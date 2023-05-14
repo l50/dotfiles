@@ -7,7 +7,11 @@ fi
 alias keeper="keeper --config ${HOME}/.keeper/config.json"
 
 # Configure persistent login for easier automation
-expect "${HOME}/.dotfiles/files/keeper_persistent_login.expect"
+configure_persistent_login() {
+  expect "${HOME}/.dotfiles/files/keeper_persistent_login.expect"
+}
+
+configure_persistent_login > /dev/null 2>&1 &
 
 # get_keeper_record() function retrieves a specific Keeper record using the provided UID.
 #
