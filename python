@@ -15,8 +15,8 @@ alias venv_create="virtualenv .venv"
 
 # Utilities
 alias str_len="python -c 'import sys; print(len(sys.argv[1]))'"
-export OS="$(uname | python3 -c 'print(open(0).read().lower().strip())')"
+OS="$(uname | python3 -c 'print(open(0).read().lower().strip())')"
+export OS
 alias pc="pre-commit"
 
-alias ranger='pipx run --spec ranger-fm ranger'
 alias keeper_update='python3 -m pip install --upgrade keepercommander'

@@ -169,3 +169,8 @@ if hash go 2>/dev/null; then
 fi
 
 add_cobra_init
+
+# Install lf if it's not already installed
+if ! command -v lf &> /dev/null; then
+    env CGO_ENABLED=0 go install -ldflags="-s -w" github.com/gokcehan/lf@latest
+fi
