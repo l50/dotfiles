@@ -1,6 +1,18 @@
-# destroy_proc kills the input proc
-destroy_proc() {
-  sudo kill -9 $(pgrep "$1")
+# Process Terminator
+# Terminates a process given its name (case-insensitive)
+# Input process name
+# Example: process_terminator "myprocess"
+process_terminator () {
+  # Find all processes (case insensitive) that match the input name
+  pids=$(pgrep -i "$1")
+
+  # If there are any matching processes, kill them
+  if [ -n "$pids" ]; then
+    echo "Killing the following PIDs: $pids"
+    sudo kill -9 $pids
+  else
+    echo "No processes found with the name: $1"
+  fi
 }
 
 # extract is an abstraction to get stuff from compressed files.
