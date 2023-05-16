@@ -11,6 +11,22 @@ configure_persistent_login() {
   expect "${HOME}/.dotfiles/files/keeper_persistent_login.expect"
 }
 
+# get_keeper_credentials() function retrieves the username and password from a specific Keeper record.
+#
+# Usage:
+#   get_keeper_credentials [record_UID]
+#
+# Output:
+#   The Username and Password values from the Keeper record with the specified UID.
+#
+# Example(s):
+#   get_keeper_credentials hfLu-IbhTTVhE3DjWsS-Eg # Retrieves credentials from test record
+get_keeper_credentials() {
+  local record=$(get_keeper_record "$1")
+  echo $(echo "$record" | jq -r .Username)
+  echo $(echo "$record" | jq -r .Password)
+}
+
 # get_keeper_record() function retrieves a specific Keeper record using the provided UID.
 #
 # Usage:
