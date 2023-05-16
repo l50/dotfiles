@@ -1,7 +1,14 @@
 # Process Terminator
 # Terminates a process given its name (case-insensitive)
-# Input process name
-# Example: process_terminator "myprocess"
+#
+# Usage:
+#   process_terminator [process_name]
+#
+# Output:
+#   No output, but terminates the specified process.
+#
+# Example(s):
+#   process_terminator "myprocess"
 process_terminator () {
   # Find all processes (case insensitive) that match the input name
   pids=$(pgrep -i "$1")
@@ -9,13 +16,23 @@ process_terminator () {
   # If there are any matching processes, kill them
   if [ -n "$pids" ]; then
     echo "Killing the following PIDs: $pids"
-    sudo kill -9 $pids
+    kill -9 $pids
   else
     echo "No processes found with the name: $1"
   fi
 }
 
-# extract is an abstraction to get stuff from compressed files.
+# Extract
+# An abstraction to get content from various compressed files.
+#
+# Usage:
+#   extract [file]
+#
+# Output:
+#   Extracts the content of the specified compressed file.
+#
+# Example(s):
+#   extract archive.tar.gz
 extract() {
 	if [ -f $1 ]; then
 		case $1 in
@@ -36,6 +53,7 @@ extract() {
 		echo "'$1' is not a valid file!"
 	fi
 }
+
 
 # Determine size of a file or total size of a directory.
 fs() {
