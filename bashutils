@@ -51,8 +51,18 @@ extract() {
 	fi
 }
 
-
-# Determine size of a file or total size of a directory.
+# File Size (fs)
+# Determines the size of a file or total size of a directory.
+#
+# Usage:
+#   fs [file|directory]
+#
+# Output:
+#   Prints the size of the specified file or total size of the specified directory.
+#
+# Example(s):
+#   fs myfile.txt
+#   fs mydirectory
 fs() {
 	if du -b /dev/null >/dev/null 2>&1; then
 		local arg=-sbh
@@ -64,6 +74,28 @@ fs() {
 	else
 		du $arg .[^.]* *
 	fi
+}
+
+# Repository Root (repo_root)
+# Changes the current directory to the root of the current Git repository.
+#
+# Usage:
+#   repo_root
+#
+# Output:
+#   Changes the current directory to the root of the current Git repository. If
+#   the current directory is not part of a Git repository, prints an error message.
+#
+# Example(s):
+#   repo_root
+repo_root() {
+  local root
+  root=$(git rev-parse --show-toplevel 2> /dev/null)
+  if [[ ! -z "$root" ]]; then
+    cd "$root"
+  else
+    echo "Current directory is not part of a git repository."
+  fi
 }
 
 # Get list of tmux sessions
