@@ -10,13 +10,10 @@
 # Example(s):
 #   process_terminator "myprocess"
 process_terminator () {
-  # Find all processes (case insensitive) that match the input name
-  pids=$(pgrep -i "$1")
-
-  # If there are any matching processes, kill them
-  if [ -n "$pids" ]; then
-    echo "Killing the following PIDs: $pids"
-    kill -9 $pids
+  if pgrep -i "$1" > /dev/null
+  then
+    pkill -i $1
+    echo "Process $1 has been terminated."
   else
     echo "No processes found with the name: $1"
   fi
