@@ -92,16 +92,15 @@ get_exported_go_funcs () {
 #   get_missing_tests ../somegopackage
 #   get_missing_tests /Users/someuser/path/to/go/github/someowner/somegorepo
 get_missing_tests() {
-    commit=8d8f800fbba1101d5a98bfe5f612372c630bb115
 
     if [[ $# -eq 0 ]]; then
-        filepath="."
+        filepath="${PWD}"
     else
         filepath="$1"
     fi
 
     # Get the list of exported functions without corresponding tests
-	missing=$(goeval -i goutils=github.com/l50/goutils@$commit "fmt.Println(goutils.FindExportedFuncsWithoutTests(\"$filepath\"))")
+	missing=$(goeval -i goutils=github.com/l50/goutils "fmt.Println(goutils.FindExportedFuncsWithoutTests(\"$filepath\"))")
 
     # Extract function names from output using awk
     missing_tests=($(awk -F '[][]' '{print $2}' <<< "$missing"))
