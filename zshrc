@@ -35,3 +35,16 @@ fi
 
 # Remove the % from the end of terminal output
 export PROMPT_EOL_MARK=''
+
+# Add asdf to PATH if it is installed
+if [[ ! $(command -v asdf) ]]; then
+  echo "asdf is not installed"
+else
+  if [[ "$(uname)" == "Darwin" ]]; then
+    # macOS
+    . /usr/local/opt/asdf/libexec/asdf.sh
+  elif [[ "$(uname)" == "Linux" ]]; then
+    # Linux
+    . $HOME/.asdf/asdf.sh
+  fi
+fi
