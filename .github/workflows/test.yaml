@@ -34,7 +34,7 @@ jobs:
         run: |
           if [[ "${RUNNER_OS}" == "Linux" ]]; then
                sudo apt-get update
-               sudo apt-get install -y curl zsh
+               sudo apt-get install -y curl git zsh
                # Fix permissions to avoid annoying message
                sudo chmod -R 755 /usr/share/zsh
                sudo chmod -R 755 /usr/share/zsh/vendor-completions
@@ -57,7 +57,6 @@ jobs:
           ls -lart ~/.dotfiles
           source ~/.zshrc
           ipaddr
-          source ~/.gvm/scripts/gvm
           go version
           cat ~/.cobra.yaml
         shell: zsh {0}

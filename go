@@ -1,5 +1,29 @@
-export FILES="${HOME}/.dotfiles/files"
+# Global system go version
 export GO_VER='1.20'
+export FILES="${HOME}/.dotfiles/files"
+
+# If asdf is installed, use it to manage go versions
+if [[ $(command -v asdf) ]]; then
+    # Install the Go plugin for asdf if not installed
+    if [[ -z $(asdf plugin list | grep 'golang') ]]; then
+        echo "Installing ASDF golang plugin..."
+        asdf plugin add golang
+    fi
+
+    # Check if specified go version is already installed
+    if [[ -z $(asdf list golang | grep "${GO_VER}") ]]; then
+        echo "Installing Go ${GO_VER}..."
+        asdf install golang ${GO_VER}
+    fi
+
+    # Set the global version of Go
+    asdf global golang ${GO_VER}
+
+    # Add go to PATH - so we can run executables from anywhere
+    export PATH="${PATH}:${GOPATH}/bin"
+else
+    echo "asdf not installed. Using system Go version."
+fi
 
 # pull_repos updates all git repositories found in the given directory by pulling changes from the upstream branch.
 # It looks for repositories by finding directories with a ".git" subdirectory.
@@ -13,16 +37,14 @@ export GO_VER='1.20'
 #   pull_repos .
 #   pull_repos $PWD
 pull_repos() {
-    goutils_ver="v1.2.1"
-
     if [[ $# -eq 0 ]]
     then
         filepath="."
-        goeval -i goutils=github.com/l50/goutils@latest 'fmt.Println(goutils.PullRepos("'"${PWD}"'"))'
+        goeval -i goutils=github.com/l50/goutils/v2/mageutils@latest 'fmt.Println(goutils.PullRepos("'"${PWD}"'"))'
     else
         filepath="$1"
         pushd $filepath || return 1
-        goeval -i goutils=github.com/l50/goutils@latest 'fmt.Println(goutils.PullRepos("'"${PWD}"'"))'
+        goeval -i goutils=github.com/l50/goutils/v2/mageutils@latest 'fmt.Println(goutils.PullRepos("'"${PWD}"'"))'
         popd || return 1
     fi
 
@@ -44,8 +66,6 @@ pull_repos() {
 #   get_exported_go_funcs ../somegopackage
 #   get_exported_go_funcs /Users/someuser/path/to/go/github/someowner/somegorepo
 get_exported_go_funcs () {
-    goutils_ver="v1.2.1"
-
     if [[ $# -eq 0 ]]
     then
         filepath="."
@@ -64,9 +84,9 @@ get_exported_go_funcs () {
     cd "$filepath" || return 1
     if [[ -n "$package_path" ]]
     then
-        goeval -i goutils=github.com/l50/goutils@$goutils_ver 'funcs, _ := goutils.FindExportedFunctionsInPackage("."); for _, f := range funcs { fmt.Printf("Function: %s\nFile: %s\n", f.FuncName, f.FilePath) }'
+        goeval -i goutils=github.com/l50/goutils/v2/mageutils@latest 'funcs, _ := goutils.FindExportedFunctionsInPackage("."); for _, f := range funcs { fmt.Printf("Function: %s\nFile: %s\n", f.FuncName, f.FilePath) }'
     else
-        echo "Error: go.mod not found in specified directory or its parent directories"
+        echo "error: go.mod not found in specified directory or its parent directories"
     fi
     cd "$current_dir" || return 1
 }
@@ -100,7 +120,8 @@ get_missing_tests() {
     fi
 
     # Get the list of exported functions without corresponding tests
-	missing=$(goeval -i goutils=github.com/l50/goutils "fmt.Println(goutils.FindExportedFuncsWithoutTests(\"$filepath\"))")
+	missing=$(goeval -i goutils=github.com/l50/goutils/v2/mageutils@latest "fmt.Println(goutils.FindExportedFuncsWithoutTests(\"$filepath\"))")
+
 
     # Extract function names from output using awk
     missing_tests=($(awk -F '[][]' '{print $2}' <<< "$missing"))
@@ -147,25 +168,6 @@ _get_comp_words_by_ref() {
 __ltrim_colon_completions() {
 }
 source "${FILES}/mage_completion.sh"
-
-### Install go with GVM
-#
-# Note that this needs a base version
-# of go needs to be installed on the system
-# for this to work.
-if hash go 2>/dev/null; then
-	GVM_BIN="${HOME}/.gvm/scripts/gvm"
-	if [[ ! -f "${GVM_BIN}" ]]; then
-		# Install gvm if it isn't installed
-		bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)
-		source "${GVM_BIN}"
-		gvm install "go${GO_VER}"
-	fi
-	source "${GVM_BIN}"
-	gvm use "go${GO_VER}" --default
-	# Add go to PATH - so we can run executables from anywhere
-	export PATH="${PATH}:${GOPATH}/bin"
-fi
 
 add_cobra_init
 
