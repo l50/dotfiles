@@ -1,5 +1,26 @@
-export FILES="${HOME}/.dotfiles/files"
+# Global system go version
 export GO_VER='1.20'
+export FILES="${HOME}/.dotfiles/files"
+
+if [[ ! $(command -v asdf) ]]; then
+# Install Go plugin for asdf if not installed
+if [[ -z $(asdf plugin list | grep 'golang') ]]; then
+  echo "Installing ASDF golang plugin..."
+  asdf plugin add golang
+fi
+
+# Check if specified go version is already installed
+if [[ -z $(asdf list golang | grep "${GO_VER}") ]]; then
+  echo "Installing Go ${GO_VER}..."
+  asdf install golang ${GO_VER}
+fi
+
+# Set the global version of Go
+asdf global golang ${GO_VER}
+
+# Add go to PATH - so we can run executables from anywhere
+export PATH="${PATH}:${GOPATH}/bin"
+fi
 
 # pull_repos updates all git repositories found in the given directory by pulling changes from the upstream branch.
 # It looks for repositories by finding directories with a ".git" subdirectory.
@@ -147,25 +168,6 @@ _get_comp_words_by_ref() {
 __ltrim_colon_completions() {
 }
 source "${FILES}/mage_completion.sh"
-
-### Install go with GVM
-#
-# Note that this needs a base version
-# of go needs to be installed on the system
-# for this to work.
-if hash go 2>/dev/null; then
-	GVM_BIN="${HOME}/.gvm/scripts/gvm"
-	if [[ ! -f "${GVM_BIN}" ]]; then
-		# Install gvm if it isn't installed
-		bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)
-		source "${GVM_BIN}"
-		gvm install "go${GO_VER}"
-	fi
-	source "${GVM_BIN}"
-	gvm use "go${GO_VER}" --default
-	# Add go to PATH - so we can run executables from anywhere
-	export PATH="${PATH}:${GOPATH}/bin"
-fi
 
 add_cobra_init
 
