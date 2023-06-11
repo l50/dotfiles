@@ -20,7 +20,7 @@ if [[ $(command -v asdf) ]]; then
     asdf global golang ${GO_VER}
 
     # Add go to PATH - so we can run executables from anywhere
-    export PATH="${PATH}:${GOPATH}/bin"
+    export PATH="${PATH}:$(go env GOPATH)/bin"
 else
     echo "asdf not installed. Using system Go version."
 fi
