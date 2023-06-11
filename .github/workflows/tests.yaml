@@ -17,7 +17,7 @@ on:
         default: jayson.e.grace@gmail.com
 
 jobs:
-  test_dotfile_install:
+  setup:
     name: Install and test my personal dotfiles
     runs-on: ${{ matrix.os }}
     strategy:
@@ -52,6 +52,33 @@ jobs:
       - name: Run dotfiles installation script
         run: bash install_dot_files.sh
 
+  bats_tests:
+    needs: setup
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Set up git repository
+        uses: actions/checkout@v3.5.2
+
+      - name: Setup BATS
+        uses: mig4/setup-bats@v1
+        with:
+          bats-version: 1.2.1
+
+      - name: Run Bats tests
+        run: bats tests/test-go.bats
+
+  dotfile_test:
+    needs: setup
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Set up git repository
+        uses: actions/checkout@v3.5.2
       - name: Confirm dotfiles are installed and working
         run: |
           ls -lart ~/.dotfiles
