@@ -80,6 +80,6 @@ Create `~/.gitconfig.userparams` with the following:
 
 ```bash
 act -P --container-architecture linux/amd64
-# macOS
+# If it's necessary to test macOS specifically:
 act -P macos-latest=-self-hosted
 ```

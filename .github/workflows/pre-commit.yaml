@@ -36,11 +36,6 @@ jobs:
       - name: Install pre-commit
         run: pip3 install pre-commit
 
-      - name: Install brew dependencies
-        run: |
-          brew install pre-commit
-          brew install shellcheck
-
       - name: Setup BATS
         uses: mig4/setup-bats@v1
         with:
