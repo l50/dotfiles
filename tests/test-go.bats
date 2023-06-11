@@ -3,6 +3,8 @@
 load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
 
+export RUNNING_BATS_TEST=1
+
 @test "pull_repos function" {
 	source "${BATS_TEST_DIRNAME}/../go"
 	run pull_repos "$PWD"

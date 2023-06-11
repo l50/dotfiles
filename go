@@ -161,9 +161,21 @@ import_path() {
 		sed -E -e 's/.\/src\/(.).*\/\1//'
 }
 
-### For mage autocomplete
-# https://github.com/magefile/mage/issues/113
-source "${FILES}/mage_completion.sh"
+### Mage Autocomplete ###
+# This section will not run during a bats test.
+if [[ $RUNNING_BATS_TEST != 1 ]]; then
+    # The functions below are required for mage autocomplete
+    _get_comp_words_by_ref() {
+        # Some function body here. If you don't have one, use `:`
+        :
+    }
+    __ltrim_colon_completions() {
+        # Some function body here. If you don't have one, use `:`
+        :
+    }
+    source "${FILES}/mage_completion.sh"
+fi
+
 
 add_cobra_init
 
