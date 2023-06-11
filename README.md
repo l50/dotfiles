@@ -9,6 +9,15 @@ and see if anything can be adopted for your own.
 
 ## Installation
 
+Install `rvm` and `ruby` (for markdownlint):
+
+```bash
+gpg --keyserver keyserver.ubuntu.com \
+    --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+\curl -sSL https://get.rvm.io | bash -s stable --ruby
+rvm install ruby-3.2.1
+```
+
 ### Linux Dependencies
 
 ```bash
@@ -63,4 +72,14 @@ Create `~/.gitconfig.userparams` with the following:
     name = Jayson Grace
     email = jayson.e.grace@gmail.com
     username = l50
+```
+
+---
+
+## Test actions locally
+
+```bash
+act -P --container-architecture linux/amd64
+# macOS
+act -P macos-latest=-self-hosted
 ```

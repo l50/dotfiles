@@ -21,6 +21,13 @@ repos:
       - id: prettier
         files: \.(json|md|yaml|yml)$
 
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.9.0
+    hooks:
+      - id: shellcheck
+        exclude: >-
+          (?x)^templates/bash/bashTTP.bash.tmpl$
+
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
     rev: 3.0.0
     hooks:
@@ -30,10 +37,7 @@ repos:
         exclude: .bats
       - id: shellcheck
       - id: shfmt
-
-  - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.32.2
-    hooks:
+      # Configuration in .mdlrc and .hooks/linters/mdstyle.rb
       - id: markdownlint
 
   - repo: https://github.com/codespell-project/codespell
