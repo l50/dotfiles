@@ -69,6 +69,11 @@ jobs:
         with:
           bats-version: 1.2.1
 
+      - name: Set up additional files for testing
+        run: |
+          mkdir -p $HOME/.dotfiles/files
+          cp files/mage_completion.sh $HOME/.dotfiles/files/mage_completion.sh
+
       - name: Run Bats tests
         run: bats tests/test-go.bats
 
