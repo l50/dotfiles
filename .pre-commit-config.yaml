@@ -27,6 +27,7 @@ repos:
       - id: script-must-have-extension
         name: Ensure shell scripts end with .sh
         types: [shell]
+        exclude: .bats
       - id: shellcheck
       - id: shfmt
 
@@ -40,3 +41,11 @@ repos:
     hooks:
       - id: codespell
         entry: codespell -q 3 -f --skip=".git,.github" README.md docs/* cmd/*
+
+  - repo: local
+    hooks:
+      - id: bats-tests
+        name: Bats tests
+        description: This hook runs Bats tests on .bats files
+        entry: .hooks/run-bats-tests.sh
+        language: script

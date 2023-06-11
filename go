@@ -161,12 +161,8 @@ import_path() {
 		sed -E -e 's/.\/src\/(.).*\/\1//'
 }
 
-### For mage completion
+### For mage autocomplete
 # https://github.com/magefile/mage/issues/113
-_get_comp_words_by_ref() {
-}
-__ltrim_colon_completions() {
-}
 source "${FILES}/mage_completion.sh"
 
 add_cobra_init
