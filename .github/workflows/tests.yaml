@@ -108,26 +108,23 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install asdf cli
-        uses: asdf-vm/actions/setup@v2
-
-      - name: Install asdf plugins
-        uses: asdf-vm/actions/plugins-add@v2
-
       - name: "Set up Cloud SDK (dependency for gcloud dotfile)"
         uses: "google-github-actions/setup-gcloud@v1"
 
       - name: Install dependencies
         run: |
           if [[ "${RUNNER_OS}" == "Linux" ]]; then
-                sudo apt-get update
-                sudo apt-get install -y curl git zsh
-                # Fix permissions to avoid annoying message
-                sudo chmod -R 755 /usr/share/zsh
-                sudo chmod -R 755 /usr/share/zsh/vendor-completions
+              sudo apt-get update
+              sudo apt-get install -y curl git zsh
+              # Fix permissions to avoid annoying message
+              sudo chmod -R 755 /usr/share/zsh
+              sudo chmod -R 755 /usr/share/zsh/vendor-completions
+              mkdir -p "${HOME}/.asdf
           # Resource: https://stackoverflow.com/questions/57946173/github-actions-run-step-on-specific-os
           elif [[ "${RUNNER_OS}" == "macOS" ]]; then
-            echo "Nothing to do here at the moment"
+              mkdir -p "${HOME}/.asdf
+          echo "Nothing to do here at the moment"
+
           else
                 echo "${RUNNER_OS} not supported"
                 exit 1
@@ -138,6 +135,12 @@ jobs:
 
       - name: Install the dotfiles
         run: bash install_dot_files.sh
+
+      - name: Install asdf cli
+        uses: asdf-vm/actions/setup@v2
+
+      - name: Install asdf plugins
+        uses: asdf-vm/actions/plugins-add@v2
 
       - name: Confirm dotfiles are installed and working
         run: |
