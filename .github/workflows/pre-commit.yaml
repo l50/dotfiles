@@ -46,6 +46,15 @@ jobs:
         with:
           bats-version: 1.2.1
 
+      - name: Install the dotfiles
+        run: bash install_dot_files.sh
+
+      - name: Install asdf cli
+        uses: asdf-vm/actions/setup@v2
+
+      - name: Install asdf plugins
+        uses: asdf-vm/actions/plugins-add@v2
+
       - name: Run pre-commit autoupdate action
         uses: browniebroke/pre-commit-autoupdate-action@main
 
