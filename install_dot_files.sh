@@ -63,8 +63,7 @@ android_sec_tools_folder()
 
 # Creates a launchd job to update the dotfiles every day at 10AM
 setup_auto_update()
-                    {
-    if [[ "$(uname)" == 'Darwin' ]]; then
+                   {
         file_name='dotfile-update'
         launchd_path="${HOME}/Library/LaunchAgents"
         plist_name="net.techvomit.$(whoami).${file_name}"
@@ -85,23 +84,20 @@ setup_auto_update()
 
             # Enable it
             launchctl load "${launchd_path}/${plist_name}.plist"
-        fi
     fi
 }
 
 # Downloads and installs my Brewfile to $HOME/.brewfile/Brewfile
 setup_brewfile()
-                 {
-    if [[ "$(uname)" == 'Darwin' ]]; then
+                {
         brewfile_path="${HOME}/.config/brewfile"
         brewfile_dl='https://raw.githubusercontent.com/l50/homebrew-brewfile/main/Brewfile'
         # Create $brewfile_path if it doesn't already exist.
         if [[ ! -d "${brewfile_path}" ]]; then
             mkdir "${brewfile_path}"
-        fi
+    fi
         echo -e "${YELLOW}Attempting to get latest Brewfile, please wait...${RESET}"
         wget -q "${brewfile_dl}" -O "${brewfile_path}/Brewfile"
-    fi
 }
 
 ### MAIN ###
@@ -151,5 +147,7 @@ cp -r "${INSTALL_DIR}/files" "${DOT_DIR}/files"
 cp "${DOT_DIR}/files/.gitconfig" "${HOME}/.gitconfig"
 echo -e "${YELLOW}Be sure to populate ${HOME}/.gitconfig.userparams!${RESET}"
 
-setup_auto_update
-setup_brewfile
+if [[ "$(uname)" == 'Darwin' ]]; then
+    setup_auto_update
+    setup_brewfile
+fi
