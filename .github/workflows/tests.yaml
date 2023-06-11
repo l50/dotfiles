@@ -1,5 +1,5 @@
 ---
-name: Test dotfiles
+name: dotfile tests
 on:
   push:
     branches: [main]
