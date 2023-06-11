@@ -33,6 +33,17 @@ jobs:
       - name: Install pre-commit
         run: pip3 install pre-commit
 
+      - name: Run go mod tidy - necessary to avoid errors with renovatebot PRs
+        run: |
+          pushd magefiles; go mod tidy; popd
+
+      - name: Commit go.mod and go.sum changes to keep pre-commit happy
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git add magefiles/go.mod magefiles/go.sum
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update go.mod and go.sum"
+
       - name: Install pre-commit dependencies
         run: mage installDeps
 
