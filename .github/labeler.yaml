@@ -1,0 +1,55 @@
+---
+area/android:
+  - "android/**/*"
+
+area/aws:
+  - "aws/**/*"
+
+area/bashutils:
+  - "bashutils/**/*"
+
+area/containers:
+  - "containers/**/*"
+
+area/docker:
+  - "docker/**/*"
+
+area/files:
+  - "files/**/*"
+
+area/gcloud:
+  - "gcloud/**/*"
+
+area/go:
+  - "go/**/*"
+
+area/k8s:
+  - "k8s/**/*"
+
+area/keeper:
+  - "keeper/**/*"
+
+area/macos:
+  - "macos/**/*"
+
+area/python:
+  - "python/**/*"
+
+area/ruby:
+  - "ruby/**/*"
+
+area/tests:
+  - "tests/**/*"
+
+# Uncategorized
+bug:
+  - "tests/**/*"
+
+docs:
+  - "*.md"
+
+enhancement:
+  - "*/**/*"
+
+question:
+  - "*.md"

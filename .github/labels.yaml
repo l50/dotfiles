@@ -1,0 +1,71 @@
+---
+# Area
+- name: area/android
+  color: "7BD7E0"
+  description: "Changes made to the android dotfile"
+
+- name: area/aws
+  color: "7BD7E0"
+  description: "Changes made to the aws dotfile"
+
+- name: area/bashutils
+  color: "7BD7E0"
+  description: "Changes made to the bash dotfile"
+
+- name: area/containers
+  color: "7BD7E0"
+  description: "Changes made to the containers dotfile"
+
+- name: area/docker
+  color: "7BD7E0"
+  description: "Changes made to the docker dotfile"
+
+- name: area/files
+  color: "7BD7E0"
+  description: "Changes made to file resources"
+
+- name: area/gcloud
+  color: "7BD7E0"
+  description: "Changes made to the gcloud dotfile"
+
+- name: area/go
+  color: "7BD7E0"
+  description: "Changes made to the Go dotfile"
+
+- name: area/k8s
+  color: "7BD7E0"
+  description: "Changes made to the Kubernetes dotfile"
+
+- name: area/keeper
+  color: "7BD7E0"
+  description: "Changes made to the Keeper dotfile"
+
+- name: area/macos
+  color: "7BD7E0"
+  description: "Changes made to the MacOS dotfile"
+
+- name: area/python
+  color: "7BD7E0"
+  description: "Changes made to the Python dotfile"
+
+- name: area/ruby
+  color: "7BD7E0"
+  description: "Changes made to the Ruby dotfile"
+
+- name: area/tests
+  color: "7BD7E0"
+  description: "Changes made to test resources"
+
+# Uncategorized
+- name: bug
+  color: "ee0701"
+
+- name: docs
+  color: "F4D1B7"
+
+- name: enhancement
+  color: "84b6eb"
+
+- name: question
+  description: "Clarification and/or additional information required to move forward"
+  color: "cc317c"
