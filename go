@@ -1,31 +1,48 @@
-# Global system go version
+# Global asdf go version
 export GO_VER='1.20'
 export FILES="${HOME}/.dotfiles/files"
+export ASDF_PATH="${HOME}/.asdf"
 
 # If asdf is installed, use it to manage go versions
-if [[ $(command -v asdf) ]]; then
+if command -v asdf &> /dev/null; then
     # Install the Go plugin for asdf if not installed
-    if [[ -z $(asdf plugin list | grep 'golang') ]]; then
+    if ! asdf plugin list | grep -q 'golang'; then
         echo "Installing ASDF golang plugin..."
         asdf plugin add golang
     fi
 
-    # Check if specified go version is already installed
-    if [[ -z $(asdf list golang | grep "${GO_VER}") ]]; then
-        echo "Installing Go ${GO_VER}..."
-        if [[ "$(uname -a | awk '{ print $NF }')" == "arm64" ]] || [[ ]]; then
+    # Install global asdf go version (if not already installed)
+    if ! asdf list golang | grep -q "${GO_VER}"; then
+        ARCH="$(uname -m)"
+        OS="$(uname | tr '[:upper:]' '[:lower:]')"
 
+        echo "Installing go ${GO_VER} for ${ARCH} on ${OS}"
+
+        if [[ "${ARCH}" == "arm64" && "${OS}" == "darwin" ]]; then
+            echo "ARM architecture detection"
             # Specify architecture
-            ASDF_GOLANG_OVERWRITE_ARCH="$(uname -a | awk '{ print $NF }')" \
-                asdf install golang ${GO_VER}
+            ASDF_GOLANG_OVERWRITE_ARCH="${ARCH}" \
+                asdf install golang "${GO_VER}"
+        else
+            # Install Go without specifying architecture
+            asdf install golang "${GO_VER}"
         fi
+        # Use go command without needing to provide a suffix
+        asdf reshim golang "${GO_VER}"
+        
+        mkdir -p "${HOME}/go/bin" "${HOME}/go/pkg" "${HOME}/go/src"
     fi
 
     # Set the global version of Go
-    asdf global golang ${GO_VER}
+    asdf global golang "${GO_VER}"
 
-    # Add go to PATH - so we can run executables from anywhere
-    export PATH="${PATH}:$(go env GOPATH)/bin"
+    # Add go to PATH so we can run executables from anywhere
+    PATH="${PATH}:$(go env GOPATH)/bin"
+    export PATH
+
+    # Set GOROOT 
+    GOROOT="${ASDF_PATH}/installs/golang/${GO_VER}/go"
+    export GOROOT
 else
     echo "asdf not installed. Using system Go version."
 fi

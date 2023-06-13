@@ -38,6 +38,14 @@ if [[ ! $(command -v asdf) ]]; then
   echo "Installing ASDF..."
   git clone https://github.com/asdf-vm/asdf.git "${HOME}/.asdf"
 fi
+# Install asdf if not installed
+if [[ ! $(command -v asdf) ]]; then
+  echo "Installing ASDF..."
+  git clone https://github.com/asdf-vm/asdf.git "${HOME}/.asdf"
+else 
+  . "${HOME}/.asdf/asdf.sh"
+  . "${HOME}/.asdf/completions/asdf.bash"
+fi
 
 # Remove the % from the end of terminal output
 export PROMPT_EOL_MARK=''
