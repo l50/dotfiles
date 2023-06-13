@@ -1,8 +1,6 @@
 # Global system go version
 export GO_VER='1.20'
 export FILES="${HOME}/.dotfiles/files"
-# Specify architecture
-export ASDF_GOLANG_OVERWRITE_ARCH="$(uname)"
 
 # If asdf is installed, use it to manage go versions
 if [[ $(command -v asdf) ]]; then
@@ -15,10 +13,13 @@ if [[ $(command -v asdf) ]]; then
     # Check if specified go version is already installed
     if [[ -z $(asdf list golang | grep "${GO_VER}") ]]; then
         echo "Installing Go ${GO_VER}..."
-        asdf install golang ${GO_VER}
+        if [[ "$(uname -a | awk '{ print $NF }')" == "arm64" ]] || [[ ]]; then
+
+            # Specify architecture
+            ASDF_GOLANG_OVERWRITE_ARCH="$(uname -a | awk '{ print $NF }')" \
+                asdf install golang ${GO_VER}
+        fi
     fi
-
-
 
     # Set the global version of Go
     asdf global golang ${GO_VER}
