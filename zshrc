@@ -39,9 +39,5 @@ if [[ ! "$(command -v asdf)" ]]; then
   git clone https://github.com/asdf-vm/asdf.git "${HOME}/.asdf"
 fi
 
-# Load ASDF
-. "${HOME}/.asdf/asdf.sh"
-. "${HOME}/.asdf/completions/asdf.bash"
-
 # Remove the % from the end of terminal output
 export PROMPT_EOL_MARK=''
