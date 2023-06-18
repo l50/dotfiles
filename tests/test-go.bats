@@ -5,6 +5,10 @@ load 'test_helper/bats-assert/load'
 
 export RUNNING_BATS_TEST=1
 
+# Source zshrc for the setup_language function
+# shellcheck source=/dev/null
+source "${HOME}/.zshrc"
+
 @test "pull_repos function" {
 	source "${BATS_TEST_DIRNAME}/../go"
 	run pull_repos "$PWD"

@@ -1,51 +1,10 @@
-# Global asdf go version
-export GO_VER='1.20'
+# Get helper func from setup-asdf.sh
+# shellcheck source=/dev/null
+source "${HOME}/.dotfiles/files/setup-asdf.sh"
+
+# Define go version from global .tool-versions file
+setup_language "golang"
 export FILES="${HOME}/.dotfiles/files"
-export ASDF_PATH="${HOME}/.asdf"
-
-# If asdf is installed, use it to manage go versions
-if command -v asdf &> /dev/null; then
-    # Install the Go plugin for asdf if not installed
-    if ! asdf plugin list | grep -q 'golang'; then
-        echo "Installing ASDF golang plugin..."
-        asdf plugin add golang
-    fi
-
-    # Install global asdf go version (if not already installed)
-    if ! asdf list golang | grep -q "${GO_VER}"; then
-        ARCH="$(uname -m)"
-        OS="$(uname | tr '[:upper:]' '[:lower:]')"
-
-        echo "Installing go ${GO_VER} for ${ARCH} on ${OS}"
-
-        if [[ "${ARCH}" == "arm64" && "${OS}" == "darwin" ]]; then
-            echo "ARM architecture detected"
-            # Specify architecture
-            ASDF_GOLANG_OVERWRITE_ARCH="${ARCH}" \
-                asdf install golang "${GO_VER}"
-        else
-            # Install Go without specifying architecture
-            asdf install golang "${GO_VER}"
-        fi
-        # Use go command without needing to provide a suffix
-        asdf reshim golang "${GO_VER}"
-
-        mkdir -p "${HOME}/go/bin" "${HOME}/go/pkg" "${HOME}/go/src"
-    fi
-
-    # Set the global version of Go
-    asdf global golang "${GO_VER}"
-
-    # Add go to PATH so we can run executables from anywhere
-    PATH="${PATH}:$(go env GOPATH)/bin"
-    export PATH
-
-    # Set GOROOT
-    GOROOT="${ASDF_PATH}/installs/golang/${GO_VER}/go"
-    export GOROOT
-else
-    echo "asdf not installed. Using system Go version."
-fi
 
 # pull_repos updates all git repositories found in the given directory by pulling changes from the upstream branch.
 # It looks for repositories by finding directories with a ".git" subdirectory.
@@ -197,7 +156,6 @@ if [[ $RUNNING_BATS_TEST != 1 ]]; then
     }
     source "${FILES}/mage_completion.sh"
 fi
-
 
 add_cobra_init
 

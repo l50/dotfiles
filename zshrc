@@ -9,7 +9,7 @@ plugins=(asdf git docker helm kubectl)
 
 # Source other dotfiles
 for file in "${HOME}/.dotfiles"/*; do
-  if [[ -f "${file}" && -r "${file}" ]]; then
+  if [[ -f "${file}" && -r "${file}" && "${file}" != "ruby" ]]; then
     source "${file}"
   fi
 done
@@ -33,11 +33,7 @@ if [[ -f "${HOME}/.dotfiles/.dotinstalldir" ]]; then
     && git pull origin main &> /dev/null && bash install_dot_files.sh)"
 fi
 
-# Install asdf if not installed
-if [[ ! "$(command -v asdf)" ]]; then
-  echo "Installing ASDF..."
-  git clone https://github.com/asdf-vm/asdf.git "${HOME}/.asdf"
-fi
+export PATH="${ASDF_PATH}/bin:${ASDF_PATH}/shims:$PATH"
 
 # Remove the % from the end of terminal output
 export PROMPT_EOL_MARK=''

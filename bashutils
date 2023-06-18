@@ -209,6 +209,28 @@ if [[ $(uname) != 'Darwin' ]]; then
 	alias l.='ls -d .* --color=auto'
 fi
 
+# Repo Sync
+# Synchronizes files between two git repositories while excluding .git directory.
+#
+# Usage:
+#   repo_sync [source_directory] [target_directory]
+#
+# Output:
+#   No output, but copies files from source directory to target directory.
+#
+# Example(s):
+#   repo_sync "/path/to/src/repo" "/path/to/dest/repo"
+repo_sync () {
+  # Check if both directories exist
+  if [[ -d "$1" ]] && [[ -d "$2" ]]; then
+    # Use rsync to copy files from the source to the target
+    rsync -av --exclude='.git/' "$1/" "$2/"
+    echo "Sync complete."
+  else
+    echo "One or both directories do not exist. Please check the paths and try again."
+  fi
+}
+
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
 
 # If gshuf and cowsay are installed, then evolve our vocab with cowsay

@@ -1,41 +1,9 @@
-# Global asdf python version
-export PY_VER='3.11.3'
-export ASDF_PATH="${HOME}/.asdf"
+# Get helper func from setup-asdf.sh
+# shellcheck source=/dev/null
+source "${HOME}/.dotfiles/files/setup-asdf.sh"
 
-# If asdf is installed, use it to manage Python versions
-if command -v asdf &> /dev/null; then
-    # Install the Python plugin for asdf if not installed
-    if ! asdf plugin list | grep -q 'python'; then
-        echo "Installing ASDF python plugin..."
-        asdf plugin add python
-    fi
-
-    # Install global asdf Python version (if not already installed)
-    if ! asdf list python | grep -q "${PY_VER}"; then
-        ARCH="$(uname -m)"
-        OS="$(uname | tr '[:upper:]' '[:lower:]')"
-
-        echo "Installing Python ${PY_VER} for ${ARCH} on ${OS}"
-
-        if [[ "${ARCH}" == "arm64" && "${OS}" == "darwin" ]]; then
-            echo "ARM architecture detected"
-            # Specify architecture
-            ASDF_PYTHON_OVERWRITE_ARCH="${ARCH}" \
-                asdf install python "${PY_VER}"
-        else
-            # Install Python without specifying architecture
-            asdf install python "${PY_VER}"
-        fi
-        # Use python command without needing to provide a suffix
-        asdf reshim python "${PY_VER}"
-    fi
-
-    # Set the global version of Python
-    asdf global python "${PY_VER}"
-
-else
-    echo "asdf not installed. Using system Python version."
-fi
+# Define python version from global .tool-versions file
+setup_language "python"
 
 # venv
 alias venv_activate="source .venv/bin/activate"
