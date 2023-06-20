@@ -19,7 +19,7 @@ if command -v asdf &> /dev/null; then
         echo "Installing go ${GO_VER} for ${ARCH} on ${OS}"
 
         if [[ "${ARCH}" == "arm64" && "${OS}" == "darwin" ]]; then
-            echo "ARM architecture detection"
+            echo "ARM architecture detected"
             # Specify architecture
             ASDF_GOLANG_OVERWRITE_ARCH="${ARCH}" \
                 asdf install golang "${GO_VER}"
@@ -29,7 +29,7 @@ if command -v asdf &> /dev/null; then
         fi
         # Use go command without needing to provide a suffix
         asdf reshim golang "${GO_VER}"
-        
+
         mkdir -p "${HOME}/go/bin" "${HOME}/go/pkg" "${HOME}/go/src"
     fi
 
@@ -40,7 +40,7 @@ if command -v asdf &> /dev/null; then
     PATH="${PATH}:$(go env GOPATH)/bin"
     export PATH
 
-    # Set GOROOT 
+    # Set GOROOT
     GOROOT="${ASDF_PATH}/installs/golang/${GO_VER}/go"
     export GOROOT
 else
