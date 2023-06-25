@@ -1,5 +1,5 @@
 # Check if the $HOME/.keeper directory exists, and create it if it doesn't
-if [ ! -d "${HOME}/.keeper" ]; then
+if [[ ! -d "${HOME}/.keeper" ]]; then
     mkdir -p "${HOME}/.keeper"
 fi
 
@@ -49,7 +49,7 @@ get_keeper_record() {
     uid="$1"
   fi
 
-  tag=v1.2.3
+  tag=v2.0.3
 
   goeval -i goutils=github.com/l50/goutils@$tag \
     'record, err := goutils.RetrieveKeeperRecord("'"$uid"'"); if err != nil { fmt.Println(err) } else { jsonData, _ := json.MarshalIndent(record, "", "  "); fmt.Println(string(jsonData)) }'
@@ -74,7 +74,7 @@ search_keeper_records() {
     search_term="$1"
   fi
 
-  tag=v1.2.3
+  tag=v2.0.3
 
   goeval -i goutils=github.com/l50/goutils@$tag \
     'record, err := goutils.SearchKeeperRecords("'"$search_term"'"); if err != nil { fmt.Println(err) } else { jsonData, _ := json.MarshalIndent(record, "", "  "); fmt.Println(string(jsonData)) }'
