@@ -1,6 +1,6 @@
-# Get helper func from setup-asdf.sh
+# Get helper func from setup_asdf.sh
 # shellcheck source=/dev/null
-source "${HOME}/.dotfiles/files/setup-asdf.sh"
+source "${HOME}/.dotfiles/files/setup_asdf.sh"
 
 # Define go version from global .tool-versions file
 setup_language "golang"

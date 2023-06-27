@@ -78,6 +78,8 @@ jobs:
         run: |
           mkdir -p $HOME/.dotfiles
           cp -r files $HOME/.dotfiles
+          # Required for asdf
+          cp -r files/tool-versions $HOME/.tool-versions
 
       - name: Run Bats tests
         run: bats tests/test-go.bats

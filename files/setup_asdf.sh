@@ -1,4 +1,7 @@
-export ASDF_PATH="${HOME}/.asdf"
+#!/usr/bin/env bash
+
+ASDF_PATH="${HOME}/.asdf"
+export ASDF_PATH
 
 # Install asdf if not installed
 if [[ ! "$(command -v asdf)" ]]; then
