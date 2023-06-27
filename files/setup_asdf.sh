@@ -7,6 +7,8 @@ export ASDF_PATH
 if [[ ! "$(command -v asdf)" ]]; then
     echo "Installing ASDF..."
     git clone https://github.com/asdf-vm/asdf.git "${ASDF_PATH}"
+    # Source asdf.sh to add asdf to current shell session
+    . "${ASDF_PATH}/asdf.sh"
 fi
 
 # Check for the global .tool-versions file employed by asdf
@@ -18,8 +20,9 @@ fi
 
 # This function sets up the language environment using asdf
 setup_language()
-                 {
+{
     local language=$1
+    local scope=$2 # 'global' or 'local'
     local version
 
     # Get version from .tool-versions file
@@ -53,8 +56,14 @@ setup_language()
             asdf reshim "${language}" "${version}"
         fi
 
-        # Set the global version of the language
-        asdf global "${language}" "${version}"
+        # Set the global or local version of the language
+        if [[ "${scope}" == "global" ]]; then
+            asdf global "${language}" "${version}"
+        elif [[ "${scope}" == "local" ]]; then
+            asdf local "${language}" "${version}"
+        else
+            echo "Invalid scope. Please use 'global' or 'local'."
+        fi
     else
         echo "asdf not installed. Using system ${language} version."
     fi

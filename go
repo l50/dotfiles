@@ -3,7 +3,7 @@
 source "${HOME}/.dotfiles/files/setup_asdf.sh"
 
 # Define go version from global .tool-versions file
-setup_language "golang"
+setup_language "golang" "global"
 export FILES="${HOME}/.dotfiles/files"
 
 # pull_repos updates all git repositories found in the given directory by pulling changes from the upstream branch.
@@ -163,3 +163,4 @@ add_cobra_init
 if ! command -v lf &> /dev/null; then
     env CGO_ENABLED=0 go install -ldflags="-s -w" github.com/gokcehan/lf@latest
 fi
+

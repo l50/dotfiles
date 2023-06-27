@@ -3,7 +3,7 @@
 source "${HOME}/.dotfiles/files/setup_asdf.sh"
 
 # Define python version from global .tool-versions file
-setup_language "python"
+setup_language "python" "global"
 
 # venv
 alias venv_activate="source .venv/bin/activate"
