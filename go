@@ -9,11 +9,10 @@ setup_language "golang" "global"
 # Set and export environment variables
 GOPATH=$(go env GOPATH)
 GOROOT=$(go env GOROOT)
-GOBIN=$(go env GOBIN)
 FILES="${HOME}/.dotfiles/files"
 
-export GOPATH GOROOT GOBIN FILES
-export PATH=$PATH:$GOPATH/bin:$GOROOT/bin:$GOBIN
+export GOPATH GOROOT FILES
+export PATH=$PATH:$GOPATH/bin:$GOROOT/bin
 
 # pull_repos updates all git repositories found in the given directory by pulling changes from the upstream branch.
 # It looks for repositories by finding directories with a ".git" subdirectory.
