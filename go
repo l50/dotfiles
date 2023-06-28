@@ -1,10 +1,19 @@
 # Get helper func from setup_asdf.sh
 # shellcheck source=/dev/null
 source "${HOME}/.dotfiles/files/setup_asdf.sh"
+source "$HOME/.asdf/asdf.sh"
 
 # Define go version from global .tool-versions file
 setup_language "golang" "global"
-export FILES="${HOME}/.dotfiles/files"
+
+# Set and export environment variables
+GOPATH=$(go env GOPATH)
+GOROOT=$(go env GOROOT)
+GOBIN=$(go env GOBIN)
+FILES="${HOME}/.dotfiles/files"
+
+export GOPATH GOROOT GOBIN FILES
+export PATH=$PATH:$GOPATH/bin:$GOROOT/bin:$GOBIN
 
 # pull_repos updates all git repositories found in the given directory by pulling changes from the upstream branch.
 # It looks for repositories by finding directories with a ".git" subdirectory.

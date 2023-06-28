@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
 
 ASDF_PATH="${HOME}/.asdf"
-export ASDF_PATH
+export PATH=$PATH:$ASDF_PATH
 
 # Install asdf if not installed
-if [[ ! "$(command -v asdf)" ]]; then
+if [[ ! -d "${ASDF_PATH}" ]]; then
     echo "Installing ASDF..."
     git clone https://github.com/asdf-vm/asdf.git "${ASDF_PATH}"
-    # Source asdf.sh to add asdf to current shell session
+fi
+
+# Source asdf.sh to add asdf to current shell session
+if [[ -f "${ASDF_PATH}/asdf.sh" ]]; then
     . "${ASDF_PATH}/asdf.sh"
+else
+    echo "asdf.sh not found. Please check your ASDF installation."
+    exit 1
 fi
 
 # Check for the global .tool-versions file employed by asdf
