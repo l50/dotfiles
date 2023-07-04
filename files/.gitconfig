@@ -9,10 +9,12 @@
     re  = rebase
     t   = tag
     pom = push origin main
-# Set manually:
+# Set manually for vim:
 # git config --global core.editor vim
+# Set manually for vscode:
+# git config --global core.editor "code --wait"
 [core]
-    editor = vim
+    editor = code --wait
 [include]
     path = ~/.gitconfig.userparams
 # Set manually:
