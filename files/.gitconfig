@@ -9,6 +9,7 @@
     re  = rebase
     t   = tag
     pom = push origin main
+    ds  = diff --staged
 # Set manually for vim:
 # git config --global core.editor vim
 # Set manually for vscode:
