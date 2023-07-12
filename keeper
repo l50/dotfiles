@@ -49,7 +49,7 @@ get_keeper_record() {
     uid="$1"
   fi
 
-  tag=v2.0.3
+  tag=latest
 
   goeval -i goutils=github.com/l50/goutils@$tag \
     'record, err := goutils.RetrieveKeeperRecord("'"$uid"'"); if err != nil { fmt.Println(err) } else { jsonData, _ := json.MarshalIndent(record, "", "  "); fmt.Println(string(jsonData)) }'
@@ -74,7 +74,7 @@ search_keeper_records() {
     search_term="$1"
   fi
 
-  tag=v2.0.3
+  tag=latest
 
   goeval -i goutils=github.com/l50/goutils@$tag \
     'record, err := goutils.SearchKeeperRecords("'"$search_term"'"); if err != nil { fmt.Println(err) } else { jsonData, _ := json.MarshalIndent(record, "", "  "); fmt.Println(string(jsonData)) }'

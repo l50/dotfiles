@@ -8,6 +8,12 @@ and see if anything can be adopted for your own.
 
 ## Installation
 
+Clone the repo:
+
+```bash
+git clone --recurse-submodules https://github.com/l50/l50.github.io.git
+```
+
 Install `rvm` and `ruby` (for markdownlint):
 
 ```bash
@@ -17,30 +23,25 @@ gpg --keyserver keyserver.ubuntu.com \
 rvm install ruby-3.2.1
 ```
 
-### Linux Dependencies
+### Debian Dependencies
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y curl zsh
+sudo apt-get install -y curl zsh xlcip expect
 # Fix permissions to avoid annoying message
 sudo chmod -R 755 /usr/share/zsh
 sudo chmod -R 755 /usr/share/zsh/vendor-completions
 # If you need to change your shell manually, run this command:
 sudo chsh -s /bin/zsh
 brew install shfmt
+brew install bats-core
 ```
 
 ### MacOS Dependencies
 
 ```bash
 # Install homebrew
-brew install cask google-cloud-sdk
-```
-
-### Ubuntu Dependencies
-
-```bash
-sudo apt-get install -y xclip expect
+brew install cask google-cloud-sdk shfmt bats-core
 ```
 
 ### oh-my-zsh
@@ -81,4 +82,20 @@ Create `~/.gitconfig.userparams` with the following:
 act -P --container-architecture linux/amd64
 # If it's necessary to test macOS specifically:
 act -P macos-latest=-self-hosted
+```
+
+---
+
+## Run bash tests
+
+```bash
+bash .hooks/run-bats-tests.sh
+```
+
+--
+
+## Update submodules
+
+```bash
+git submodule update --init --recursive
 ```
