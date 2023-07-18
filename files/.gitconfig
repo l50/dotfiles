@@ -29,6 +29,6 @@
 
 # Authentication for gh cli
 [credential "https://github.com"]
-        helper = !/usr/local/bin/gh auth git-credential
+        helper = !$(command -v gh) auth git-credential
 [credential "https://gist.github.com"]
-        helper = !/usr/local/bin/gh auth git-credential
+        helper = !$(command -v gh) auth git-credential
