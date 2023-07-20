@@ -12,3 +12,21 @@ download_bucket() {
 
 	aws s3 sync "s3://${1}" "${dest}"
 }
+
+# List Running Instances
+# Lists all running EC2 instances.
+#
+# Usage:
+#   list_running_instances
+#
+# Output:
+#   Outputs a table of running instances.
+#
+# Example(s):
+#   list_running_instances
+list_running_instances() {
+  aws ec2 describe-instances \
+    --query \
+    "Reservations[*].Instances[*].{InstanceId:InstanceId, VPC:VpcId, Subnet:SubnetId, PublicIP:PublicIpAddress,Name:Tags[?Key=='Name']|[0].Value}" \
+    --filters Name=instance-state-name,Values=running --no-cli-pager --output json
+}
