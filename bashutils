@@ -231,6 +231,37 @@ repo_sync () {
   fi
 }
 
+# Get JSON Keys
+# Fetches all the keys from a JSON file using jq.
+#
+# Usage:
+#   getJSONKeys [json_file]
+#
+# Output:
+#   Prints all the keys present in the JSON file.
+#
+# Example(s):
+#   getJSONKeys "/path/to/jsonfile.json"
+getJSONKeys() {
+    jq 'keys' "$1"
+}
+
+
+# Get JSON Values
+# Fetches all the values of array objects from a JSON file using jq.
+#
+# Usage:
+#   getJSONValues [json_file]
+#
+# Output:
+#   Prints all the values present in the JSON array objects.
+#
+# Example(s):
+#   getJSONValues "/path/to/jsonfile.json"
+getJSONValues() {
+    jq '.[] | values' "$1"
+}
+
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
 
 # If gshuf and cowsay are installed, then evolve our vocab with cowsay
