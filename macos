@@ -116,17 +116,39 @@ if [[ -f '/usr/local/bin/ggrep' ]]; then
 	alias grep='/usr/local/bin/ggrep'
 fi
 
-# Find files larger than 100MB - https://www.fonepaw.com/eraser/find-large-files-mac.html
-alias largestFiles="sudo find / -type f -size +100000k -exec ls -lh {} \; | awk '{ print \$9 \": \" \$5 }'"
+# largest_files() finds the largest files in the current directory
+# and its subdirectories.
+#
+# Usage:
+#   largest_files [directory]
+#
+# Output:
+#   The largest files in the current directory and its subdirectories.
+#
+# Example(s):
+#   largest_files
+#   largest_files /Users/username
+#
+# Resource:
+#   https://www.fonepaw.com/eraser/find-large-files-mac.html
+largest_files() {
+    if [ -z "$1" ]; then
+        sudo find . -type f -size +100000k -exec ls -lh {} \; | awk '{ print $9 ": " $5 }'
+    else
+        sudo find "$1" -type f -size +100000k -exec ls -lh {} \; | awk '{ print $9 ": " $5 }'
+    fi
+}
 
-# Get default gateway
-alias gw="route -n get default | grep gateway | awk '{print \$2}'"
-
-# Fix brew on ARM
-# https://dev.to/saschaeggi/fix-brew-homebrew-on-m1-macs-c9g
-if [[ "$(uname -a | grep -i arm)" ]]; then
-	alias brew='arch -x86_64 brew'
-fi
+# gw() gets the default gateway.
+#
+# Usage:
+#   gw
+#
+# Output:
+#   The default gateway.
+gw() {
+    route -n get default | grep gateway | awk '{print $2}'
+}
 
 # Kill all instances of chrome
 alias die-chrome='pkill Chrome'
