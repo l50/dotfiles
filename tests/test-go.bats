@@ -101,6 +101,7 @@ EOF
 	# Clean up the temporary directory
 	rm -rf "${TEMP_DIR}"
 }
+
 @test "add_cobra_init function" {
 	source "${BATS_TEST_DIRNAME}/../go"
 	run add_cobra_init "$PWD"

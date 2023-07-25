@@ -45,7 +45,7 @@ pull_repos() {
 
 # get_exported_go_funcs prints a list of all exported functions in the current Go project.
 #
-# This function uses the Gosh tool to execute a Go one-liner that imports the
+# This function uses the Go eval tool to execute a Go one-liner that imports the
 # goutils package and calls the FindExportedFunctionsInPackage function on the
 # current project directory. It then loops through the results and prints each
 # function name and file path.
@@ -57,32 +57,36 @@ pull_repos() {
 #   get_exported_go_funcs $PWD
 #   get_exported_go_funcs ../somegopackage
 #   get_exported_go_funcs /Users/someuser/path/to/go/github/someowner/somegorepo
-get_exported_go_funcs () {
-    if [[ $# -eq 0 ]]
-    then
-        filepath="."
+get_exported_go_funcs() {
+    if [[ $# -eq 0 ]]; then
+        filepath="${PWD}"
     else
         filepath="$1"
     fi
-    while [[ ! -e "$filepath/go.mod" && "$filepath" != "/" ]]
-    do
-        filepath="$(dirname "$filepath")"
-    done
-    if [[ -e "$filepath/go.mod" ]]
-    then
-        package_path="$(grep -E "^module " "$filepath/go.mod" | awk '{ print $2 }')"
+
+    # Get the list of exported functions
+    funcs=$(goeval -i mageutils=github.com/l50/goutils/v2/dev/mage@latest \
+        "funcs, err := mageutils.FindExportedFunctionsInPackage(\"$filepath\"); if err != nil {fmt.Println(err)} else {for _, f := range funcs {fmt.Println(f.FuncName + \": \" + f.FilePath)}}")
+
+    # Check if an error message was returned
+    if [[ "$funcs" == *"no exported functions found in package"* ]]; then
+        echo "$funcs"
+        return
     fi
-    current_dir="$(pwd)"
-    cd "$filepath" || return 1
-    if [[ -n "$package_path" ]]
-    then
-        goeval -i mageutils=github.com/l50/goutils/v2/dev/mage@latest \
-            'funcs, _ := mageutils.FindExportedFunctionsInPackage("."); '\
-            'for _, f := range funcs { fmt.Printf("Function: %s\nFile: %s\n", f.FuncName, f.FilePath) }'
+
+    # Read into array
+    exported_funcs=()
+    while IFS= read -r line; do
+        exported_funcs+=("$line")
+    done <<< "$funcs"
+
+    # Print results
+    if [ ${#exported_funcs[@]} -eq 0 ]; then
+        echo "No exported functions found."
     else
-        echo "error: go.mod not found in specified directory or its parent directories"
+        echo "The following functions are exported:"
+        printf "%s\n" "${exported_funcs[@]}"
     fi
-    cd "$current_dir" || return 1
 }
 
 # get_missing_tests() function checks the exported functions in a Go project and
