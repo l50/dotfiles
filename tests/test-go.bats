@@ -55,6 +55,7 @@ export RUNNING_BATS_TEST=1
 @test "get_missing_tests function identifies exported Go functions without tests" {
 	# Create a temporary directory
 	TEMP_DIR=$(mktemp -d)
+	go install github.com/dolmen-go/goeval@latest
 
 	# Create a Go file with some exported and unexported functions
 	cat >"${TEMP_DIR}/testfile.go" <<EOF
