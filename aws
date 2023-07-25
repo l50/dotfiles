@@ -141,10 +141,6 @@ function get_latest_ami() {
     echo "$AMI_ID"
 }
 
-# Usage example
-AMI_ID=$(get_latest_ami "ubuntu" "22.04" "amd64" "${AWS_DEFAULT_REGION}")
-echo "Latest AMI ID: $AMI_ID"
-
 # List Running Instances
 # Lists all running EC2 instances.
 #
