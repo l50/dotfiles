@@ -106,7 +106,6 @@ get_exported_go_funcs () {
 #   get_missing_tests ../somegopackage
 #   get_missing_tests /Users/someuser/path/to/go/github/someowner/somegorepo
 get_missing_tests() {
-
     if [[ $# -eq 0 ]]; then
         filepath="${PWD}"
     else
@@ -117,8 +116,17 @@ get_missing_tests() {
     missing=$(goeval -i mageutils=github.com/l50/goutils/v2/dev/mage@latest \
         "fmt.Println(mageutils.FindExportedFuncsWithoutTests(\"$filepath\"))")
 
+    # Check if an error message was returned
+    if [[ "$missing" == *"no exported functions found in package"* ]]; then
+        echo "$missing"
+        return
+    fi
+
     # Read into array
-    IFS=$'\n' read -ra missing_tests <<< "$missing"
+    missing_tests=()
+    while IFS= read -r line; do
+        missing_tests+=("$line")
+    done <<< "$missing"
 
     # Print results
     if [ ${#missing_tests[@]} -eq 0 ]; then
@@ -128,6 +136,9 @@ get_missing_tests() {
         printf "%s\n" "${missing_tests[@]}"
     fi
 }
+
+
+
 
 
 # Add Cobra init adds a cobra init file
