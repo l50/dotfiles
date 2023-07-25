@@ -81,8 +81,14 @@ jobs:
           # Required for asdf
           cp -r files/tool-versions $HOME/.tool-versions
 
+      - name: Set up temporary git config to satisfy tests
+        run: |
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+
       - name: Run Bats tests
-        run: bats tests/test-go.bats
+        run: |
+          bats tests/test-go.bats
 
   dotfile_test:
     needs: setup
