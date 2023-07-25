@@ -29,11 +29,14 @@ pull_repos() {
     if [[ $# -eq 0 ]]
     then
         filepath="."
-        goeval -i goutils=github.com/l50/goutils/v2/mageutils@latest 'fmt.Println(goutils.PullRepos("'"${PWD}"'"))'
+
+        goeval -i git=github.com/l50/goutils/v2/git@latest \
+            'fmt.Println(git.PullRepos("'"${PWD}"'"))'
     else
         filepath="$1"
         pushd $filepath || return 1
-        goeval -i goutils=github.com/l50/goutils/v2/mageutils@latest 'fmt.Println(goutils.PullRepos("'"${PWD}"'"))'
+        goeval -i git=github.com/l50/goutils/v2/git@latest \
+            'fmt.Println(git.PullRepos("'"${PWD}"'"))'
         popd || return 1
     fi
 
@@ -73,7 +76,9 @@ get_exported_go_funcs () {
     cd "$filepath" || return 1
     if [[ -n "$package_path" ]]
     then
-        goeval -i goutils=github.com/l50/goutils/v2/mageutils@latest 'funcs, _ := goutils.FindExportedFunctionsInPackage("."); for _, f := range funcs { fmt.Printf("Function: %s\nFile: %s\n", f.FuncName, f.FilePath) }'
+        goeval -i mageutils=github.com/l50/goutils/v2/dev/mage@latest \
+            'funcs, _ := mageutils.FindExportedFunctionsInPackage("."); '\
+            'for _, f := range funcs { fmt.Printf("Function: %s\nFile: %s\n", f.FuncName, f.FilePath) }'
     else
         echo "error: go.mod not found in specified directory or its parent directories"
     fi
@@ -109,11 +114,11 @@ get_missing_tests() {
     fi
 
     # Get the list of exported functions without corresponding tests
-	missing=$(goeval -i goutils=github.com/l50/goutils/v2/mageutils@latest "fmt.Println(goutils.FindExportedFuncsWithoutTests(\"$filepath\"))")
+    missing=$(goeval -i mageutils=github.com/l50/goutils/v2/dev/mage@latest \
+        "fmt.Println(mageutils.FindExportedFuncsWithoutTests(\"$filepath\"))")
 
-
-    # Extract function names from output using awk
-    missing_tests=($(awk -F '[][]' '{print $2}' <<< "$missing"))
+    # Read into array
+    IFS=$'\n' read -ra missing_tests <<< "$missing"
 
     # Print results
     if [ ${#missing_tests[@]} -eq 0 ]; then
@@ -123,6 +128,7 @@ get_missing_tests() {
         printf "%s\n" "${missing_tests[@]}"
     fi
 }
+
 
 # Add Cobra init adds a cobra init file
 # for the system to $COB_CONF_PATH

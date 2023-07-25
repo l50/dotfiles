@@ -5,7 +5,7 @@ set -e
 repo_root=$(git rev-parse --show-toplevel)
 
 # Run all bats tests in the tests directory
-output=$(bats "${repo_root}/tests/"*.bats 2>&1)
+output=$(bats --tap "${repo_root}/tests/"*.bats)
 exit_code=$?
 
 echo "${output}"
