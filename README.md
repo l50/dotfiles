@@ -1,7 +1,8 @@
 # dotfiles
 
-[![Test dotfiles](https://github.com/l50/dotfiles/actions/workflows/tests.yaml/badge.svg)](https://github.com/l50/dotfiles/actions/workflows/tests.yaml)
 [![License](https://img.shields.io/github/license/l50/dotfiles?label=License&style=flat&color=blue&logo=github)](https://github.com/l50/dotfiles/blob/master/LICENSE)
+[![Test dotfiles](https://github.com/l50/dotfiles/actions/workflows/tests.yaml/badge.svg)](https://github.com/l50/dotfiles/actions/workflows/tests.yaml)
+[![Renovate](https://github.com/l50/dotfiles/actions/workflows/renovate.yaml/badge.svg)](https://github.com/l50/dotfiles/actions/workflows/renovate.yaml)
 
 These are my dotfiles. Please feel free to check them out
 and see if anything can be adopted for your own.
