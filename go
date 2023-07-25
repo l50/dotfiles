@@ -141,10 +141,6 @@ get_missing_tests() {
     fi
 }
 
-
-
-
-
 # Add Cobra init adds a cobra init file
 # for the system to $COB_CONF_PATH
 add_cobra_init() {
