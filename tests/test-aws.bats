@@ -12,3 +12,11 @@ export RUNNING_BATS_TEST=1
 		echo "Error: $output"
 	fi
 }
+
+@test "list_instance_profiles function" {
+	source "${BATS_TEST_DIRNAME}/../aws"
+	run list_instance_profiles
+	if [[ "${status}" -ne 0 ]]; then
+		echo "Error: $output"
+	fi
+}

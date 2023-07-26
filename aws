@@ -158,3 +158,23 @@ list_running_instances() {
     "Reservations[*].Instances[*].{InstanceId:InstanceId, VPC:VpcId, Subnet:SubnetId, PublicIP:PublicIpAddress,Name:Tags[?Key=='Name']|[0].Value}" \
     --filters Name=instance-state-name,Values=running --no-cli-pager --output json
 }
+
+# List Instance Profiles
+# Lists all instance profiles.
+#
+# Usage:
+#   list_instance_profiles
+#
+# Output:
+#   Outputs a list of instance profiles.
+#
+# Example(s):
+#   list_instance_profiles
+list_instance_profiles() {
+    INSTANCE_PROFILE_NAMES=$(aws iam list-instance-profiles --query "InstanceProfiles[].InstanceProfileName" --output text | tr '\t' '\n')
+
+    # For each instance profile, print the name
+    for INSTANCE_PROFILE_NAME in $INSTANCE_PROFILE_NAMES; do
+        echo "$INSTANCE_PROFILE_NAME"
+    done
+}
