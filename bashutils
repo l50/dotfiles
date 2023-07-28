@@ -246,7 +246,6 @@ getJSONKeys() {
     jq 'keys' "$1"
 }
 
-
 # Get JSON Values
 # Fetches all the values of array objects from a JSON file using jq.
 #
@@ -261,6 +260,103 @@ getJSONKeys() {
 getJSONValues() {
     jq '.[] | values' "$1"
 }
+
+# Fetch and optionally install from Github
+# Downloads a binary tool from a GitHub releases page, verifies its checksum
+# if one is available, and optionally installs it in a directory within the PATH.
+# It supports tar.gz archives for Linux and zip files for MacOS.
+# After the process, it cleans up the artifacts. If installation is chosen, it will print a success message.
+#
+# Usage:
+#   fetchFromGithub [author] [repository_name] [install]
+#
+# Output:
+#   Downloads the tool, and if 'install' is set to 'true', it will install the tool and print a success message.
+#
+# Example(s):
+#   fetchFromGithub "cli" "cli" # Just fetches the Github CLI
+#   fetchFromGithub "cli" "cli" "true" # Fetches and installs the Github CLI
+fetchFromGithub() {
+    AUTHOR="$1"
+    REPO_NAME="$2"
+    INSTALL="${3:-false}"
+    os=$(uname | tr '[:upper:]' '[:lower:]')
+    arch=$(uname -m)
+
+    if [[ "$arch" == "x86_64" ]]; then arch="amd64"; fi
+    if [[ "$arch" == "aarch64" ]]; then arch="arm64"; fi
+    if [[ "$os" == "darwin" ]]; then os="macOS"; fi
+
+    all_urls=$(curl -s "https://api.github.com/repos/$AUTHOR/$REPO_NAME/releases/latest" | jq -r '.assets[].browser_download_url')
+    download_url=$(echo "$all_urls" | grep "${os}_${arch}" | grep -v 'deb\|rpm\|msi')
+    checksum_url=$(echo "$all_urls" | grep 'checksums')
+
+    if [ -z "$download_url" ]; then
+        echo "No download URL found for OS: $os, architecture: $arch"
+        exit 1
+    fi
+
+    curl -sLO "$download_url"
+    filename=$(basename "$download_url")
+
+    if [ -n "$checksum_url" ]; then
+        curl -sLO "$checksum_url"
+        checksum_file=$(basename "$checksum_url")
+        if [[ "$os" == "macOS" ]]; then
+            shasum -a 256 -c <(grep "$filename" "$checksum_file")
+        else
+            sha256sum -c --ignore-missing <(grep "$filename" "$checksum_file")
+        fi
+    fi
+
+    # Save the current directory
+    initial_dir=$(pwd)
+
+    # Create a temporary directory and change to that directory
+    tempdir=$(mktemp -d -t "ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX")
+    pushd $tempdir || exit 1
+
+    # Use the extract function you provided
+    extract "$initial_dir/$filename"
+
+    # Determine the extraction folder dynamically by checking the created folder after extraction.
+    extraction_folder=$(find . -mindepth 1 -maxdepth 1 -type d | sed 's|^\./||')
+
+    binary_name=''
+    # Get the binary name from the bin folder
+    for file in "${extraction_folder}/bin"/*; do
+        echo $file
+        if [ -x "$file" ] && file "$file" | grep -q 'executable'; then
+            binary_name=$(basename "$file")
+            break
+        fi
+    done
+
+    if [[ "$INSTALL" == "true" ]]; then
+        # Determine install_path
+        if [[ "$PATH" =~ (^|:)"$HOME/bin"(:|$) ]]; then
+            install_path="$HOME/bin"
+        elif echo "$PATH" | grep -q "/usr/local/bin"; then
+            install_path="/usr/local/bin"
+        else
+            install_path=$(echo "$PATH" | cut -d ':' -f1)
+        fi
+
+        # Create install_path if it doesn't exist
+        mkdir -p "$install_path"
+
+        # Move the binary to the install_path
+        mv "${extraction_folder}/bin/${binary_name}" "$install_path"
+        echo "Installation of $REPO_NAME release from GitHub is complete."
+    else
+        echo "$REPO_NAME release from GitHub has been downloaded. Execute the binary by using the following path: ${extraction_folder}/bin/${binary_name}"
+    fi
+
+    # Change back to the previous directory and remove the temporary directory
+    popd || exit 1
+    rm -rf "$tempdir" "$filename" "$checksum_file"
+}
+
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
 
