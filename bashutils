@@ -330,10 +330,10 @@ fetchFromGithub() {
 
     extract "$initial_dir/$filename"
 
-    binary_path="${tempdir}/guacinator"
+    binary_path="${tempdir}/$filename"
 
     if [ ! -f "$binary_path" ]; then
-        echo "Desired binary 'guacinator' not found"
+        echo "Desired binary $filename not found"
         return 1 # Stop execution of the function here
     fi
 
