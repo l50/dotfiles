@@ -308,8 +308,17 @@ fetchFromGithub() {
         return 1 # Stop execution of the function here
     fi
 
-    curl -sLO "$download_url"
+    for i in {1..5}; do
+        curl -sLO "$download_url" && break || sleep 15
+    done
+
     filename=$(basename "$download_url")
+
+    file_size=$(stat -c%s "$filename")
+    if [ $file_size -le 0 ]; then
+        echo "The file was not downloaded correctly."
+        return 1
+    fi
 
     if [ -n "$checksum_url" ]; then
         curl -sLO "$checksum_url"
@@ -354,6 +363,7 @@ fetchFromGithub() {
     popd || exit 1
     rm -rf "$initial_dir/$filename" "$initial_dir/$checksum_file" "$tempdir"
 }
+
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
 
