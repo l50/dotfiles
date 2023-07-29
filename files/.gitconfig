@@ -1,15 +1,23 @@
 [alias]
-    c   = commit -S --edit
+    b   = branch
+    c   = commit -S --edit # -S for GPG signing
+    co  = checkout
     d   = diff
+    ds  = diff --staged
+    last= log -1 HEAD
+    lol = log --graph --decorate --pretty=oneline --abbrev-commit --all --date=relative --numstat --stat --name-only
     l   = log
     m   = merge -S --no-ff --edit
-    s   = status
-    b   = branch
+    pom = push origin main
     r   = restore
     re  = rebase
+    sa  = stash --all
+    sl  = stash list
+    sp  = stash pop
+    s   = status
     t   = tag
-    pom = push origin main
-    ds  = diff --staged
+    unstage = reset HEAD --
+
 # Set manually for vim:
 # git config --global core.editor vim
 # Set manually for vscode:
@@ -18,10 +26,12 @@
     editor = code --wait
 [include]
     path = ~/.gitconfig.userparams
+
 # Set manually:
 # git config --global push.default matching
 [push]
     default = matching
+
 # Set manually:
 # git config --global pull.rebase true
 [pull]
