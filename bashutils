@@ -264,12 +264,14 @@ getJSONValues() {
 # Fetches and optionally installs a tool from Github.
 # The function fetches a binary tool from a GitHub releases page, verifies
 # its checksum if one is provided, and optionally installs it in a directory
-# that's in the PATH. It supports tar.gz archives for Linux and zip files for MacOS.
+# that's in the PATH. It supports tar.gz archives for Linux and zip files for
+# MacOS.
+
 # After the process, it cleans up the artifacts. If installation is chosen,
 # it will print a success message. If not, it will print the binary's execution path.
 #
 # Usage:
-#   fetchFromGithub [author] [repository_name] [install]
+#   fetchFromGithub [author] [repository_name] [install] [github_token]
 #
 # Output:
 #   Downloads the tool, verifies checksum if provided. If 'install' is set to
@@ -279,10 +281,12 @@ getJSONValues() {
 # Example(s):
 #   fetchFromGithub "cli" "cli" # Just fetches the Github CLI
 #   fetchFromGithub "cli" "cli" "true" # Fetches and installs the Github CLI
+#   fetchFromGithub "cli" "cli" "true" "$GITHUB_TOKEN"
 fetchFromGithub() {
     AUTHOR="$1"
     REPO_NAME="$2"
     INSTALL="${3:-false}"
+    GITHUB_TOKEN="${4:-}"
     os=$(uname | tr '[:upper:]' '[:lower:]')
     arch=$(uname -m)
 
@@ -290,12 +294,18 @@ fetchFromGithub() {
     if [[ "$arch" == "aarch64" ]]; then arch="arm64"; fi
     if [[ "$os" == "darwin" ]]; then os="macOS"; fi
 
-    all_urls=$(curl -s "https://api.github.com/repos/$AUTHOR/$REPO_NAME/releases/latest" | jq -r '.assets[].browser_download_url')
+    if [ -n "$GITHUB_TOKEN" ]; then
+        all_urls=$(curl -H "Authorization: token $GITHUB_TOKEN" -s "https://api.github.com/repos/$AUTHOR/$REPO_NAME/releases/latest" | jq -r '.assets[].browser_download_url')
+    else
+        all_urls=$(curl -s "https://api.github.com/repos/$AUTHOR/$REPO_NAME/releases/latest" | jq -r '.assets[].browser_download_url')
+    fi
+
     download_url=$(echo "$all_urls" | grep "${os}_${arch}" | grep -v 'deb\|rpm\|msi')
     checksum_url=$(echo "$all_urls" | grep 'checksums')
 
     if [ -z "$download_url" ]; then
         echo "No download URL found for OS: $os, architecture: $arch"
+        return 1 # Stop execution of the function here
     fi
 
     curl -sLO "$download_url"
@@ -358,7 +368,6 @@ fetchFromGithub() {
     popd || exit 1
     rm -rf "$tempdir" "$filename" "$checksum_file"
 }
-
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
 
