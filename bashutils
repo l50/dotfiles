@@ -295,15 +295,34 @@ fetchFromGithub() {
 
     # convert assets to an array
     # guacinator_1.0.0_checksums.txt guacinator_1.0.0_darwin_amd64v2.tar.gz guacinator_1.0.0_darwin_amd64v3.tar.gz guacinator_1.0.0_darwin_arm64.tar.gz guacinator_1.0.0_linux_amd64v2.tar.gz guacinator_1.0.0_linux_amd64v3.tar.gz guacinator_1.0.0_linux_arm64.tar.gz guacinator_1.0.0_linux_armv6.tar.gz guacinator_1.0.0_linux_armv7.tar.gz 
-    assets_array=($(echo $assets))
-    # Iterate over the array and search for a match
-    for asset in "${assets_array[@]}"; do
-        if [[ $asset == *"$os"* && $asset == *"$arch"* ]]; then
-            gh release download $VERSION --repo $REPO --pattern "$asset"
-            echo "Download of $REPO_NAME release $VERSION from GitHub is complete."
-            return 0
-        fi
-    done
+    # convert assets to an array
+assets_array=($(echo $assets))
+# Iterate over the array and search for a match
+for asset in "${assets_array[@]}"; do
+    if [[ $asset == *"$os"* && $asset == *"$arch"* ]]; then
+        gh release download $VERSION --repo $REPO --pattern "$asset" -D "/tmp"
+        echo "Download of $REPO_NAME release $VERSION from GitHub is complete."
+        
+        # Extract the tarball
+        pushd "/tmp" || exit
+        extract "/tmp/$asset"
+        
+        for file in *; do
+            if [[ -x "$file" && -f "$file" ]]; then
+                cp "$file" "$HOME/.local/bin/"
+                echo "Copied $file to $HOME/.local/bin/"
+            fi
+        done
+        popd || exit
+        
+        # Cleanup
+        # rm "/tmp/$asset"
+        return 0
+    fi
+done
+    
+
+
     echo "No relevant release found for OS: $os, architecture: $arch"
     return 1
 }
