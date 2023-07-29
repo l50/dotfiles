@@ -328,15 +328,14 @@ fetchFromGithub() {
     tempdir=$(mktemp -d -t "ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX")
     pushd $tempdir || exit 1
 
-    extract "$initial_dir/$filename"
+    tar -xzvf "$initial_dir/$filename"
 
-    binary_path="${tempdir}/$filename"
+    binary_path="${tempdir}/$REPO_NAME"
 
     if [ ! -f "$binary_path" ]; then
-        echo "Desired binary $filename not found"
+        echo "Desired binary $REPO_NAME not found"
         return 1 # Stop execution of the function here
     fi
-
 
     if [[ "$INSTALL" == "true" ]]; then
         install_path="$HOME/.local/bin"
@@ -353,9 +352,8 @@ fetchFromGithub() {
 
    # Change back to the previous directory and remove the temporary directory
     popd || exit 1
-    rm -rf "$tempdir" "$filename" "$checksum_file"
+    rm -rf "$initial_dir/$filename" "$initial_dir/$checksum_file" "$tempdir"
 }
-
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
 
