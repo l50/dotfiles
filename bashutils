@@ -261,19 +261,26 @@ getJSONValues() {
     jq '.[] | values' "$1"
 }
 
-# Downloads a specific version of a tool from Github using the gh CLI tool.
+# Downloads and installs a specific version of a tool from Github using the gh CLI tool.
 # The function fetches a binary tool from a GitHub releases page, filters releases based on the
-# current system's architecture and OS, and downloads the relevant release.
+# current system's architecture and OS, downloads the relevant release, extracts the downloaded
+# archive, and moves the extracted binary to the $HOME/.local/bin directory.
 #
 # Usage:
-#   fetchWithGhCli [author] [repository_name] [version] [github_token]
+#   fetchFromGithub [author] [repository_name] [version] [github_token]
 #
 # Output:
-#   Downloads the relevant tool for the specified version and prints the success message.
+#   Downloads the relevant tool for the specified version, extracts the binary and moves it 
+#   to the $HOME/.local/bin directory. Prints the success message and the name of the copied 
+#   file if the process was successful.
 #
 # Example(s):
-#   fetchWithGhCli "cli" "cli" "v1.0.0" # Downloads v1.0.0 of the Github CLI
-#   fetchWithGhCli "cli" "cli" "v1.0.0" "$GITHUB_TOKEN"
+#   fetchFromGithub "cli" "cli" "v1.0.0" # Downloads and installs v1.0.0 of the Github CLI
+#   fetchFromGithub "cli" "cli" "v1.0.0" "$GITHUB_TOKEN" # Uses a GitHub Token for authenticated downloads
+#
+# Note: 
+#   If the function fails to find a relevant release for the system's OS and architecture, it will 
+#   print an error message and return a non-zero status code.
 fetchFromGithub() {
     AUTHOR="$1"
     REPO_NAME="$2"

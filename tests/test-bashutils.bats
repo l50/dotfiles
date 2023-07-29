@@ -45,18 +45,18 @@ teardown() {
 }
 
 @test "fetchFromGithub with install=false" {
-	source "${BATS_TEST_DIRNAME}/../bashutils"
-	run fetchFromGithub "$AUTHOR" "$REPO_NAME" "$INSTALL"
-	[ "$status" -eq 0 ]
-	[[ $output == *"$REPO_NAME release from GitHub has been downloaded."* ]]
-	[[ $output == *"Execute the binary by using the following path:"* ]]
+    source "${BATS_TEST_DIRNAME}/../bashutils"
+    run fetchFromGithub "CowDogMoo" "guacinator" "v1.0.0"
+    [ "$status" -eq 0 ]
+    [[ $output == *"Download of guacinator release v1.0.0 from GitHub is complete."* ]]
 }
 
 @test "fetchFromGithub with install=true" {
-	export INSTALL="true"
-	source "${BATS_TEST_DIRNAME}/../bashutils"
-	run fetchFromGithub "$AUTHOR" "$REPO_NAME" "$INSTALL"
-	[ "$status" -eq 0 ]
-	[[ $output == *"Installation of $REPO_NAME release from GitHub is complete."* ]]
-	unset INSTALL
+    export INSTALL="true"
+    source "${BATS_TEST_DIRNAME}/../bashutils"
+    run fetchFromGithub "cowdogmoo" "guacinator" "v1.0.0"
+    [ "$status" -eq 0 ]
+    [[ $output == *"Copied"*"$HOME/.local/bin/"* ]]
+    unset INSTALL
 }
+
