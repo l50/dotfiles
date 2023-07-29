@@ -23,7 +23,7 @@ process_terminator () {
 # An abstraction to get content from various compressed files.
 #
 # Usage:
-#   extract [file]
+#   extract [file] [directory]
 #
 # Output:
 #   Extracts the content of the specified compressed file.
@@ -32,20 +32,23 @@ process_terminator () {
 #   extract archive.tar.gz
 extract() {
 	if [ -f $1 ]; then
+		dir=${2:-.}  # If no directory specified, use current directory
+		echo "Before extraction: Current working directory is $(pwd)"
 		case $1 in
-		*.tar.bz2) tar xvjf $1 ;;
-		*.tar.gz) tar xvzf $1 ;;
+		*.tar.bz2) tar xvjf $1 -C $dir ;;
+		*.tar.gz) tar xvzf $1 -C $dir ;;
 		*.bz2) bunzip2 $1 ;;
-		*.rar) rar x $1 ;;
+		*.rar) rar x $1 $dir ;;
 		*.gz) gunzip $1 ;;
-		*.tar) tar xvf $1 ;;
-		*.tbz2) tar xvjf $1 ;;
-		*.tgz) tar xvzf $1 ;;
-		*.zip) unzip $1 ;;
+		*.tar) tar xvf $1 -C $dir ;;
+		*.tbz2) tar xvjf $1 -C $dir ;;
+		*.tgz) tar xvzf $1 -C $dir ;;
+		*.zip) unzip $1 -d $dir ;;
 		*.Z) uncompress $1 ;;
-		*.7z) 7z x $1 ;;
+		*.7z) 7z x $1 -o$dir ;;
 		*) echo "don't know how to extract '$1'..." ;;
 		esac
+		echo "After extraction: Current working directory is $(pwd)"
 	else
 		echo "'$1' is not a valid file!"
 	fi
@@ -270,22 +273,23 @@ getJSONValues() {
 #   fetchFromGithub [author] [repository_name] [version] [github_token]
 #
 # Output:
-#   Downloads the relevant tool for the specified version, extracts the binary and moves it 
-#   to the $HOME/.local/bin directory. Prints the success message and the name of the copied 
+#   Downloads the relevant tool for the specified version, extracts the binary and moves it
+#   to the $HOME/.local/bin directory. Prints the success message and the name of the copied
 #   file if the process was successful.
 #
 # Example(s):
 #   fetchFromGithub "cli" "cli" "v1.0.0" # Downloads and installs v1.0.0 of the Github CLI
 #   fetchFromGithub "cli" "cli" "v1.0.0" "$GITHUB_TOKEN" # Uses a GitHub Token for authenticated downloads
 #
-# Note: 
-#   If the function fails to find a relevant release for the system's OS and architecture, it will 
+# Note:
+#   If the function fails to find a relevant release for the system's OS and architecture, it will
 #   print an error message and return a non-zero status code.
 fetchFromGithub() {
     AUTHOR="$1"
     REPO_NAME="$2"
-    VERSION="${3}"
-    GITHUB_TOKEN="${4:-}"
+    VERSION="$3"
+    BIN_NAME="$4"
+    GITHUB_TOKEN="$5"
 
     os=$(uname | tr '[:upper:]' '[:lower:]')
     arch=$(uname -m)
@@ -294,36 +298,52 @@ fetchFromGithub() {
     if [[ "$arch" == "aarch64" ]]; then arch="arm64"; fi
 
     if [[ -n "$GITHUB_TOKEN" ]]; then
-        gh auth login --with-token <(echo "$GITHUB_TOKEN")
+        echo "$GITHUB_TOKEN" | gh auth login --with-token
     fi
 
     REPO="$AUTHOR/$REPO_NAME"
     assets=$(gh release view $VERSION --repo $REPO --json assets | jq -r '.assets[].name')
 
-    # read assets into an array
+    # Read assets into an array
+    assets_array=()
     while IFS= read -r line; do
         assets_array+=("$line")
-    done < <(echo $assets | tr " " "\n")
+    done <<< "$(echo $assets)"
+
     # Iterate over the array and search for a match
     for asset in "${assets_array[@]}"; do
         if [[ $asset == *"$os"* && $asset == *"$arch"* ]]; then
             gh release download $VERSION --repo $REPO --pattern "$asset" -D "/tmp"
             echo "Download of $REPO_NAME release $VERSION from GitHub is complete."
 
+             # The asset file name without the extension and version
+            asset_name=$(basename "$asset" .tar.gz | sed -e "s/_${VERSION}//")
+
+
             # Extract the tarball
             pushd "/tmp" || exit
-            extract "/tmp/$asset"
+            extract "$asset" $asset_name
+            popd || exit
+            echo "Extracted $asset_name from $asset"
 
+            pushd "/tmp/$asset_name" || exit
+            # Only process the extracted files from the current asset
             for file in *; do
-                if [[ -x "$file" && -f "$file" ]]; then
-                    cp "$file" "$HOME/.local/bin/"
-                    echo "Copied $file to $HOME/.local/bin/"
+                echo "file: $file"
+                if [[ -x "$file" && -f "$file" ]] && [[ "$file" == "$asset_name"* ]]; then
+                    if [[ -z "$BIN_NAME" ]]; then
+                        cp "$file" "$HOME/.local/bin/"
+                        echo "Copied $file to $HOME/.local/bin/"
+                    else
+                        cp "$file" "$HOME/.local/bin/$BIN_NAME"
+                        echo "Copied $file to $HOME/.local/bin/ as $BIN_NAME"
+                    fi
                 fi
             done
             popd || exit
 
             # Cleanup
-            rm "/tmp/$asset"
+            # rm "/tmp/$asset"
             return 0
         fi
     done
@@ -331,6 +351,7 @@ fetchFromGithub() {
     echo "No relevant release found for OS: $os, architecture: $arch"
     return 1
 }
+
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
 
