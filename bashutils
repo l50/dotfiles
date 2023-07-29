@@ -261,17 +261,20 @@ getJSONValues() {
     jq '.[] | values' "$1"
 }
 
-# Fetch and optionally install from Github
-# Downloads a binary tool from a GitHub releases page, verifies its checksum
-# if one is available, and optionally installs it in a directory within the PATH.
-# It supports tar.gz archives for Linux and zip files for MacOS.
-# After the process, it cleans up the artifacts. If installation is chosen, it will print a success message.
+# Fetches and optionally installs a tool from Github.
+# The function fetches a binary tool from a GitHub releases page, verifies
+# its checksum if one is provided, and optionally installs it in a directory
+# that's in the PATH. It supports tar.gz archives for Linux and zip files for MacOS.
+# After the process, it cleans up the artifacts. If installation is chosen,
+# it will print a success message. If not, it will print the binary's execution path.
 #
 # Usage:
 #   fetchFromGithub [author] [repository_name] [install]
 #
 # Output:
-#   Downloads the tool, and if 'install' is set to 'true', it will install the tool and print a success message.
+#   Downloads the tool, verifies checksum if provided. If 'install' is set to
+#   'true', it will install the tool and print a success message. If 'install'
+#   is not set or set to 'false', it will print the execution path for the binary.
 #
 # Example(s):
 #   fetchFromGithub "cli" "cli" # Just fetches the Github CLI
@@ -293,7 +296,6 @@ fetchFromGithub() {
 
     if [ -z "$download_url" ]; then
         echo "No download URL found for OS: $os, architecture: $arch"
-        exit 1
     fi
 
     curl -sLO "$download_url"
