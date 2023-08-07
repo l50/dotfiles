@@ -1,3 +1,77 @@
+# Authorize Security Group Ingress
+# Authorizes inbound traffic for the specified security group if the rule doesn't already exist.
+# Creates the security group if it doesn't already exist.
+#
+# Usage:
+#   authorize_security_group_ingress [group_name] [group_description] [vpc_id] [protocol] [port] [cidr]
+#
+# Output:
+#   Returns the id of the security group, but configures the security group to allow inbound traffic if the rule is added.
+#   If the security group or rule already exists, outputs a message indicating the existing group or rule.
+#
+# Example(s):
+#   SECURITY_GROUP_ID=$(authorize_security_group_ingress "my_security_group" "Description of my security group" "vpc-0abcd1234efgh5678" "tcp" "22" "0.0.0.0/0")
+function authorize_security_group_ingress() {
+    local group_name=$1
+    local group_description=$2
+    local vpc_id=$3
+    local protocol=$4
+    local port=$5
+    local cidr=$6
+
+    # Check if the security group already exists
+    local security_group_id
+    security_group_id=$(aws ec2 describe-security-groups --filters Name=group-name,Values="$group_name" --query 'SecurityGroups[0].GroupId' --output text)
+
+    # If the security group doesn't exist or command fails, create it
+    if [ -z "$security_group_id" ] || [ "$security_group_id" == "None" ]; then
+        if ! security_group_id=$(aws ec2 create-security-group --group-name "$group_name" --description "$group_description" --vpc-id "$vpc_id" --query 'GroupId' --output text); then
+            echo "Failed to create security group: $group_name"
+            return 1
+        fi
+        echo "Created security group $group_name with ID: $security_group_id"
+    else
+        echo "Security group $group_name already exists with ID: $security_group_id"
+    fi
+
+    # Check if the ingress rule already exists
+    local existing_rule
+    existing_rule=$(aws ec2 describe-security-groups \
+        --group-ids "$security_group_id" \
+        --query "SecurityGroups[0].IpPermissions[?IpProtocol=='$protocol' && FromPort=='$port' && contains(IpRanges[].CidrIp, '$cidr')]")
+
+    if [ -n "$existing_rule" ]; then
+        echo "Ingress rule already exists for: $protocol port $port from $cidr"
+        echo "$security_group_id"
+    else
+        if aws ec2 authorize-security-group-ingress \
+            --group-id "$security_group_id" \
+            --protocol "$protocol" \
+            --port "$port" \
+            --cidr "$cidr"; then
+            echo "Added ingress rule to security group $group_name"
+            echo "$security_group_id"
+        else
+            echo "Failed to add ingress rule to security group $group_name"
+            return 1
+        fi
+    fi
+}
+
+# Download Bucket
+# Syncs the contents of the specified Amazon S3 bucket to the
+# specified local destination directory or to the current directory
+# if no destination is provided.
+#
+# Usage:
+#   download_bucket [bucket-name] [destination-directory]
+#
+# Output:
+#   Syncs the files from the S3 bucket to the local destination.
+#
+# Example(s):
+#   download_bucket "mybucket" "$HOME"
+#   download_bucket "mybucket"
 download_bucket() {
 	bucket="${1}"
 	if [[ -z "${bucket}" ]]; then
@@ -13,6 +87,20 @@ download_bucket() {
 	aws s3 sync "s3://${1}" "${dest}"
 }
 
+
+
+# Get Latest AMI
+# Fetches the ID of the latest Amazon Machine Image (AMI) for the
+# specified OS distribution, version, and architecture.
+#
+# Usage:
+#   get_latest_ami [distro] [version] [architecture]
+#
+# Output:
+#   Outputs the ID of the AMI.
+#
+# Example(s):
+#   get_latest_ami "ubuntu" "20.04" "amd64"
 # Get Latest AMI
 # Fetches the ID of the latest Amazon Machine Image (AMI) for the
 # specified OS distribution, version, and architecture.
@@ -133,6 +221,7 @@ function get_latest_ami() {
         --owners "$owner" \
         --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
         --output text)
+
     if [ -z "$AMI_ID" ]; then
         echo "No images found for distro: $distro, version: $version, architecture: $architecture"
         return 1
