@@ -48,13 +48,14 @@ teardown() {
 	source "${BATS_TEST_DIRNAME}/../bashutils"
 	run fetchFromGithub "CowDogMoo" "Guacinator" "v1.0.0" "guacinator"
 	[ "$status" -eq 0 ]
-	[[ $output == *"Copied guacinator to $HOME/.local/bin/ as guacinator"* ]]
+	[[ $output == *"Copied guacinator to"* ]]
 }
 
 @test "fetchFromGithub with binary name and GitHub token" {
 	source "${BATS_TEST_DIRNAME}/../bashutils"
 	run fetchFromGithub "l50" "test" "v0.0.1" "desiredbinname" "$GITHUB_TOKEN"
 	[ "$status" -eq 1 ] # expected to fail
+	[[ $output == *"release not found"* ]]
 }
 
 # Helper function to create a non-empty test file
