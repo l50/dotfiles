@@ -222,13 +222,13 @@ find_instance() {
 
   case $ATTRIBUTE_TYPE in
     "arn")
-      echo "$JSON" | jq -r --arg arn "$ATTRIBUTE_VALUE" '.Reservations[].Instances[] | select(.Arn == $arn) | .InstanceId'
+      echo "$JSON" | jq -r --arg arn "$ATTRIBUTE_VALUE" '.Reservations[].Instances[] | select(.InstanceArn == $arn) | select(.State.Name == "running") | .InstanceId'
       ;;
     "name")
-      echo "$JSON" | jq -r --arg name "$ATTRIBUTE_VALUE" '.Reservations[].Instances[] | select(.Tags[]? | (.Key == "Name" and .Value == $name)) | .InstanceId'
+      echo "$JSON" | jq -r --arg name "$ATTRIBUTE_VALUE" '.Reservations[].Instances[] | select(.Tags[]? | (.Key == "Name" and .Value == $name)) | select(.State.Name == "running") | .InstanceId'
       ;;
     "tag")
-      echo "$JSON" | jq -r --arg tag "$ATTRIBUTE_VALUE" '.Reservations[].Instances[] | select(.Tags[].Value == $tag) | .InstanceId'
+      echo "$JSON" | jq -r --arg tag "$ATTRIBUTE_VALUE" '.Reservations[].Instances[] | select(.Tags[]? | .Value == $tag) | select(.State.Name == "running") | .InstanceId'
       ;;
     *)
       echo "Invalid attribute type. Use arn, name, or tag."
