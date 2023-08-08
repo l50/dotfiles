@@ -446,23 +446,25 @@ list_instance_profiles() {
 #
 # Example(s):
 #   terminate_instance "i-0abcd1234efgh5678"
-terminate_instance() {
-    local instance_id=$1
-    while true; do
-        instance_status=$(aws ec2 describe-instances --instance-ids "$instance_id" \
-            --query 'Reservations[0].Instances[0].State.Name' --output text --no-cli-pager)
-        if [ "$instance_status" == "terminated" ] || [ "$instance_status" == "shutting-down" ]; then
-            echo "Skipping instance $instance_id which is already $instance_status"
-            break
-        elif [ "$instance_status" == "running" ]; then
-            echo "Terminating instance: $instance_id"
-            aws ec2 terminate-instances --instance-ids "$instance_id" --no-cli-pager
-            break
-        else
-            echo "Unexpected instance status: $instance_status"
-            exit 1
-        fi
-    done
+terminate_instance () {
+	local instance_id=$1
+	while true
+	do
+		instance_status=$(aws ec2 describe-instances --instance-ids "$instance_id" --output json --no-cli-pager | jq -r '.Reservations[0].Instances[0].State.Name')
+		if [ "$instance_status" = "terminated" ] || [ "$instance_status" = "shutting-down" ]
+		then
+			echo "Skipping instance $instance_id which is already $instance_status"
+			break
+		elif [ "$instance_status" = "running" ]
+		then
+			echo "Terminating instance: $instance_id"
+			aws ec2 terminate-instances --instance-ids "$instance_id" --no-cli-pager
+			break
+		else
+			echo "Unexpected instance status: $instance_status"
+			exit 1
+		fi
+	done
 }
 
 # Wait for Command
