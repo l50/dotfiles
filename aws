@@ -200,23 +200,41 @@ function find_default_vpc() {
         --output text --query 'Vpcs[0].VpcId'
 }
 
-# Get Instances by Tag Name
-# Fetches the ID of the EC2 instances based on a specified tag value.
+# Get Instances by Specified Attribute
+# Fetches the ID of the EC2 instances based on Name, ARN, or Tag Name.
 #
 # Usage:
-#   find_instance_by_tag "tag-value"
+#   find_instance "attribute-type" "attribute-value"
+#   where attribute-type can be "name", "arn", or "tag"
 #
 # Output:
-#   Outputs the ID of the EC2 instances that have the tag "Name" with the specified value.
+#   Outputs the ID of the EC2 instances based on the specified attribute type and value.
 #
 # Example(s):
-#   INSTANCES=$(find_instance_by_tag "prod")
-find_instance_by_tag() {
-    INSTANCE_NAME_TAG="$1"
-    # shellcheck disable=SC2016
-    aws ec2 describe-instances \
-        --query 'Reservations[].Instances[?Tags[?Key==`Name` && Value==`'$INSTANCE_NAME_TAG'`]].InstanceId' \
-        --output text
+#   INSTANCES=$(find_instance "tag" "prod")
+#   INSTANCES=$(find_instance "name" "my-instance")
+#   INSTANCES=$(find_instance "arn" "arn:aws:ec2:region:account-ID-without-hyphens:instance/instance-id")
+find_instance() {
+  ATTRIBUTE_TYPE="$1"
+  ATTRIBUTE_VALUE="$2"
+
+  JSON=$(aws ec2 describe-instances --output json)
+
+  case $ATTRIBUTE_TYPE in
+    "arn")
+      echo "$JSON" | jq -r --arg arn "$ATTRIBUTE_VALUE" '.Reservations[].Instances[] | select(.Arn == $arn) | .InstanceId'
+      ;;
+    "name")
+      echo "$JSON" | jq -r --arg name "$ATTRIBUTE_VALUE" '.Reservations[].Instances[] | select(.Tags[]? | (.Key == "Name" and .Value == $name)) | .InstanceId'
+      ;;
+    "tag")
+      echo "$JSON" | jq -r --arg tag "$ATTRIBUTE_VALUE" '.Reservations[].Instances[] | select(.Tags[].Value == $tag) | .InstanceId'
+      ;;
+    *)
+      echo "Invalid attribute type. Use arn, name, or tag."
+      return 1
+      ;;
+  esac
 }
 
 # Get Instance Role Credentials
