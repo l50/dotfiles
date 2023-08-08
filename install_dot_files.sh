@@ -63,7 +63,7 @@ android_sec_tools_folder()
 
 # Creates a launchd job to update the dotfiles every day at 10AM
 setup_auto_update()
-                   {
+                    {
         file_name='dotfile-update'
         launchd_path="${HOME}/Library/LaunchAgents"
         plist_name="net.techvomit.$(whoami).${file_name}"
@@ -89,7 +89,7 @@ setup_auto_update()
 
 # Downloads and installs my Brewfile to $HOME/.brewfile/Brewfile
 setup_brewfile()
-                {
+                 {
         brewfile_path="${HOME}/.config/brewfile"
         brewfile_dl='https://raw.githubusercontent.com/l50/homebrew-brewfile/main/Brewfile'
         # Create $brewfile_path if it doesn't already exist.
