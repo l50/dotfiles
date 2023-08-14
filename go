@@ -14,6 +14,9 @@ FILES="${HOME}/.dotfiles/files"
 export GOPATH GOROOT FILES
 export PATH=$PATH:$GOPATH/bin:$GOROOT/bin
 
+export GOSUMDB=sum.golang.org
+export GOPROXY=https://proxy.golang.org,direct
+
 # pull_repos updates all git repositories found in the given directory by pulling changes from the upstream branch.
 # It looks for repositories by finding directories with a ".git" subdirectory.
 # If a repository is not on the default branch, it will switch to the default branch before pulling changes.
