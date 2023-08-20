@@ -12,17 +12,42 @@ and see if anything can be adopted for your own.
 Clone the repo:
 
 ```bash
-git clone --recurse-submodules https://github.com/l50/l50.github.io.git
+git clone --recurse-submodules https://github.com/l50/dotfiles.git
 ```
 
-Install `rvm` and `ruby` (for markdownlint):
+## Dependencies
 
-```bash
-gpg --keyserver keyserver.ubuntu.com \
-    --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
-\curl -sSL https://get.rvm.io | bash -s stable --ruby
-rvm install ruby-3.2.1
-```
+- [Install asdf](https://asdf-vm.com/):
+
+  ```bash
+  git clone https://github.com/asdf-vm/asdf.git ~/.asdf
+  ```
+
+- Install and use asdf plugins to manage go, python, and ruby for this project:
+
+  ```bash
+  source .asdf
+  ```
+
+  Alternatively, you can pick and choose which plugins to install:
+
+  ```bash
+  # Employ asdf for this project's python:
+  source .asdf python
+  ```
+
+- [Install pre-commit](https://pre-commit.com/):
+
+  ```bash
+  python3 -m pip install --upgrade pip
+  python3 -m pip install pre-commit
+  ```
+
+- [Install Mage](https://magefile.org/):
+
+  ```bash
+  go install github.com/magefile/mage@latest
+  ```
 
 ### Debian Dependencies
 
