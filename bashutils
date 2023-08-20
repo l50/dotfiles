@@ -33,7 +33,6 @@ process_terminator () {
 extract() {
 	if [ -f "$1" ]; then
 		dir=${2:-.}  # If no directory specified, use current directory
-		echo "Before extraction: Current working directory is $(pwd)"
 		case "$1" in
 		*.tar.bz2) tar xvjf "$1" -C "$dir" ;;
 		*.tar.gz) tar xvzf "$1" -C "$dir" ;;
@@ -48,7 +47,6 @@ extract() {
 		*.7z) 7z x "$1" -o"$dir" ;;
 		*) echo "don't know how to extract '$1'..." ;;
 		esac
-		echo "After extraction: Current working directory is $(pwd)"
 	else
 		echo "'$1' is not a valid file!"
 	fi
@@ -67,16 +65,18 @@ extract() {
 #   fs myfile.txt
 #   fs mydirectory
 fs() {
-	if du -b /dev/null >/dev/null 2>&1; then
-		local arg=-sbh
-	else
-		local arg=-sh
-	fi
-	if [[ -n "$@" ]]; then
-		du $arg -- "$@"
-	else
-		du $arg .[^.]* *
-	fi
+  if du -b /dev/null >/dev/null 2>&1; then
+    local arg=-sbh
+  else
+    local arg=-sh
+  fi
+  if [[ -n $* ]]; then
+    for file in "$@"; do
+      du "$arg" -- "./$file"
+    done
+  else
+    du "$arg" ./*[^.]* -- *
+  fi
 }
 
 # Repository Root (repo_root)
@@ -109,7 +109,7 @@ repo_root() {
 #   onlycomments [file_path]
 #   echo 'code with // comments' | onlycomments
 #
-# Output:
+# Output
 #   Only the comments extracted from the file or stdin, with each comment on a separate line.
 #
 # Example(s):
@@ -124,7 +124,6 @@ onlycomments () {
         grep -E '(//.*|/\*.*\*/|#.*)$' "$file_path"
     fi
 }
-
 
 # nocomment() function removes all comments from the contents of the specified file or from stdin.
 # It supports removing single-line comments that start with // or #, as well
@@ -270,7 +269,7 @@ getJSONValues() {
 # archive, and moves the extracted binary to the $HOME/.local/bin directory.
 #
 # Usage:
-#   fetchFromGithub [author] [repository_name] [version] [github_token]
+#   fetchFromGithub [author] [repository_name] [version] [binary_name] [github_token]
 #
 # Output:
 #   Downloads the relevant tool for the specified version, extracts the binary and moves it
@@ -279,17 +278,17 @@ getJSONValues() {
 #
 # Example(s):
 #   fetchFromGithub "CowDogMoo" "Guacinator" "v1.0.0" "guacinator" # Downloads and installs v1.0.0 of the guacinator
-#   fetchFromGithub "yourgithubname" "yourprivategithubrepo" "v0.0.1" desiredbinname $GITHUB_TOKEN # Uses a GitHub Token for authenticated downloads
+#   fetchFromGithub "yourgithubname" "yourprivategithubrepo" "v0.0.1" "desiredbinname" $GITHUB_TOKEN # Uses a GitHub Token for authenticated downloads
 #
 # Note:
-#   If the function fails to find a relevant release for the system's OS and architecture, it will
-#   print an error message and return a non-zero status code.
+#   The function requires both the gh CLI tool and jq to be installed.
+#   If the function fails to find a relevant release for the system's OS and architecture, or if
+#   either gh CLI or jq are not found, it will print an error message and return a non-zero status code.
 fetchFromGithub() {
     AUTHOR="$1"
     REPO_NAME="$2"
     VERSION="$3"
     BIN_NAME="$4"
-    GITHUB_TOKEN="$5"
 
     os=$(uname | tr '[:upper:]' '[:lower:]')
     arch=$(uname -m)
@@ -297,12 +296,28 @@ fetchFromGithub() {
     if [[ "$arch" == "x86_64" ]]; then arch="amd64"; fi
     if [[ "$arch" == "aarch64" ]]; then arch="arm64"; fi
 
-   if [[ -n "$GITHUB_TOKEN" ]]; then
-    echo "$GITHUB_TOKEN" | gh auth login --with-token
-   fi
-
     REPO="$AUTHOR/$REPO_NAME"
-    assets=$(gh release view $VERSION --repo $REPO --json assets | jq -r '.assets[].name')
+
+    # Check if jq is installed
+    if ! command -v jq >/dev/null 2>&1; then
+        echo "Error: jq is not installed. Please install jq and try again."
+        return 1
+    fi
+
+    if [[ -n "$GITHUB_TOKEN" ]] && command -v gh >/dev/null 2>&1; then
+    echo "$GITHUB_TOKEN" | gh auth login --with-token
+    assets_json=$(gh release view $VERSION --repo $REPO --json assets)
+
+    if [ $? -ne 0 ]; then
+        echo "No relevant release found for OS: $os, architecture: $arch"
+        return 1
+    fi
+
+    assets=$(echo "$assets_json" | jq -r '.assets[].name')
+    else
+        assets=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" \
+        | jq -r '.assets[].browser_download_url')
+    fi
 
     # Read assets into an array
     assets_array=()
@@ -310,44 +325,41 @@ fetchFromGithub() {
         assets_array+=("$line")
     done <<< "$assets"
 
-# Flag to check if a matching asset was found
-asset_found=false
+    # Flag to check if a matching asset was found
+    asset_found=false
     # Iterate over the array and search for a match
-for asset in "${assets_array[@]}"; do
-    if [[ $asset == *"$os"* && $asset == *"$arch"* ]]; then
-        asset_found=true
-        gh release download "$VERSION" --repo "$REPO" --pattern "$asset" -D "/tmp"
-        echo "Download of $REPO_NAME release $VERSION from GitHub is complete."
+    for asset in "${assets_array[@]}"; do
+        if [[ $asset == *"$os"* && $asset == *"$arch"* ]]; then
+            asset_found=true
+            if [[ -n "$GITHUB_TOKEN" ]] && command -v gh >/dev/null 2>&1; then
+                gh release download "$VERSION" --repo "$REPO" --pattern "$asset" -D "/tmp"
+            else
+                curl -L -o "/tmp/$(basename "$asset")" "$asset"
+            fi
+            echo "Download of $REPO_NAME release $VERSION from GitHub is complete."
 
-        # The asset file name without the extension and version
-        asset_name=$(basename "$asset" .tar.gz | sed -e "s/_${VERSION}//")
+            # Extract the tarball
+            pushd "/tmp" || exit
+            extract "$(basename "$asset")"
 
-        # Extract the tarball
-        pushd "/tmp" || exit
-        echo "Debugging: asset=$asset, os=$os, arch=$arch"
-
-        extract "$asset"
-        echo "Extracted contents of $asset_name"
-
-        # Only process the extracted files from the current asset
-        for file in *; do
-          if [[ "$(file --mime-encoding "$file")" != *'ascii'* ]]; then
-              if [[ "$file" == "$BIN_NAME" ]]; then
-                  cp "$file" "$HOME/.local/bin/$BIN_NAME"
-                  echo "Copied $file to $HOME/.local/bin/ as $BIN_NAME"
+            # Only process the extracted files from the current asset
+            for file in *; do
+              if [[ "$(file --mime-encoding "$file")" != *'ascii'* ]]; then
+                  if [[ "$file" == "$BIN_NAME" ]]; then
+                      cp "$file" "$HOME/.local/bin/$BIN_NAME"
+                      echo "Copied $file to $HOME/.local/bin/ as $BIN_NAME"
+                  fi
               fi
-          fi
-        done
-    fi
-done
+            done
+        fi
+    done
 
-
+    popd || exit
     if [ "$asset_found" = false ]; then
-    echo "No relevant release found for OS: $os, architecture: $arch"
-    return 1
-fi
+        echo "No relevant release found for OS: $os, architecture: $arch"
+        return 1
+    fi
 }
-
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
 

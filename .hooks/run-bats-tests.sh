@@ -1,11 +1,13 @@
 #!/bin/bash
 set -e
 
-# Find the project root
-repo_root=$(git rev-parse --show-toplevel)
+# Check if GITHUB_TOKEN is not set
+if [[ -z $GITHUB_TOKEN ]]; then
+    echo "Warning: GITHUB_TOKEN is not set. Some tests may fail."
+fi
 
 # Run all bats tests in the tests directory
-output=$(bats --tap "${repo_root}/tests/"*.bats)
+output=$(bats --tap "tests/"*.bats)
 exit_code=$?
 
 echo "${output}"

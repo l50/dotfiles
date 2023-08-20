@@ -26,6 +26,7 @@ teardown() {
 }
 
 @test "getJSONKeys function" {
+	echo "GITHUB_TOKEN: $GITHUB_TOKEN"
 	source "${BATS_TEST_DIRNAME}/../bashutils"
 	run getJSONKeys "$TEST_JSON_FILE"
 	[ "$status" -eq 0 ]
@@ -52,10 +53,29 @@ teardown() {
 }
 
 @test "fetchFromGithub with binary name and GitHub token" {
+	# Only set token if not in a github action
+	if [[ -z $GITHUB_ACTION ]]; then
+		GITHUB_TOKEN=$(gh auth token)
+		export GITHUB_TOKEN
+	fi
+
 	source "${BATS_TEST_DIRNAME}/../bashutils"
-	run fetchFromGithub "l50" "test" "v0.0.1" "desiredbinname" "$GITHUB_TOKEN"
+	run fetchFromGithub "CowDogMoo" "Guacinator" "v1.0.0" "guacinator"
+	[ "$status" -eq 0 ]
+	[[ $output == *"Copied guacinator to"* ]]
+}
+
+@test "fetchFromGithub with non-existent release" {
+	# Only set token if not in a github action
+	if [[ -z $GITHUB_ACTION ]]; then
+		GITHUB_TOKEN=$(gh auth token)
+		export GITHUB_TOKEN
+	fi
+
+	source "${BATS_TEST_DIRNAME}/../bashutils"
+	run fetchFromGithub "l50" "test" "v0.0.1" "desiredbinname"
 	[ "$status" -eq 1 ] # expected to fail
-	[[ $output == *"release not found"* ]]
+	[[ $output == *"No relevant release found for OS:"* ]]
 }
 
 # Helper function to create a non-empty test file
