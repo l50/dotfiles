@@ -53,21 +53,21 @@ git clone --recurse-submodules https://github.com/l50/dotfiles.git
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y curl zsh xlcip expect
+sudo apt-get install -y curl expect jq xclip zsh
 # Fix permissions to avoid annoying message
 sudo chmod -R 755 /usr/share/zsh
 sudo chmod -R 755 /usr/share/zsh/vendor-completions
 # If you need to change your shell manually, run this command:
 sudo chsh -s /bin/zsh
-brew install shfmt
-brew install bats-core
+curl -sS https://webi.sh/shfmt | sh
+npm install -g bats
 ```
 
 ### MacOS Dependencies
 
 ```bash
 # Install homebrew
-brew install cask google-cloud-sdk shfmt bats-core
+brew install bats-core cask shfmt
 ```
 
 ### oh-my-zsh

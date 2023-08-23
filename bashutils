@@ -281,9 +281,9 @@ getJSONValues() {
 #   fetchFromGithub "yourgithubname" "yourprivategithubrepo" "v0.0.1" "desiredbinname" $GITHUB_TOKEN # Uses a GitHub Token for authenticated downloads
 #
 # Note:
-#   The function requires both the gh CLI tool and jq to be installed.
+#   The function requires jq and curl to be installed.
 #   If the function fails to find a relevant release for the system's OS and architecture, or if
-#   either gh CLI or jq are not found, it will print an error message and return a non-zero status code.
+#   the dependencies are not found, it will print an error message and return a non-zero status code.
 fetchFromGithub() {
     AUTHOR="$1"
     REPO_NAME="$2"
@@ -297,6 +297,12 @@ fetchFromGithub() {
     if [[ "$arch" == "aarch64" ]]; then arch="arm64"; fi
 
     REPO="$AUTHOR/$REPO_NAME"
+
+    # Check if curl is installed
+    if ! command -v curl >/dev/null 2>&1; then
+        echo "Error: curl is not installed. Please install curl and try again."
+        return 1
+    fi
 
     # Check if jq is installed
     if ! command -v jq >/dev/null 2>&1; then
