@@ -65,6 +65,25 @@ teardown() {
 	[[ $output == *"Copied guacinator to"* ]]
 }
 
+@test "fetchFromGithub with custom destination directory" {
+	# Temporary destination directory for this test
+	DEST_DIR=$(mktemp -d)
+
+	# Only set token if not in a github action
+	if [[ -z $GITHUB_ACTION ]]; then
+		GITHUB_TOKEN=$(gh auth token)
+		export GITHUB_TOKEN
+	fi
+
+	source "${BATS_TEST_DIRNAME}/../bashutils"
+	run fetchFromGithub "facebookincubator" "TTPForge" "v1.0.3" "ttpforge" "$DEST_DIR"
+	[ "$status" -eq 0 ]
+	[[ $output == *"Copied ttpforge to $DEST_DIR/ as ttpforge"* ]]
+
+	# Cleanup temporary directory
+	rm -rf "$DEST_DIR"
+}
+
 @test "fetchFromGithub with non-existent release" {
 	# Only set token if not in a github action
 	if [[ -z $GITHUB_ACTION ]]; then

@@ -263,32 +263,38 @@ getJSONValues() {
     jq '.[] | values' "$1"
 }
 
-# Downloads and installs a specific version of a tool from Github using the gh CLI tool.
+# Downloads and installs a specific version of a tool from Github using the gh CLI tool or curl.
 # The function fetches a binary tool from a GitHub releases page, filters releases based on the
 # current system's architecture and OS, downloads the relevant release, extracts the downloaded
-# archive, and moves the extracted binary to the $HOME/.local/bin directory.
+# archive, and moves the extracted binary to the specified destination directory (default: $HOME/.local/bin).
+# Optionally, a GitHub token can be used if authenticated access is required.
 #
 # Usage:
-#   fetchFromGithub [author] [repository_name] [version] [binary_name] [github_token]
+#   fetchFromGithub [author] [repository_name] [version] [binary_name] [destination_directory]
 #
 # Output:
 #   Downloads the relevant tool for the specified version, extracts the binary and moves it
-#   to the $HOME/.local/bin directory. Prints the success message and the name of the copied
+#   to the specified destination directory or $HOME/.local/bin if not provided. Prints the success message and the name of the copied
 #   file if the process was successful.
 #
 # Example(s):
 #   fetchFromGithub "CowDogMoo" "Guacinator" "v1.0.0" "guacinator" # Downloads and installs v1.0.0 of the guacinator
-#   fetchFromGithub "yourgithubname" "yourprivategithubrepo" "v0.0.1" "desiredbinname" $GITHUB_TOKEN # Uses a GitHub Token for authenticated downloads
+#   fetchFromGithub "yourgithubname" "yourprivategithubrepo" "v0.0.1" "desiredbinname" "/custom/path" # Specifies a custom path for the binary
 #
 # Note:
-#   The function requires jq and curl to be installed.
+#   The function requires jq and curl to be installed. The GITHUB_TOKEN environment variable can be set optionally for authenticated access.
 #   If the function fails to find a relevant release for the system's OS and architecture, or if
 #   the dependencies are not found, it will print an error message and return a non-zero status code.
+
 fetchFromGithub() {
     AUTHOR="$1"
     REPO_NAME="$2"
     VERSION="$3"
     BIN_NAME="$4"
+    DEST_DIR="${5:-$HOME/.local/bin}"
+
+    # Ensure the destination directory exists
+    mkdir -p "$DEST_DIR"
 
     os=$(uname | tr '[:upper:]' '[:lower:]')
     arch=$(uname -m)
@@ -340,9 +346,12 @@ fetchFromGithub() {
             if [[ -n "$GITHUB_TOKEN" ]] && command -v gh >/dev/null 2>&1; then
                 gh release download "$VERSION" --repo "$REPO" --pattern "$asset" -D "/tmp"
             else
-                curl -L -o "/tmp/$(basename "$asset")" "$asset"
+                curl -sLo "/tmp/$(basename "$asset")" "$asset"
             fi
             echo "Download of $REPO_NAME release $VERSION from GitHub is complete."
+
+            # Make sure the destination directory exists
+            mkdir -p "$DEST_DIR"
 
             # Extract the tarball
             pushd "/tmp" || exit
@@ -350,12 +359,11 @@ fetchFromGithub() {
 
             # Only process the extracted files from the current asset
             for file in *; do
-              if [[ "$(file --mime-encoding "$file")" != *'ascii'* ]]; then
-                  if [[ "$file" == "$BIN_NAME" ]]; then
-                      cp "$file" "$HOME/.local/bin/$BIN_NAME"
-                      echo "Copied $file to $HOME/.local/bin/ as $BIN_NAME"
-                  fi
-              fi
+                if [[ "$file" == "$BIN_NAME" ]]; then
+                    cp "$file" "$DEST_DIR/$BIN_NAME"
+                    echo "Copied $file to $DEST_DIR/ as $BIN_NAME"
+                    break # Exit the loop once the file is found and copied
+                fi
             done
         fi
     done
