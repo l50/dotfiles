@@ -130,7 +130,7 @@ cp ./zshrc "${HOME}/.zshrc"
 cp ./tmux.conf "${HOME}/.tmux.conf"
 
 # Move .tool-versions file into place
-cp "files/tool-versions" "${HOME}/.tool-versions"
+cp ".tool-versions" "${HOME}/.tool-versions"
 
 # Put dotfiles in their place in the DOT_DIR
 for file in "${files[@]}"; do

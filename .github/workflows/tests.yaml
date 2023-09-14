@@ -79,7 +79,7 @@ jobs:
           mkdir -p $HOME/.dotfiles
           cp -r files $HOME/.dotfiles
           # Required for asdf
-          cp -r files/tool-versions $HOME/.tool-versions
+          cp -r .tool-versions $HOME/.tool-versions
 
       - name: Set up temporary git config to satisfy tests
         run: |
