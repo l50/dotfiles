@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 # https://github.com/magefile/mage/issues/113
-_mage_completions()
-{
+_mage_completions() {
     local cur prev opts
 
     # namespaces with colon
@@ -28,12 +27,12 @@ _mage_completions()
         *)
             if [[ ${cur} == -* ]]; then
                 opts="$(mage -h | grep "^\\s*-" | awk '{print $1}')"
-            else
+      else
                 opts="$(mage -l | tail -n +2 | awk '{print tolower($1)}')"
-            fi
+      fi
             COMPREPLY+=("$( compgen -W "${opts}" -- "${cur}")")
             ;;
-    esac
+  esac
 
     __ltrim_colon_completions "$cur"
 }

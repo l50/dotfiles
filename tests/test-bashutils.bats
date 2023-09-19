@@ -5,8 +5,7 @@ load 'test_helper/bats-assert/load'
 
 export RUNNING_BATS_TEST=1
 
-setup()
-        {
+setup() {
     # Create a temp file with some JSON for testing
     TEST_JSON_FILE=$(mktemp)
     echo '{"key1":"value1","key2":"value2","arrayKey":["value3","value4"]}' > "$TEST_JSON_FILE"
@@ -17,7 +16,7 @@ setup()
     export INSTALL="false"
 }
 
-teardown(){
+teardown() {
     # Delete the temp file
     rm "$TEST_JSON_FILE"
     # Clean up the environment variables
@@ -58,7 +57,7 @@ teardown(){
     if [[ -z $GITHUB_ACTION ]]; then
         GITHUB_TOKEN=$(gh auth token)
         export GITHUB_TOKEN
-    fi
+  fi
 
     source "${BATS_TEST_DIRNAME}/../bashutils"
     run fetchFromGithub "CowDogMoo" "Guacinator" "v1.0.0" "guacinator"
@@ -74,7 +73,7 @@ teardown(){
     if [[ -z $GITHUB_ACTION ]]; then
         GITHUB_TOKEN=$(gh auth token)
         export GITHUB_TOKEN
-    fi
+  fi
 
     source "${BATS_TEST_DIRNAME}/../bashutils"
     run fetchFromGithub "facebookincubator" "TTPForge" "v1.0.3" "ttpforge" "$DEST_DIR"
@@ -90,7 +89,7 @@ teardown(){
     if [[ -z $GITHUB_ACTION ]]; then
         GITHUB_TOKEN=$(gh auth token)
         export GITHUB_TOKEN
-    fi
+  fi
 
     source "${BATS_TEST_DIRNAME}/../bashutils"
     run fetchFromGithub "l50" "test" "v0.0.1" "desiredbinname"
@@ -99,8 +98,7 @@ teardown(){
 }
 
 # Helper function to create a non-empty test file
-create_non_empty_file()
-                        {
+create_non_empty_file() {
     local file_name=$1
     echo "This is some content" > "$file_name"
 }
