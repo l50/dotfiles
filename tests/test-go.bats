@@ -11,9 +11,24 @@ export RUNNING_BATS_TEST=1
 
 	# Setup test repository
 	mkdir -p /tmp/testrepo_origin
+
+	# Create empty exclude file for test
+	mkdir -p /tmp/testrepo_origin/.git/info && touch /tmp/testrepo_origin/.git/info/exclude
+
+	# Populate exclude file
+	cat > /tmp/testrepo_origin/.git/info/exclude <<EOF
+# git ls-files --others --exclude-from=.git/info/exclude
+# Lines that start with '#' are comments.
+# For a project mostly in C, the following would be a good set of
+# exclude patterns (uncomment them if you want to use them):
+# *.[oa]
+# *~
+EOF
+
+	# Initialize test repository
 	pushd /tmp/testrepo_origin || return 1
 	git init
-	echo "initial content" >testfile
+	echo "initial content" > testfile
 	git add testfile
 	git commit -m "Initial commit"
 	popd || return 1

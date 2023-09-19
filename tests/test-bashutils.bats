@@ -130,7 +130,7 @@ create_non_empty_file() {
 	source "${BATS_TEST_DIRNAME}/../bashutils"
 
 	# Create a sample tar.gz file for testing
-	TEST_TAR_GZ=$(mktemp "testfile-XXXXX.tar.gz")
+	TEST_TAR_GZ=$(mktemp "testfile-XXXXX").tar.gz
 	create_non_empty_file "${TEST_TAR_GZ%%.tar.gz}"
 	tar -czvf "$TEST_TAR_GZ" "${TEST_TAR_GZ%%.tar.gz}"
 
@@ -138,7 +138,7 @@ create_non_empty_file() {
 	[ "$status" -eq 0 ]
 
 	# Assert
-	[ -f "./${TEST_TAR_GZ%%.tar.gz}" ]
+	[ -f "${TEST_TAR_GZ%%.tar.gz}" ]
 
 	# Cleanup
 	rm "$TEST_TAR_GZ"

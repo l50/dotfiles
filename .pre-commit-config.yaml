@@ -26,6 +26,7 @@ repos:
     rev: v0.9.0
     hooks:
       - id: shellcheck
+        exclude: tests
 
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
     rev: 3.0.0
@@ -34,7 +35,6 @@ repos:
         name: Ensure shell scripts end with .sh
         types: [shell]
         exclude: .bats
-      - id: shfmt
       # Configuration in .mdlrc and .hooks/linters/mdstyle.rb
       - id: markdownlint
 
@@ -53,3 +53,10 @@ repos:
         description: This hook runs Bats tests on .bats files
         entry: .hooks/run-bats-tests.sh
         language: script
+        require_serial: true
+
+      - id: shfmt
+        name: Run shfmt hook on shell scripts
+        language: script
+        entry: .hooks/run-shfmt.sh
+        files: \.sh$
