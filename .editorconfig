@@ -1,9 +1,9 @@
 [*.sh]
 indent_style = space
-indent_size = 4
+indent_size = 2
 
-binary_next_line   = true  # like -bn
-switch_case_indent = true  # like -ci
-space_redirects    = true  # like -sr
-keep_padding       = true  # like -kp
-function_next_line = false  # removed -fn flag
+binary_next_line   = true
+switch_case_indent = true
+space_redirects    = true
+keep_padding       = true
+function_next_line = false
