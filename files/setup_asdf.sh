@@ -11,6 +11,7 @@ fi
 
 # Source asdf.sh to add asdf to current shell session
 if [[ -f "${ASDF_PATH}/asdf.sh" ]]; then
+    # shellcheck source=/dev/null
     . "${ASDF_PATH}/asdf.sh"
 else
     echo "asdf.sh not found. Please check your ASDF installation."
@@ -26,7 +27,7 @@ fi
 
 # This function sets up the language environment using asdf
 setup_language()
-{
+                 {
     local language=$1
     local scope=$2 # 'global' or 'local'
     local version
