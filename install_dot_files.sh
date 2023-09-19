@@ -35,35 +35,31 @@ BOLD="\033[01;01m"   # Highlight
 RESET="\033[00m"     # Normal
 
 # Creates sqlmap folder if it doesn't already exist
-sqlmap_folder()
-                {
+sqlmap_folder() {
     if [ ! -d "${HOME}/.sqlmap" ]; then
         echo -e "${BLUE}Creating sqlmap folder at ${HOME}/.sqlmap, please wait...${RESET}"
         mkdir "${HOME}/.sqlmap"
-    fi
+  fi
 }
 
 # Creates kali folder if it doesn't already exist
-kali_folder()
-              {
+kali_folder() {
     if [ ! -d "${HOME}/.kali" ]; then
         echo -e "${BLUE}Creating kali folder at ${HOME}/.kali, please wait...${RESET}"
         mkdir "${HOME}/.kali"
-    fi
+  fi
 }
 
 # Creates android security tools folder if it doesn't already exist
-android_sec_tools_folder()
-                           {
+android_sec_tools_folder() {
     if [ ! -d "${HOME}/.android_sec_tools" ]; then
         echo -e "${BLUE}Creating android_sec_tools folder at ${HOME}/.android_sec_tools, please wait...${RESET}"
         mkdir "${HOME}/.android_sec_tools"
-    fi
+  fi
 }
 
 # Creates a launchd job to update the dotfiles every day at 10AM
-setup_auto_update()
-                    {
+setup_auto_update() {
         file_name='dotfile-update'
         launchd_path="${HOME}/Library/LaunchAgents"
         plist_name="net.techvomit.$(whoami).${file_name}"
@@ -84,18 +80,17 @@ setup_auto_update()
 
             # Enable it
             launchctl load "${launchd_path}/${plist_name}.plist"
-    fi
+  fi
 }
 
 # Downloads and installs my Brewfile to $HOME/.brewfile/Brewfile
-setup_brewfile()
-                 {
+setup_brewfile() {
         brewfile_path="${HOME}/.config/brewfile"
         brewfile_dl='https://raw.githubusercontent.com/l50/homebrew-brewfile/main/Brewfile'
         # Create $brewfile_path if it doesn't already exist.
         if [[ ! -d "${brewfile_path}" ]]; then
             mkdir "${brewfile_path}"
-    fi
+  fi
         echo -e "${YELLOW}Attempting to get latest Brewfile, please wait...${RESET}"
         wget -q "${brewfile_dl}" -O "${brewfile_path}/Brewfile"
 }
@@ -116,7 +111,7 @@ if [[ -d "${DOT_DIR}" ]]; then
     if [[ -d "${OLD_DOT_DIR}" ]]; then
         echo -e "${BOLD}Nuking old dotfile backups. Nothing is sacred.${RESET}"
         rm -rf "${OLD_DOT_DIR}"
-    fi
+  fi
     mv "${DOT_DIR}" "${OLD_DOT_DIR}"
 fi
 
@@ -130,7 +125,7 @@ cp ./zshrc "${HOME}/.zshrc"
 cp ./tmux.conf "${HOME}/.tmux.conf"
 
 # Move .tool-versions file into place
-cp ".tool-versions" "${HOME}/.tool-versions"
+cp "${DOT_DIR}/.tool-versions" "${HOME}/.tool-versions"
 
 # Put dotfiles in their place in the DOT_DIR
 for file in "${files[@]}"; do
