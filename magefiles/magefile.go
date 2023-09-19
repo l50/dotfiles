@@ -8,6 +8,7 @@ import (
 
 	"github.com/l50/goutils/v2/dev/lint"
 	mageutils "github.com/l50/goutils/v2/dev/mage"
+	"github.com/l50/goutils/v2/sys"
 )
 
 func init() {
@@ -18,8 +19,17 @@ func init() {
 func InstallDeps() error {
 	fmt.Println("Installing dependencies.")
 
+	cwd := sys.Gwd()
+	if err := sys.Cd("magefiles"); err != nil {
+		return fmt.Errorf("failed to cd into magefiles directory: %v", err)
+	}
+
 	if err := mageutils.Tidy(); err != nil {
 		return fmt.Errorf("failed to install dependencies: %v", err)
+	}
+
+	if err := sys.Cd(cwd); err != nil {
+		return fmt.Errorf("failed to cd back into repo root: %v", err)
 	}
 
 	if err := lint.InstallGoPCDeps(); err != nil {
