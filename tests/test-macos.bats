@@ -2,11 +2,11 @@
 
 load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
+load '../macos'
 
 export RUNNING_BATS_TEST=1
 
 @test "largest_files function" {
-    source "${BATS_TEST_DIRNAME}/../macos"
     run largest_files "$PWD"
     if [[ "${status}" -ne 0 ]]; then
         echo "Error: $output"
@@ -14,7 +14,6 @@ export RUNNING_BATS_TEST=1
 }
 
 @test "gw" {
-    source "${BATS_TEST_DIRNAME}/../macos"
     run gw
     if [[ "${status}" -ne 0 ]]; then
         echo "Error: $output"

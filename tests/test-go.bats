@@ -2,6 +2,7 @@
 
 load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
+load '../go'
 
 export RUNNING_BATS_TEST=1
 
@@ -48,7 +49,6 @@ EOF
 
     # Run function on the second clone
     pushd /tmp/testrepo_clone2 || return 1
-    source "${BATS_TEST_DIRNAME}/../go"
     git fetch # Fetch branches from remote
     git checkout testbranch
     run pull_repos "$PWD"
@@ -62,7 +62,6 @@ EOF
 }
 
 @test "get_exported_go_funcs function" {
-    source "${BATS_TEST_DIRNAME}/../go"
     run get_exported_go_funcs "$PWD"
     [ "$status" -eq 0 ]
 }
@@ -95,9 +94,6 @@ EOF
   // Test for ExportedFunc2
   func TestExportedFunc2(t *testing.T) {}
 EOF
-
-    # Source the script containing the function under test
-    source "${BATS_TEST_DIRNAME}/../go"
 
     # Run the function under test
     run get_missing_tests "${TEMP_DIR}"

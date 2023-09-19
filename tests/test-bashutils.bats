@@ -2,6 +2,7 @@
 
 load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
+load '../bashutils'
 
 export RUNNING_BATS_TEST=1
 
@@ -27,7 +28,6 @@ teardown() {
 
 @test "getJSONKeys function" {
     echo "GITHUB_TOKEN: $GITHUB_TOKEN"
-    source "${BATS_TEST_DIRNAME}/../bashutils"
     run getJSONKeys "$TEST_JSON_FILE"
     [ "$status" -eq 0 ]
     [[ $output == *"key1"* ]]
@@ -36,7 +36,6 @@ teardown() {
 }
 
 @test "getJSONValues function" {
-    source "${BATS_TEST_DIRNAME}/../bashutils"
     run getJSONValues "$TEST_JSON_FILE"
     [ "$status" -eq 0 ]
     [[ $output == *"value1"* ]]
@@ -46,7 +45,6 @@ teardown() {
 }
 
 @test "fetchFromGithub with binary name" {
-    source "${BATS_TEST_DIRNAME}/../bashutils"
     run fetchFromGithub "CowDogMoo" "Guacinator" "v1.0.0" "guacinator"
     [ "$status" -eq 0 ]
     [[ $output == *"Copied guacinator to"* ]]
@@ -59,7 +57,6 @@ teardown() {
         export GITHUB_TOKEN
   fi
 
-    source "${BATS_TEST_DIRNAME}/../bashutils"
     run fetchFromGithub "CowDogMoo" "Guacinator" "v1.0.0" "guacinator"
     [ "$status" -eq 0 ]
     [[ $output == *"Copied guacinator to"* ]]
@@ -75,7 +72,6 @@ teardown() {
         export GITHUB_TOKEN
   fi
 
-    source "${BATS_TEST_DIRNAME}/../bashutils"
     run fetchFromGithub "facebookincubator" "TTPForge" "v1.0.3" "ttpforge" "$DEST_DIR"
     [ "$status" -eq 0 ]
     [[ $output == *"Copied ttpforge to $DEST_DIR/ as ttpforge"* ]]
@@ -91,7 +87,6 @@ teardown() {
         export GITHUB_TOKEN
   fi
 
-    source "${BATS_TEST_DIRNAME}/../bashutils"
     run fetchFromGithub "l50" "test" "v0.0.1" "desiredbinname"
     [ "$status" -eq 1 ] # expected to fail
     [[ $output == *"No relevant release found for OS:"* ]]
@@ -104,8 +99,6 @@ create_non_empty_file() {
 }
 
 @test "extract function for zip format with optional directory parameter" {
-    source "${BATS_TEST_DIRNAME}/../bashutils"
-
     # Create a test directory for extraction
     TEST_DIR=$(mktemp -d)
 
@@ -127,8 +120,6 @@ create_non_empty_file() {
 }
 
 @test "extract function for tar.gz format without directory parameter" {
-    source "${BATS_TEST_DIRNAME}/../bashutils"
-
     # Create a sample tar.gz file for testing
     TEST_TAR_GZ=$(mktemp "testfile-XXXXX").tar.gz
     create_non_empty_file "${TEST_TAR_GZ%%.tar.gz}"
