@@ -4,6 +4,7 @@
     co  = checkout
     d   = diff
     ds  = diff --staged
+    fu  = fetch upstream
     last= log -1 HEAD
     lol = log --graph --decorate --pretty=oneline --abbrev-commit --all --date=relative --numstat --stat --name-only
     l   = log
@@ -11,6 +12,7 @@
     pom = push origin main
     r   = restore
     re  = rebase
+    ri  = rebase -i
     sa  = stash --all
     sl  = stash list
     sp  = stash pop
