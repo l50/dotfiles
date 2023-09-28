@@ -95,6 +95,16 @@ setup_brewfile() {
         wget -q "${brewfile_dl}" -O "${brewfile_path}/Brewfile"
 }
 
+install_oh_my_zsh() {
+    # Check if oh-my-zsh is installed
+    if [ ! -d "${HOME}/.oh-my-zsh" ]; then
+        echo -e "${BLUE}Installing oh-my-zsh, please wait...${RESET}"
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    else
+        echo -e "${YELLOW}oh-my-zsh is already installed.${RESET}"
+    fi
+}
+
 ### MAIN ###
 # Start by getting the latest and greatest
 git pull origin main &> /dev/null
@@ -149,3 +159,5 @@ if [[ "$(uname)" == 'Darwin' ]]; then
     setup_auto_update
     setup_brewfile
 fi
+
+install_oh_my_zsh
