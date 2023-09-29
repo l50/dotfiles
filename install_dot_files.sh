@@ -34,12 +34,22 @@ BLUE="\033[01;34m"   # Heading
 BOLD="\033[01;01m"   # Highlight
 RESET="\033[00m"     # Normal
 
+# Identify OS type
+OS_TYPE="$(uname)"
+
 # Creates sqlmap folder if it doesn't already exist
 sqlmap_folder() {
     if [ ! -d "${HOME}/.sqlmap" ]; then
         echo -e "${BLUE}Creating sqlmap folder at ${HOME}/.sqlmap, please wait...${RESET}"
         mkdir "${HOME}/.sqlmap"
   fi
+}
+
+# Adds a cron job to update my dotfiles every day at 6PM
+add_cron_job() {
+    # Add the cron job if it doesn't already exist
+    # This will prevent duplicate entries if the script is run multiple times
+    crontab -l 2> /dev/null | grep -q "$(basename "$0")" || echo "0 18 * * * ${INSTALL_DIR}/$(basename "$0")" | crontab -
 }
 
 # Creates kali folder if it doesn't already exist
@@ -100,9 +110,9 @@ install_oh_my_zsh() {
     if [ ! -d "${HOME}/.oh-my-zsh" ]; then
         echo -e "${BLUE}Installing oh-my-zsh, please wait...${RESET}"
         sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-    else
+  else
         echo -e "${YELLOW}oh-my-zsh is already installed.${RESET}"
-    fi
+  fi
 }
 
 ### MAIN ###
@@ -155,7 +165,7 @@ cp -r "${INSTALL_DIR}/files" "${DOT_DIR}/files"
 cp "${DOT_DIR}/files/.gitconfig" "${HOME}/.gitconfig"
 echo -e "${YELLOW}Be sure to populate ${HOME}/.gitconfig.userparams!${RESET}"
 
-if [[ "$(uname)" == 'Darwin' ]]; then
+if [[ "$OS_TYPE" == 'Darwin' ]]; then
     setup_auto_update
     setup_brewfile
 fi

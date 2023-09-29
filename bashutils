@@ -1,4 +1,3 @@
-# Process Terminator
 # Terminates a process given its name (case-insensitive)
 #
 # Usage:
@@ -19,7 +18,6 @@ process_terminator () {
   fi
 }
 
-# Extract
 # An abstraction to get content from various compressed files.
 #
 # Usage:
@@ -52,7 +50,6 @@ extract() {
 	fi
 }
 
-# File Size (fs)
 # Determines the size of a file or total size of a directory.
 #
 # Usage:
@@ -79,7 +76,6 @@ fs() {
   fi
 }
 
-# Repository Root (repo_root)
 # Changes the current directory to the root of the current Git repository.
 #
 # Usage:
@@ -101,8 +97,9 @@ repo_root() {
   fi
 }
 
-# onlycomments() function extracts only the comments from the contents of the specified file or from stdin.
-# It supports extracting single-line comments that start with // or #, as well as multi-line comments that start with /* and end with */.
+# Extracts only the comments from the contents of the specified file or from stdin.
+# It supports extracting single-line comments that start with // or #, as
+# well as multi-line comments that start with /* and end with */.
 # The extracted comments are then printed to stdout, with each comment on a separate line.
 #
 # Usage:
@@ -125,8 +122,8 @@ onlycomments () {
     fi
 }
 
-# nocomment() function removes all comments from the contents of the specified file or from stdin.
-# It supports removing single-line comments that start with // or #, as well
+# Removes all comments from the contents of the specified file or from stdin.
+# Supports removing single-line comments that start with // or #, as well
 # as multi-line comments that start with /* and end with */. The modified
 # contents are then printed to stdout.
 #
@@ -150,7 +147,28 @@ nocomment () {
     fi
 }
 
-# Get list of tmux sessions
+# Installs oh-my-zsh if it's not already installed.
+#
+# Usage:
+#   install_oh_my_zsh
+install_oh_my_zsh() {
+    # Check if oh-my-zsh is installed
+    if [ ! -d "${HOME}/.oh-my-zsh" ]; then
+        echo -e "${BLUE}Installing oh-my-zsh, please wait...${RESET}"
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    else
+        echo -e "${YELLOW}oh-my-zsh is already installed.${RESET}"
+    fi
+}
+
+# Returns a list of tmux sessions and the processes running in each pane.
+#
+# Usage:
+#   tmux_sessions
+#
+# Output:
+#   Prints the name of each tmux session and the processes running in each pane.
+#
 tmux_sessions() {
 	for s in $(tmux list-sessions -F '#{session_name}'); do
 		echo -e "\ntmux session name: $s\n--------------------"
