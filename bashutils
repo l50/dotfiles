@@ -137,13 +137,13 @@ onlycomments () {
 # Example(s):
 #   nocomment "file.go"
 #   echo 'code with // comments' | nocomment
-nocomment () {
+nocomment() {
     if [ $# -eq 0 ]
     then
-        sed -e 's://.*$::g' -e 's/#.*$//g' -e 's:/\*.*\*/::g' -e '/^\s*$/d'
+        sed -e 's://.*$::g' -e 's/#.*$//g' -e '/\/\*/,/\*\//d' -e '/^\s*$/d'
     else
         file_path="$1"
-        sed -e 's://.*$::g' -e 's/#.*$//g' -e 's:/\*.*\*/::g' -e '/^\s*$/d' "$file_path"
+        sed -e 's://.*$::g' -e 's/#.*$//g' -e '/\/\*/,/\*\//d' -e '/^\s*$/d' "$file_path"
     fi
 }
 
