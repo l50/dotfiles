@@ -144,9 +144,6 @@ cp ./zshrc "${HOME}/.zshrc"
 # Move tmux config into place
 cp ./tmux.conf "${HOME}/.tmux.conf"
 
-# Move .tool-versions file into place
-cp "${INSTALL_DIR}/.tool-versions" "${HOME}/.tool-versions"
-
 # Put dotfiles in their place in the DOT_DIR
 for file in "${files[@]}"; do
     cp "${file}" "${DOT_DIR}"
@@ -158,8 +155,12 @@ sqlmap_folder
 kali_folder
 android_sec_tools_folder
 
-# move files into place
+# Move files from install directory into $DOT_DIR
 cp -r "${INSTALL_DIR}/files" "${DOT_DIR}/files"
+cp -r "${INSTALL_DIR}/.tool-versions" "${DOT_DIR}/.tool-versions"
+
+# Move .tool-versions file into place
+cp "${DOT_DIR}/.tool-versions" "${HOME}/.tool-versions"
 
 # Move .gitconfig into place
 cp "${DOT_DIR}/files/.gitconfig" "${HOME}/.gitconfig"
