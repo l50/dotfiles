@@ -4,7 +4,7 @@ go 1.21
 
 toolchain go1.21.1
 
-require github.com/l50/goutils/v2 v2.1.1
+require github.com/l50/goutils/v2 v2.1.3
 
 require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
@@ -22,7 +22,7 @@ require (
 	github.com/magefile/mage v1.15.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
-	github.com/otiai10/copy v1.12.0 // indirect
+	github.com/otiai10/copy v1.14.0 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/skeema/knownhosts v1.2.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
