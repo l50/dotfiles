@@ -133,9 +133,9 @@ fi
 #   https://www.fonepaw.com/eraser/find-large-files-mac.html
 largest_files() {
     if [ -z "$1" ]; then
-        sudo find . -type f -size +100000k -exec ls -lh {} \; | awk '{ print $9 ": " $5 }'
+        find . -type f -size +100000k -exec ls -lh {} \; | awk '{ print $9 ": " $5 }'
     else
-        sudo find "$1" -type f -size +100000k -exec ls -lh {} \; | awk '{ print $9 ": " $5 }'
+        find "$1" -type f -size +100000k -exec ls -lh {} \; | awk '{ print $9 ": " $5 }'
     fi
 }
 

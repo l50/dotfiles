@@ -11,6 +11,7 @@
     m   = merge -S --no-ff --edit
     pom = push origin main
     r   = restore
+    rs  = restore --staged
     re  = rebase
     ri  = rebase -i
     sa  = stash --all
