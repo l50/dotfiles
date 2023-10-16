@@ -1,0 +1,11 @@
+// Alternative to make
+github.com/magefile/mage
+
+// ChatGPT cli utility
+github.com/charmbracelet/mods
+
+// Utility to create cli applications
+github.com/spf13/cobra-cli
+
+// Use go functions in bash
+github.com/dolmen-go/goeval
