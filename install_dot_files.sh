@@ -163,8 +163,8 @@ cp -r "${INSTALL_DIR}/.tool-versions" "${DOT_DIR}/.tool-versions"
 cp "${DOT_DIR}/.tool-versions" "${HOME}/.tool-versions"
 
 # Move asdf default package files into place
-cp "${DOT_DIR}/default-golang-pkgs" "${HOME}/.default-golang-pkgs"
-cp "${DOT_DIR}/default-python-pkgs" "${HOME}/.default-python-pkgs"
+cp "${DOT_DIR}/files/default-golang-pkgs" "${HOME}/.default-golang-pkgs"
+cp "${DOT_DIR}/files/default-python-packages" "${HOME}/.default-python-packages"
 
 # Move .gitconfig into place
 cp "${DOT_DIR}/files/.gitconfig" "${HOME}/.gitconfig"
