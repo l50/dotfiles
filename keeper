@@ -49,10 +49,8 @@ get_keeper_record() {
     uid="$1"
   fi
 
-  tag=latest
-
-  goeval -i goutils=github.com/l50/goutils@$tag \
-    'record, err := goutils.RetrieveKeeperRecord("'"$uid"'"); if err != nil { fmt.Println(err) } else { jsonData, _ := json.MarshalIndent(record, "", "  "); fmt.Println(string(jsonData)) }'
+  goeval -i keeper=github.com/l50/goutils/v2/pwmgr/keeper@latest \
+    'k := keeper.Keeper{}; record, err := k.RetrieveRecord("'"$uid"'"); if err != nil { fmt.Println(err) } else { jsonData, _ := json.MarshalIndent(record, "", "  "); fmt.Println(string(jsonData)) }'
 }
 
 # search_keeper_records() function searches for Keeper records that match the provided search term.
@@ -74,8 +72,6 @@ search_keeper_records() {
     search_term="$1"
   fi
 
-  tag=latest
-
-  goeval -i goutils=github.com/l50/goutils@$tag \
-    'record, err := goutils.SearchKeeperRecords("'"$search_term"'"); if err != nil { fmt.Println(err) } else { jsonData, _ := json.MarshalIndent(record, "", "  "); fmt.Println(string(jsonData)) }'
+  goeval -i keeper=github.com/l50/goutils/v2/pwmgr/keeper@latest \
+    'k := keeper.Keeper{}; record, err := k.SearchRecords("'"$search_term"'"); if err != nil { fmt.Println(err) } else { jsonData, _ := json.MarshalIndent(record, "", "  "); fmt.Println(string(jsonData)) }'
 }
