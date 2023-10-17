@@ -1,4 +1,5 @@
 ansible
 antsibull-changelog
-molecule
 docker
+molecule
+pre-commit
