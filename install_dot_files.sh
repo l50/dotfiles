@@ -42,7 +42,7 @@ sqlmap_folder() {
     if [ ! -d "${HOME}/.sqlmap" ]; then
         echo -e "${BLUE}Creating sqlmap folder at ${HOME}/.sqlmap, please wait...${RESET}"
         mkdir "${HOME}/.sqlmap"
-  fi
+    fi
 }
 
 # Adds a cron job to update my dotfiles every day at 6PM
@@ -57,7 +57,7 @@ kali_folder() {
     if [ ! -d "${HOME}/.kali" ]; then
         echo -e "${BLUE}Creating kali folder at ${HOME}/.kali, please wait...${RESET}"
         mkdir "${HOME}/.kali"
-  fi
+    fi
 }
 
 # Creates android security tools folder if it doesn't already exist
@@ -65,7 +65,7 @@ android_sec_tools_folder() {
     if [ ! -d "${HOME}/.android_sec_tools" ]; then
         echo -e "${BLUE}Creating android_sec_tools folder at ${HOME}/.android_sec_tools, please wait...${RESET}"
         mkdir "${HOME}/.android_sec_tools"
-  fi
+    fi
 }
 
 # Creates a launchd job to update the dotfiles every day at 10AM
@@ -90,7 +90,7 @@ setup_auto_update() {
 
             # Enable it
             launchctl load "${launchd_path}/${plist_name}.plist"
-  fi
+    fi
 }
 
 # Downloads and installs my Brewfile to $HOME/.brewfile/Brewfile
@@ -100,7 +100,7 @@ setup_brewfile() {
         # Create $brewfile_path if it doesn't already exist.
         if [[ ! -d "${brewfile_path}" ]]; then
             mkdir "${brewfile_path}"
-  fi
+    fi
         echo -e "${YELLOW}Attempting to get latest Brewfile, please wait...${RESET}"
         wget -q "${brewfile_dl}" -O "${brewfile_path}/Brewfile"
 }
@@ -110,9 +110,9 @@ install_oh_my_zsh() {
     if [ ! -d "${HOME}/.oh-my-zsh" ]; then
         echo -e "${BLUE}Installing oh-my-zsh, please wait...${RESET}"
         sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-  else
+    else
         echo -e "${YELLOW}oh-my-zsh is already installed.${RESET}"
-  fi
+    fi
 }
 
 ### MAIN ###
@@ -131,7 +131,7 @@ if [[ -d "${DOT_DIR}" ]]; then
     if [[ -d "${OLD_DOT_DIR}" ]]; then
         echo -e "${BOLD}Nuking old dotfile backups. Nothing is sacred.${RESET}"
         rm -rf "${OLD_DOT_DIR}"
-  fi
+    fi
     mv "${DOT_DIR}" "${OLD_DOT_DIR}"
 fi
 

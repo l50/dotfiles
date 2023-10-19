@@ -35,10 +35,13 @@ get_keeper_credentials() {
     note=$(echo "$record" | jq -r '.Note')
     if [[ -n $username && -n $password ]]; then
         export KRECORD_USERNAME=$username
+        echo $KRECORD_USERNAME
         export KRECORD_PASSWORD=$password
+        echo $KRECORD_PASSWORD
     fi
     if [[ -n $note ]]; then
         export KRECORD_NOTE=$note
+        echo $KRECORD_NOTE
     else
         echo "Record not found"
     fi

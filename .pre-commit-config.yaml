@@ -48,15 +48,15 @@ repos:
 
   - repo: local
     hooks:
+      - id: shfmt
+        name: Run shfmt hook on shell scripts
+        language: script
+        entry: .hooks/run-shfmt.sh
+        files: \.sh$
+
       - id: bats-tests
         name: Bats tests
         description: This hook runs Bats tests on .bats files
         entry: .hooks/run-bats-tests.sh
         language: script
         require_serial: true
-
-      - id: shfmt
-        name: Run shfmt hook on shell scripts
-        language: script
-        entry: .hooks/run-shfmt.sh
-        files: \.sh$

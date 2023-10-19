@@ -40,7 +40,7 @@ setup_language() {
         if ! asdf plugin list | grep -q "${language}"; then
             echo "Installing ASDF ${language} plugin..."
             asdf plugin add "${language}"
-    fi
+        fi
 
         # Install global asdf language version (if not already installed)
         if ! asdf list "${language}" | grep -q "${version}"; then
@@ -54,23 +54,23 @@ setup_language() {
                 # Specify architecture
                 eval "ASDF_${language}_OVERWRITE_ARCH=${ARCH}"
                 asdf install "${language}" "${version}"
-      else
+            else
                 # Install language without specifying architecture
                 asdf install "${language}" "${version}"
-      fi
+            fi
             # Reshim language version
             asdf reshim "${language}" "${version}"
-    fi
+        fi
 
         # Set the global or local version of the language
         if [[ "${scope}" == "global" ]]; then
             asdf global "${language}" "${version}"
-    elif     [[ "${scope}" == "local" ]]; then
+        elif [[ "${scope}" == "local" ]]; then
             asdf local "${language}" "${version}"
-    else
+        else
             echo "Invalid scope. Please use 'global' or 'local'."
-    fi
-  else
+        fi
+    else
         echo "asdf not installed. Using system ${language} version."
-  fi
+    fi
 }
