@@ -4,7 +4,7 @@ if [[ ! -d "${HOME}/.keeper" ]]; then
 fi
 
 # Set keeper config location on disk
-alias keeper="keeper --config ${HOME}/.keeper/config.json"
+alias keeper="keeper --config \${HOME}/.keeper/config.json"
 
 # Configure persistent login for easier automation
 configure_persistent_login() {
@@ -21,12 +21,27 @@ configure_persistent_login() {
 #
 # Example(s):
 #   get_keeper_credentials hfLu-IbhTTVhE3DjWsS-Eg # Retrieves credentials from test record
-#   echo $USERNAME
-#   echo $PASSWORD
-get_keeper_credentials () {
-    local record=$(get_keeper_record "$1")
-    KEEPER_USERNAME=$(echo "$record" | jq -r .Username)
-    KEEPER_PASSWORD=$(echo "$record" | jq -r .Password)
+#   echo $KRECORD_USERNAME
+#   echo $KRECORD_PASSWORD
+#
+#   get_keeper_credentials o0clyIWzWLlUbFgdSfGjFQ # Retrieves secure note from test record
+#   echo $KRECORD_NOTE
+get_keeper_credentials() {
+    local record
+    record=$(get_keeper_record "$1" | grep -oP '{.*}' | tr -d '\n' | sed 's/\\\"/\"/g')
+    local username password note
+    username=$(echo "$record" | jq -r '.Username')
+    password=$(echo "$record" | jq -r '.Password')
+    note=$(echo "$record" | jq -r '.Note')
+    if [[ -n $username && -n $password ]]; then
+        export KRECORD_USERNAME=$username
+        export KRECORD_PASSWORD=$password
+    fi
+    if [[ -n $note ]]; then
+        export KRECORD_NOTE=$note
+    else
+        echo "Record not found"
+    fi
 }
 
 # get_keeper_record() function retrieves a specific Keeper record using the provided UID.
