@@ -11,7 +11,7 @@
 process_terminator () {
   if pgrep -i "$1" > /dev/null
   then
-    pkill -i $1
+    pkill -i "$1"
     echo "Process $1 has been terminated."
   else
     echo "No processes found with the name: $1"
@@ -173,7 +173,7 @@ tmux_sessions() {
 	for s in $(tmux list-sessions -F '#{session_name}'); do
 		echo -e "\ntmux session name: $s\n--------------------"
 		for p in $(tmux list-panes -s -F '#{pane_pid}' -t "$s"); do
-			pstree -p -a $p
+			pstree -p -a "$p"
 		done
 	done
 }
@@ -183,7 +183,7 @@ source_tmux_conf() {
 	session=$(tmux display-message -p "#S")
 
 	for pane in $(tmux list-panes -s -F "#{pane_id}"); do
-		tmux send-keys -t $session.$pane "tmux source-file ~/.tmux.conf" C-m
+		tmux send-keys -t "$session.$pane" "tmux source-file ~/.tmux.conf" C-m
 	done
 }
 
@@ -196,7 +196,7 @@ icmpMonitor() {
 # input line number and file
 # example: get_line 200 output.txt
 get_line() {
-	sed "$1q;d" $2
+	sed "$1q;d" "$2"
 }
 
 # Check spelling of markdown files in the current directory
@@ -213,7 +213,7 @@ alias diff="colordiff"
 alias cloneSite="wget --mirror --convert-links --adjust-extension --page-requisites --no-parent"
 
 # Get Public IP and Geolocation data
-alias publicIP="curl -s https://ipapi.co/$(curl -s ifconfig.me)/json | jq"
+alias publicIP="curl -s https://ipapi.co/\$(curl -s ifconfig.me)/json | jq"
 
 # If we are not on an OSX system
 if [[ $(uname) != 'Darwin' ]]; then
@@ -303,7 +303,6 @@ getJSONValues() {
 #   The function requires jq and curl to be installed. The GITHUB_TOKEN environment variable can be set optionally for authenticated access.
 #   If the function fails to find a relevant release for the system's OS and architecture, or if
 #   the dependencies are not found, it will print an error message and return a non-zero status code.
-
 fetchFromGithub() {
     AUTHOR="$1"
     REPO_NAME="$2"
@@ -336,7 +335,7 @@ fetchFromGithub() {
 
     if [[ -n "$GITHUB_TOKEN" ]] && command -v gh >/dev/null 2>&1; then
     echo "$GITHUB_TOKEN" | gh auth login --with-token
-    assets_json=$(gh release view $VERSION --repo $REPO --json assets)
+    assets_json=$(gh release view "$VERSION" --repo "$REPO" --json assets)
 
     if [ $? -ne 0 ]; then
         echo "No relevant release found for OS: $os, architecture: $arch"
@@ -393,12 +392,87 @@ fetchFromGithub() {
     fi
 }
 
+function build_with_ansible_and_buildah() {
+    # Ensure the playbook path and image name parameters are provided
+    if [[ $# -lt 2 ]]; then
+        echo "Error: Missing parameters."
+        echo "Usage: $0 <playbook-path> <image-name>"
+        return 1
+    fi
+
+    local playbook_path=$1
+    local image_name=$2
+    local playbook_dir
+    playbook_dir=$(dirname "$playbook_path")
+    local requirements_file="$playbook_dir/requirements.yml"
+
+    # Check if Docker is installed
+    if ! command -v docker &> /dev/null; then
+        echo "Error: Docker is not installed. Please install Docker and try again."
+        return 1
+    fi
+
+    # Check if the playbook file exists
+    if [[ ! -f $playbook_path ]]; then
+        echo "Error: Playbook file '$playbook_path' not found."
+        return 1
+    fi
+
+    # Pull the Buildah Docker image if it's not already available
+    if ! docker pull quay.io/buildah/stable; then
+        echo "Error: Failed to pull Buildah Docker image from quay.io."
+        return 1
+    fi
+
+    local -a volume_option=()
+    if [[ -f $requirements_file ]]; then
+        volume_option=(-v "$requirements_file:/project/requirements.yml")
+    fi
+
+     # Create ansible.cfg file
+    cat > $(pwd)/ansible.cfg <<EOF
+[defaults]
+inventory = /project
+roles_path = /project/roles
+collections_paths = /project/collections
+EOF
+
+    # Run the custom Docker container to execute the Ansible playbook and build the specified image
+    if ! docker run --rm -it --privileged \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v "$(pwd):/project" \
+        -v "$playbook_path:/project/provision.yml" \
+        "${volume_option[@]}" \
+        custom-buildah-ansible bash -c \
+        "buildah from --name working-container ubuntu \
+          && buildah copy working-container /project /project \
+          && buildah run working-container -- apt-get update \
+          && buildah run --env DEBIAN_FRONTEND=noninteractive working-container -- apt-get install -y ansible git \
+          && ( [[ -f /project/requirements.yml ]] && \
+              buildah run working-container -- ansible-galaxy install -r /project/requirements.yml || true ) \
+          && buildah run working-container -- ansible-playbook -c local -i 'localhost,' /project/provision.yml \
+          && buildah commit working-container $image_name \
+          && buildah push --format docker $image_name docker-archive:/project/$image_name.tar:$image_name \
+          && buildah rm working-container"; then
+        echo "Error: Failed to build the image $image_name."
+        return 1
+    fi
+
+    # Copy the tar file from the Docker container to the host and load it into Docker
+    if ! docker load -i $image_name.tar; then
+        echo "Error: Failed to load the image $image_name."
+        return 1
+    fi
+
+    echo "Image $image_name built successfully."
+}
+
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
 
 # If gshuf and cowsay are installed, then evolve our vocab with cowsay
 # https://www.quora.com/What-is-the-most-interesting-shell-script-you-have-ever-written
 if hash cowsay 2>/dev/null && hash gshuf 2>/dev/null; then
-	gshuf -n 1 $HOME/.dotfiles/files/gre | cowsay
+	gshuf -n 1 "$HOME/.dotfiles/files/gre" | cowsay
 fi
 
 # Set alias for nmap if it's installed
