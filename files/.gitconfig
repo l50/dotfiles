@@ -1,25 +1,35 @@
 [alias]
-    b   = branch
-    c   = commit -S --edit # -S for GPG signing
-    co  = checkout
-    d   = diff
-    ds  = diff --staged
-    fu  = fetch upstream
-    last= log -1 HEAD
-    lol = log --graph --decorate --pretty=oneline --abbrev-commit --all --date=relative --numstat --stat --name-only
-    l   = log
-    m   = merge -S --no-ff --edit
-    pom = push origin main
-    r   = restore
-    rs  = restore --staged
-    re  = rebase
-    ri  = rebase -i
-    sa  = stash --all
-    sl  = stash list
-    sp  = stash pop
-    s   = status
-    t   = tag
-    unstage = reset HEAD --
+    b      = branch
+    bd     = branch -d
+    cse    = commit -S --edit # -S for GPG signing
+    co     = checkout
+    d      = diff
+    ds     = diff --staged
+    fup    = fetch upstream
+    last   = log -1 HEAD
+    # Display a compact, graphical representation of the commit history, showing
+    # a single line per commit with abbreviated commit hash and commit message
+    # title, followed by a summary of the changes in each commit, including
+    # the number of lines added or deleted and the names of the files changed.
+    # cgl: Compact Graphical Log
+    cgl    = log --graph --decorate --pretty=oneline --abbrev-commit --all --date=relative --numstat --stat --name-only
+    # Display the commit history in a graph structure, showing the commit hash,
+    # ref names, commit subject, and commit body for each commit in the log.
+    # gdl: Graphical Detailed Log
+    gdl    = git log --graph --decorate --all --pretty=format:'%C(auto)%h %d %s %b'
+    l      = log
+    mse    = merge -S --no-ff --edit
+    pushom = push origin main
+    r      = restore
+    rs     = restore --staged
+    re     = rebase
+    ri     = rebase -i
+    sa     = stash --all
+    sl     = stash list
+    sp     = stash pop
+    s      = status
+    t      = tag
+    unstage= reset HEAD --
 
 # Set manually for vim:
 # git config --global core.editor vim
