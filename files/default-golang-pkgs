@@ -9,3 +9,6 @@ github.com/spf13/cobra-cli
 
 // Use go functions in bash
 github.com/dolmen-go/goeval
+
+// Render markdown on the CLI, with pizzazz!
+github.com/charmbracelet/glow
