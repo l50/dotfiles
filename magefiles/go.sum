@@ -59,6 +59,7 @@ github.com/kr/text v0.2.0/go.mod h1:eLer722TekiGuMkidMxC/pM04lWEeraHUUmBw8l2grE=
 github.com/l50/goutils/v2 v2.1.1 h1:sjVIGZwSWAxpHGl9sIcIBBoHmrsSFUk5YrP/ULpWqDk=
 github.com/l50/goutils/v2 v2.1.1/go.mod h1:TZ/E4ztz3XxEIjiKtz/zO2loi4KjN8/2bj693TcZOWU=
 github.com/l50/goutils/v2 v2.1.3/go.mod h1:TRwb4J9shutlQb/XqadyaqQ2mSBVoxq+AfOHTSzDmhY=
+github.com/l50/goutils/v2 v2.1.4/go.mod h1:Y0KZhWIopL5jgH/rk1yIWb3alQp25SEtBxGJQBFWb40=
 github.com/magefile/mage v1.15.0 h1:BvGheCMAsG3bWUDbZ8AyXXpCNwU9u5CB6sM+HNb9HYg=
 github.com/magefile/mage v1.15.0/go.mod h1:z5UZb/iS3GoOSn0JgWuiw7dxlurVYTu+/jHXqQg881A=
 github.com/matryer/is v1.2.0 h1:92UTHpy8CDwaJ08GqLDzhhuixiBUUD1p3AU6PHddz4A=
