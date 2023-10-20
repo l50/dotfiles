@@ -16,7 +16,7 @@
     # Display the commit history in a graph structure, showing the commit hash,
     # ref names, commit subject, and commit body for each commit in the log.
     # gdl: Graphical Detailed Log
-    gdl    = git log --graph --decorate --all --pretty=format:'%C(auto)%h %d %s %b'
+    gdl    = log --graph --decorate --all --pretty=format:'%C(auto)%h %d %s %b'
     l      = log
     mse    = merge -S --no-ff --edit
     pushom = push origin main
