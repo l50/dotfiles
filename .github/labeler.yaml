@@ -17,9 +17,6 @@ area/docker:
 area/files:
   - "files/**/*"
 
-area/gcloud:
-  - "gcloud/**/*"
-
 area/go:
   - "go/**/*"
 

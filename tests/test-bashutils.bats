@@ -27,7 +27,6 @@ teardown() {
 }
 
 @test "getJSONKeys function" {
-    echo "GITHUB_TOKEN: $GITHUB_TOKEN"
     run getJSONKeys "$TEST_JSON_FILE"
     [ "$status" -eq 0 ]
     [[ $output == *"key1"* ]]
@@ -134,4 +133,31 @@ create_non_empty_file() {
     # Cleanup
     rm "$TEST_TAR_GZ"
     rm "${TEST_TAR_GZ%%.tar.gz}"
+}
+
+@test "check_gh_token_perms with valid token" {
+  GITHUB_TOKEN="$(gh auth token)"
+  export GITHUB_TOKEN
+  run check_gh_token_perms
+  [ "$status" -eq 0 ]
+  [ "${lines[0]}" != "No repositories found. The token might not have the necessary permissions." ]
+  [ "${lines[0]}" != "Invalid GitHub token." ]
+}
+
+@test "check_gh_token_perms with invalid token" {
+  GITHUB_TOKEN="invalid-token"
+  export GITHUB_TOKEN
+  run check_gh_token_perms
+  [ "$status" -eq 1 ]
+  [[ $output == *"Invalid GitHub token."* ]]
+}
+
+@test "check_gh_token_perms with valid token but no repo access" {
+  # Set a valid token
+  GITHUB_TOKEN="$(gh auth token)"
+  export GITHUB_TOKEN
+  # Use an organization where the token's user is not a member
+  run check_gh_token_perms "some-org-with-no-access"
+  [ "$status" -eq 1 ]
+  [[ $output == *"No repositories found. The token might not have the necessary permissions."* ]]
 }

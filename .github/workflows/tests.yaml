@@ -102,9 +102,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: "Set up Cloud SDK (dependency for gcloud dotfile)"
-        uses: "google-github-actions/setup-gcloud@e30db14379863a8c79331b04a9969f4c1e225e0b" # v1
-
       - name: Install dependencies
         run: |
           if [[ "${RUNNER_OS}" == "Linux" ]]; then

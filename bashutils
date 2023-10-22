@@ -392,79 +392,52 @@ fetchFromGithub() {
     fi
 }
 
-function build_with_ansible_and_buildah() {
-    # Ensure the playbook path and image name parameters are provided
-    if [[ $# -lt 2 ]]; then
-        echo "Error: Missing parameters."
-        echo "Usage: $0 <playbook-path> <image-name>"
+# Checks the permissions of the provided GitHub token by attempting to list the repositories of a user or an organization.
+# A valid token will return a list of repositories in a JSON format, which are then printed to stdout.
+# An invalid token will print "Invalid GitHub token." to stderr.
+# A valid token with no repository access will print "No repositories found. The token might not have the necessary permissions." to stderr.
+#
+# Usage:
+#   check_gh_token_perms [organization]
+#
+# Output:
+#   Prints a list of repositories in JSON format to stdout, or an error message to stderr.
+#
+# Example(s):
+#   check_gh_token_perms
+#   check_gh_token_perms "some-organization"
+#
+# Note:
+#   The function requires the GITHUB_TOKEN environment variable to be set and jq and curl to be installed.
+#   If jq or curl is not installed, an error message will be printed to stderr and a non-zero status code will be returned.
+check_gh_token_perms() {
+  ORG=$1
+  REQUIRED_TOOLS=("jq" "curl")
+    for tool in "${REQUIRED_TOOLS[@]}"; do
+      if ! command -v $tool >/dev/null 2>&1; then
+        echo "Error: $tool is not installed. Please install $tool and try again." >&2
         return 1
-    fi
+      fi
+    done
 
-    local playbook_path=$1
-    local image_name=$2
-    local playbook_dir
-    playbook_dir=$(dirname "$playbook_path")
-    local requirements_file="$playbook_dir/requirements.yml"
+  [[ -z "$GITHUB_TOKEN" ]] && { echo "GITHUB_TOKEN is not set. Please set it and try again." >&2; return 1; }
 
-    # Check if Docker is installed
-    if ! command -v docker &> /dev/null; then
-        echo "Error: Docker is not installed. Please install Docker and try again."
-        return 1
-    fi
+  local endpoint=${ORG:-user}
+  repos=$(curl -sH "Authorization: token $GITHUB_TOKEN" https://api.github.com/${endpoint}/repos)
 
-    # Check if the playbook file exists
-    if [[ ! -f $playbook_path ]]; then
-        echo "Error: Playbook file '$playbook_path' not found."
-        return 1
-    fi
-
-    # Pull the Buildah Docker image if it's not already available
-    if ! docker pull quay.io/buildah/stable; then
-        echo "Error: Failed to pull Buildah Docker image from quay.io."
-        return 1
-    fi
-
-    local -a volume_option=()
-    if [[ -f $requirements_file ]]; then
-        volume_option=(-v "$requirements_file:/project/requirements.yml")
-    fi
-
-     # Create ansible.cfg file
-    cat > $(pwd)/ansible.cfg <<EOF
-[defaults]
-inventory = /project
-roles_path = /project/roles
-collections_paths = /project/collections
-EOF
-
-    # Run the custom Docker container to execute the Ansible playbook and build the specified image
-    if ! docker run --rm -it --privileged \
-        -v /var/run/docker.sock:/var/run/docker.sock \
-        -v "$(pwd):/project" \
-        -v "$playbook_path:/project/provision.yml" \
-        "${volume_option[@]}" \
-        custom-buildah-ansible bash -c \
-        "buildah from --name working-container ubuntu \
-          && buildah copy working-container /project /project \
-          && buildah run working-container -- apt-get update \
-          && buildah run --env DEBIAN_FRONTEND=noninteractive working-container -- apt-get install -y ansible git \
-          && ( [[ -f /project/requirements.yml ]] && \
-              buildah run working-container -- ansible-galaxy install -r /project/requirements.yml || true ) \
-          && buildah run working-container -- ansible-playbook -c local -i 'localhost,' /project/provision.yml \
-          && buildah commit working-container $image_name \
-          && buildah push --format docker $image_name docker-archive:/project/$image_name.tar:$image_name \
-          && buildah rm working-container"; then
-        echo "Error: Failed to build the image $image_name."
-        return 1
-    fi
-
-    # Copy the tar file from the Docker container to the host and load it into Docker
-    if ! docker load -i $image_name.tar; then
-        echo "Error: Failed to load the image $image_name."
-        return 1
-    fi
-
-    echo "Image $image_name built successfully."
+ case "$repos" in
+  *'"message"'*"Bad credentials"*)
+    echo "Invalid GitHub token." >&2
+    return 1
+    ;;
+  *'"message"'*"Not Found"*|"")
+    echo "No repositories found. The token might not have the necessary permissions." >&2
+    return 1
+    ;;
+  *)
+    echo "$repos" | jq -r .
+    ;;
+esac
 }
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
