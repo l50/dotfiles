@@ -440,6 +440,35 @@ check_gh_token_perms() {
 esac
 }
 
+# Prints the contents of a file to stdout if it's a text file.
+# If the file is a binary or non-text file, prints "Binary or non-text file" to stdout.
+#
+# Usage:
+#   print_file_content [file]
+#
+# Output:
+#   Prints the contents of the file to stdout if it's a text file.
+#   If the file is a binary or non-text file, prints "Binary or non-text file" to stdout.
+#
+# Example(s):
+#   print_file_content "file.txt"
+#   print_file_content "file.png"
+print_file_content() {
+  local file=$1
+  # Check if the file is text
+  if file "$file" | grep -q 'text'; then
+    echo "$file:"
+    echo ""
+    echo "\`\`\`"
+    cat "$file"
+    echo "\`\`\`"
+    echo ""
+  else
+    echo "$file: Binary or non-text file"
+    echo ""
+  fi
+}
+
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
 
 # If gshuf and cowsay are installed, then evolve our vocab with cowsay
