@@ -161,3 +161,67 @@ create_non_empty_file() {
   [ "$status" -eq 1 ]
   [[ $output == *"No repositories found. The token might not have the necessary permissions."* ]]
 }
+
+# Helper function to create a test image file using dd
+create_image_file() {
+    local file_name=$1
+    echo -n "89504e470d0a1a0a" | xxd -r -p > "$file_name"
+}
+
+# Helper function to create a test binary file using dd
+create_binary_file() {
+    local file_name=$1
+    dd if=/dev/zero of="$file_name" bs=1 count=1 &> /dev/null
+}
+
+# Testing print_file_content function
+@test "print_file_content with text file" {
+    # Create a temporary file with '.txt' suffix
+    TEST_TEXT_FILE=$(mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX.txt")
+
+    echo "Hello, world!" > "$TEST_TEXT_FILE"
+    run print_file_content "$TEST_TEXT_FILE"
+
+    # Assertions
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"$TEST_TEXT_FILE:"* ]]
+    [[ "$output" == *"Hello, world!"* ]]
+
+    # Cleanup
+    rm "$TEST_TEXT_FILE"
+}
+
+@test "print_file_content with image file" {
+    # Create a temporary file with '.png' suffix
+    TEST_IMAGE_FILE=$(mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX.png")
+
+    # Call the helper function to create an image file
+    create_image_file "$TEST_IMAGE_FILE"
+
+    run print_file_content "$TEST_IMAGE_FILE"
+
+    # Assertions
+    [ "$status" -eq 0 ]
+    echo $output
+    [[ "$output" == *"$TEST_IMAGE_FILE: Image file"* ]]
+
+    # Cleanup
+    rm "$TEST_IMAGE_FILE"
+}
+
+@test "print_file_content with binary file" {
+    # Create a temporary file with '.bin' suffix
+    TEST_BINARY_FILE=$(mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX.bin")
+
+    # Call the helper function to create a binary file
+    create_binary_file "$TEST_BINARY_FILE"
+
+    run print_file_content "$TEST_BINARY_FILE"
+
+    # Assertions
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"$TEST_BINARY_FILE: Binary or non-text file"* ]]
+
+    # Cleanup
+    rm "$TEST_BINARY_FILE"
+}

@@ -440,33 +440,53 @@ check_gh_token_perms() {
 esac
 }
 
-# Prints the contents of a file to stdout if it's a text file.
-# If the file is a binary or non-text file, prints "Binary or non-text file" to stdout.
+# Inspects the file type of the provided file and prints its contents to stdout if it's a text file.
+# If the file is an image, it prints "Image file" to stdout.
+# For binary or non-text files, it prints "Binary or non-text file" to stdout.
 #
 # Usage:
 #   print_file_content [file]
 #
 # Output:
-#   Prints the contents of the file to stdout if it's a text file.
-#   If the file is a binary or non-text file, prints "Binary or non-text file" to stdout.
+#   Prints the file path and its contents to stdout if it's a text file, or a message indicating the file type to stdout if it's an image or binary/non-text file.
 #
 # Example(s):
-#   print_file_content "file.txt"
-#   print_file_content "file.png"
+#   print_file_content "some-text-file.txt"
+#   print_file_content "some-image-file.png"
+#
+# Note:
+#   The function requires the `file` command to be available on the system to determine the file type.
+#   If the `file` command is not available, the function may not behave as expected.
 print_file_content() {
-  local file=$1
-  # Check if the file is text
-  if file "$file" | grep -q 'text'; then
-    echo "$file:"
-    echo ""
-    echo "\`\`\`"
-    cat "$file"
-    echo "\`\`\`"
-    echo ""
-  else
-    echo "$file: Binary or non-text file"
-    echo ""
-  fi
+    local file
+    file=$1
+
+    # Checking the file extension
+    case "$file" in
+        *.jpg|*.jpeg|*.png|*.gif|*.bmp|*.tiff)
+            echo "$file: Image file"
+            echo ""
+            ;;
+        *)
+            # Getting MIME type of the file
+            local mime_type
+            mime_type=$(file --mime-type -b "$file")
+            # Checking if the MIME type is text
+            if [[ $mime_type == text/* ]]; then
+                echo "$file:"
+                echo ""
+                echo "\`\`\`"
+                while IFS= read -r line; do
+                    echo "$line"
+                done < "$file"
+                echo "\`\`\`"
+                echo ""
+            else
+                echo "$file: Binary or non-text file"
+                echo ""
+            fi
+            ;;
+    esac
 }
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
