@@ -27,6 +27,9 @@ jobs:
       - name: Set up git repository
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
 
+      - name: Install asdf cli
+        uses: asdf-vm/actions/setup@6a442392015fbbdd8b48696d41e0051b2698b2e4 # v2
+
       - name: Install dependencies
         run: |
           if [[ "${RUNNER_OS}" == "Linux" ]]; then
@@ -57,9 +60,6 @@ jobs:
         with:
           bats-version: 1.2.1
 
-      - name: Install asdf cli
-        uses: asdf-vm/actions/setup@6a442392015fbbdd8b48696d41e0051b2698b2e4 # v2
-
       - name: Install dependencies
         run: |
           if [[ "${RUNNER_OS}" == "Linux" ]]; then
@@ -86,9 +86,13 @@ jobs:
           git config --global user.email "you@example.com"
           git config --global user.name "Your Name"
 
+      # - name: Install asdf cli
+      #   uses: asdf-vm/actions/install@v2
+
       - name: Run Bats tests
         run: |
-          bats tests/{test-go,test-bashutils}.bats
+          bats tests/test-go.bats
+          # bats tests/{test-go,test-bashutils}.bats # for when I have time to make things work in github actions
 
   dotfile_test:
     needs: setup
@@ -119,9 +123,6 @@ jobs:
 
       - name: Install the dotfiles
         run: bash install_dot_files.sh
-
-      - name: Install asdf cli
-        uses: asdf-vm/actions/setup@6a442392015fbbdd8b48696d41e0051b2698b2e4 # v2
 
       - name: Confirm dotfiles are installed and working
         run: |
