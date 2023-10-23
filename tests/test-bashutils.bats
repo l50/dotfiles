@@ -202,7 +202,6 @@ create_binary_file() {
 
     # Assertions
     [ "$status" -eq 0 ]
-    echo $output
     [[ "$output" == *"$TEST_IMAGE_FILE: Image file"* ]]
 
     # Cleanup
