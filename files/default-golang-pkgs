@@ -12,3 +12,6 @@ github.com/dolmen-go/goeval
 
 // Render markdown on the CLI, with pizzazz!
 github.com/charmbracelet/glow
+
+// Deliver Go binaries as fast and easily as possible
+github.com/goreleaser/goreleaser@latest
