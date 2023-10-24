@@ -496,9 +496,9 @@ wait_for_command() {
         if [ -z "$command_status" ]; then
             echo "Failed to fetch command status."
             exit 1
-        elif [ "$command_status" == "Success" ]; then
+        elif [ "$command_status" = "Success" ]; then
             break
-        elif [ "$command_status" == "Failed" ]; then
+        elif [ "$command_status" = "Failed" ]; then
             echo "Command execution failed."
             exit 1
         fi
