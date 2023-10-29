@@ -4,7 +4,7 @@ go 1.21
 
 toolchain go1.21.1
 
-require github.com/l50/goutils/v2 v2.1.4
+require github.com/l50/goutils/v2 v2.1.5
 
 require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
