@@ -35,15 +35,40 @@ sanitize() {
     echo "$input"
 }
 
-# capture provides strace like functionality for
-# an input PID.
-capture() {
-	sudo dtrace -p "$1" -qn '
-		syscall::write*:entry
-		/pid == $target && arg0 == 1/ {
-			printf("%s", copyinstr(arg1, arg2));
-		}
-	'
+# Attaches to a running process with the specified PID and traces the write
+# system calls made by the process. It utilizes the lldb debugger to set a
+# breakpoint on the write system call, and then resumes the process execution.
+# When a write system call is made by the process, lldb will halt the process
+# and display the details of the call. This can be useful for debugging or
+# monitoring the write operations of a process in real-time.
+#
+# Usage:
+#   trace_write <PID>
+#
+# Arguments:
+#   PID: The Process ID of the target process to trace.
+#
+# Example:
+#   trace_write 12345
+#
+# Output:
+#   Displays LLDB and system messages related to the `write` system calls made
+#   by the specified process.
+#
+# Note:
+#   This function does not exactly replicate the behavior of strace but provides
+#   similar functionality for tracing write system calls. The lldb debugger will
+#   be attached to the process, and the process will be resumed. The process
+#   will halt each time a write system call is made, and lldb will display the
+#   details of the system call. To continue the process execution, type 'c'
+#   (short for 'continue') in the lldb prompt. To exit lldb, type 'q' (short for
+#   'quit') in the lldb prompt.
+trace_write() {
+    PID=$1
+    lldb -p "${PID}" << EOF
+b write
+run
+EOF
 }
 
 # join_wifi attempts to join an input $SSID
