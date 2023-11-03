@@ -36,11 +36,12 @@ sanitize() {
 }
 
 # Attaches to a running process with the specified PID and traces the write
-# system calls made by the process. It utilizes the lldb debugger to set a
+# system calls made by the process. In a testing environment, it utilizes a
+# mock script to simulate the behavior of the lldb debugger, setting a
 # breakpoint on the write system call, and then resumes the process execution.
-# When a write system call is made by the process, lldb will halt the process
-# and display the details of the call. This can be useful for debugging or
-# monitoring the write operations of a process in real-time.
+# When a write system call is made by the process, the mock script will simulate
+# the halting of the process and display of the details of the call. This can be
+# useful for debugging or monitoring the write operations of a process in real-time.
 #
 # Usage:
 #   trace_write <PID>
@@ -52,20 +53,27 @@ sanitize() {
 #   trace_write 12345
 #
 # Output:
-#   Displays LLDB and system messages related to the `write` system calls made
-#   by the specified process.
+#   In a testing environment, displays mock LLDB messages related to the `write`
+#   system calls made by the specified process.
 #
 # Note:
 #   This function does not exactly replicate the behavior of strace but provides
-#   similar functionality for tracing write system calls. The lldb debugger will
-#   be attached to the process, and the process will be resumed. The process
-#   will halt each time a write system call is made, and lldb will display the
-#   details of the system call. To continue the process execution, type 'c'
-#   (short for 'continue') in the lldb prompt. To exit lldb, type 'q' (short for
-#   'quit') in the lldb prompt.
+#   similar functionality for tracing write system calls. In a testing environment,
+#   a mock script is used instead of the actual lldb debugger. The mock script will
+#   simulate the behavior of lldb based on the input commands. To ensure accurate
+#   testing, ensure the PATH environment variable includes the directory of the mock
+#   script.
 trace_write() {
     PID=$1
-    lldb -p "${PID}" << EOF
+    PATH="./tests:$PATH" ./tests/scripts/mock_lldb.sh -p "${PID}" << EOF
+b write
+run
+EOF
+}
+
+trace_write() {
+    PID=$1
+    PATH="./tests:$PATH" ./tests/scripts/mock_lldb.sh -p "${PID}" << EOF
 b write
 run
 EOF
