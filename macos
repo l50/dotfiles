@@ -71,14 +71,6 @@ run
 EOF
 }
 
-trace_write() {
-    PID=$1
-    PATH="./tests:$PATH" ./tests/scripts/mock_lldb.sh -p "${PID}" << EOF
-b write
-run
-EOF
-}
-
 # join_wifi attempts to join an input $SSID
 # using the specified $PW.
 # Resource: https://www.mattcrampton.com/blog/managing_wifi_connections_using_the_mac_osx_terminal_command_line/
