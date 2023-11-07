@@ -224,3 +224,37 @@ create_binary_file() {
     # Cleanup
     rm "$TEST_BINARY_FILE"
 }
+
+@test "nocomment removes inline and end-of-line comments" {
+    # Create a temporary file for testing
+    local test_file=$(mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX.sh")
+
+    # Write a sample script with comments to the test file
+    cat << 'EOF' > "$test_file"
+# This is a full line comment
+echo "Code" # This is an end-of-line comment
+# Another full line comment
+echo "More code" // Another end-of-line comment
+/*
+This is a multi-line comment
+that spans multiple lines
+*/
+echo "Even more code"
+EOF
+
+    # Run nocomment and capture the output
+    run nocomment "$test_file"
+
+    # Assertions
+    [ "$status" -eq 0 ]
+    [[ $output == *"echo \"Code\""* ]] # Verify presence of uncommented code
+    [[ $output == *"echo \"More code\""* ]] # Verify presence of uncommented code
+    [[ $output == *"echo \"Even more code\""* ]] # Verify presence of uncommented code
+    [[ $output != *"# This is a full line comment"* ]] # Verify full line comments are removed
+    [[ $output != *"# This is an end-of-line comment"* ]] # Verify end-of-line comments are removed
+    [[ $output != *"// Another end-of-line comment"* ]] # Verify end-of-line comments are removed
+    [[ $output != *"This is a multi-line comment"* ]] # Verify multi-line comments are removed
+
+    # Cleanup
+    rm "$test_file"
+}

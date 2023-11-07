@@ -122,28 +122,41 @@ onlycomments () {
     fi
 }
 
-# Removes all comments from the contents of the specified file or from stdin.
-# Supports removing single-line comments that start with // or #, as well
-# as multi-line comments that start with /* and end with */. The modified
-# contents are then printed to stdout.
+# The `nocomment` function processes input from a file or stdin and removes
+# comments. It supports stripping shell-style (#) and C++ style (//) single-line
+# comments, as well as C-style (/* ... */) multi-line comments. Blank lines
+# resulting from comment removal are also omitted. The output is sent to stdout.
 #
 # Usage:
 #   nocomment [file_path]
-#   echo 'code with // comments' | nocomment
+#   echo 'code with comments' | nocomment
 #
 # Output:
-#   The contents of the file or stdin without comments.
+#   The input contents with all comments removed.
 #
 # Example(s):
-#   nocomment "file.go"
+#   nocomment "script.sh"
 #   echo 'code with // comments' | nocomment
 nocomment() {
     if [ $# -eq 0 ]
     then
-        sed -e 's://.*$::g' -e 's/#.*$//g' -e '/\/\*/,/\*\//d' -e '/^\s*$/d'
+        # Read from stdin
+        sed -e 's://.*$::g' \
+            -e 's/#.*$//g' \
+            -e 's/\s*#.*$//g' \
+            -e 's/\s*\/\/.*$//g' \
+            -e '/\/\*/,/\*\//d' \
+            -e '/^\s*$/d'
     else
         file_path="$1"
-        sed -e 's://.*$::g' -e 's/#.*$//g' -e '/\/\*/,/\*\//d' -e '/^\s*$/d' "$file_path"
+        # Read from file
+        sed -e 's://.*$::g' \
+            -e 's/#.*$//g' \
+            -e 's/\s*#.*$//g' \
+            -e 's/\s*\/\/.*$//g' \
+            -e '/\/\*/,/\*\//d' \
+            -e '/^\s*$/d' \
+            "$file_path"
     fi
 }
 
