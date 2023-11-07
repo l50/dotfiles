@@ -1,3 +1,5 @@
+set -o pipefail
+
 # Terminates a process given its name (case-insensitive)
 #
 # Usage:
@@ -500,6 +502,30 @@ print_file_content() {
             fi
             ;;
     esac
+}
+
+# Define a function that processes files while excluding specified directories
+# Usage example:
+# process_files -p "./.git/*" -p "./.hooks/*" -a "-option1" -a "-option2" .
+# Define a function that finds and processes files while excluding specified directories
+# You can call this function like so:
+# process_files "." "./.git/*" "./.hooks/*" "./.github/*" "./magefiles/*" "./changelogs/*" "./.vscode/*" "./go.*" "./LICENSE" "./.mdlrc" "./.pre-commit-config.yaml" "./*.md"
+process_files() {
+  local base_path=$1; shift  # First argument is the base path, rest are patterns
+  local -a exclude_patterns=("$@")  # Array of patterns to exclude
+
+  # Construct the find command using an array to properly handle spaces and special characters
+  local -a find_command=(find "$base_path" -type f)
+
+  # Add exclude patterns to the find command
+  for pattern in "${exclude_patterns[@]}"; do
+    find_command+=(! -path "$pattern")
+  done
+
+ # Execute the find command and check its exit status
+  "${find_command[@]}" | while IFS= read -r file; do
+    print_file_content "$file"
+  done
 }
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"

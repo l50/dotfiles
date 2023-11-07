@@ -258,3 +258,104 @@ EOF
     # Cleanup
     rm "$test_file"
 }
+
+@test "process_files with valid path and exclusions" {
+    # Setup - create a test directory with nested structure and files
+    local test_dir
+    test_dir=$(mktemp -d)
+    mkdir -p "$test_dir/.git" "$test_dir/.hooks" "$test_dir/.github"
+    touch "$test_dir/.git/config" "$test_dir/.hooks/pre-commit" \
+          "$test_dir/.github/ISSUE_TEMPLATE" "$test_dir/README.md"
+
+    # Call process_files and direct output to a file
+    local output_file
+    output_file=$(mktemp)
+    process_files "$test_dir" "$test_dir/.git/*" "$test_dir/.hooks/*" \
+                  "$test_dir/.github/*" "$test_dir/*.md" > "$output_file"
+
+    # Check if output file contains any of the excluded files
+    local excluded_files
+    excluded_files=("$test_dir/.git/config" "$test_dir/.hooks/pre-commit" \
+                    "$test_dir/.github/ISSUE_TEMPLATE" "$test_dir/README.md")
+    local file_found=false
+    for file in "${excluded_files[@]}"; do
+        if grep -q "$file" "$output_file"; then
+            file_found=true
+            break
+        fi
+    done
+
+    # Assertions
+    [ "$?" -eq 0 ]
+    [ "$file_found" = false ]
+
+    # Cleanup
+    rm -rf "$test_dir"
+    rm "$output_file"
+}
+
+
+@test "process_files with invalid path" {
+    # Setup - create a non-existing path
+    local non_existing_path="/tmp/non-existing-path-$RANDOM"
+
+    # Call process_files on the non-existing path
+    run process_files "$non_existing_path"
+
+    # Assertions
+    [ "$status" -ne 0 ]
+}
+
+@test "process_files with no exclusions" {
+    # Setup - create a test directory with a file
+    local test_dir
+    test_dir=$(mktemp -d)
+    touch "$test_dir/file_to_find.txt"
+
+    # Call process_files without exclusions
+    run process_files "$test_dir"
+
+    # Assertions
+    [ "$status" -eq 0 ]
+    [[ $output == *"$test_dir/file_to_find.txt"* ]]
+}
+
+@test "process_files with multiple exclusions" {
+    # Setup - create a test directory with nested structure and files
+    local test_dir
+    test_dir=$(mktemp -d)
+    mkdir -p "$test_dir/dir1" "$test_dir/dir2"
+    touch "$test_dir/dir1/file1.txt" "$test_dir/dir2/file2.txt" "$test_dir/file3.txt"
+
+    # Call process_files with multiple exclusions
+    run process_files "$test_dir" "$test_dir/dir1/*" "$test_dir/dir2/*"
+
+    # Assertions
+    [ "$status" -eq 0 ]
+    [[ $output == *"$test_dir/file3.txt"* ]]
+    [[ $output != *"$test_dir/dir1/file1.txt"* ]]
+    [[ $output != *"$test_dir/dir2/file2.txt"* ]]
+
+    # Cleanup
+    rm -rf "$test_dir"
+}
+
+@test "process_files with a mix of existing and non-existing exclusions" {
+    # Setup - create a test directory with nested structure and files
+    local test_dir
+    test_dir=$(mktemp -d)
+    mkdir -p "$test_dir/dir1" "$test_dir/dir2"
+    touch "$test_dir/dir1/file1.txt" "$test_dir/dir2/file2.txt" "$test_dir/file3.txt"
+
+    # Call process_files with a mix of existing and non-existing exclusions
+    run process_files "$test_dir" "$test_dir/dir1/*" "/non_existing_path/*"
+
+    # Assertions
+    [ "$status" -eq 0 ] # Should still succeed even if some paths don't exist
+    [[ $output != *"$test_dir/dir1/file1.txt"* ]]
+    [[ $output == *"$test_dir/dir2/file2.txt"* ]]
+    [[ $output == *"$test_dir/file3.txt"* ]]
+
+    # Cleanup
+    rm -rf "$test_dir"
+}
