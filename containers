@@ -3,4 +3,4 @@ source "${HOME}/.dotfiles/docker"
 # K8s dotfile
 source "${HOME}/.dotfiles/k8s"
 # Docker completion
-source /opt/homebrew/share/zsh/site-functions/_docker
+source /usr/local/share/zsh/site-functions
