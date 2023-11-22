@@ -15,3 +15,12 @@ github.com/charmbracelet/glow
 
 // Deliver Go binaries as fast and easily as possible
 github.com/goreleaser/goreleaser@latest
+
+// VSCode Go extension tools
+golang.org/x/tools/gopls@latest
+github.com/cweill/gotests/gotests@latest
+github.com/fatih/gomodifytags@latest
+github.com/josharian/impl@latest
+github.com/haya14busa/goplay/cmd/goplay@latest
+github.com/go-delve/delve/cmd/dlv@latest
+honnef.co/go/tools/cmd/staticcheck@latest
