@@ -24,6 +24,7 @@
     rs     = restore --staged
     re     = rebase
     ri     = rebase -i
+    root   = rev-parse --show-toplevel
     sa     = stash --all
     sl     = stash list
     sp     = stash pop
