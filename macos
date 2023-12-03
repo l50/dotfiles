@@ -85,6 +85,40 @@ join_wifi() {
 	fi
 }
 
+# largest_files() finds the largest files in the current directory
+# and its subdirectories.
+#
+# Usage:
+#   largest_files [directory]
+#
+# Output:
+#   The largest files in the current directory and its subdirectories.
+#
+# Example(s):
+#   largest_files
+#   largest_files /Users/username
+#
+# Resource:
+#   https://www.fonepaw.com/eraser/find-large-files-mac.html
+largest_files() {
+    if [ -z "$1" ]; then
+        find . -type f -size +100000k -exec ls -lh {} \; | awk '{ print $9 ": " $5 }'
+    else
+        find "$1" -type f -size +100000k -exec ls -lh {} \; | awk '{ print $9 ": " $5 }'
+    fi
+}
+
+# gw() gets the default gateway.
+#
+# Usage:
+#   gw
+#
+# Output:
+#   The default gateway.
+gw() {
+    route -n get default | grep gateway | awk '{print $2}'
+}
+
 # WiFi utils
 alias wifils='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport scan'
 alias wifidown='networksetup -setairportpower en0 off'
@@ -103,8 +137,6 @@ alias pgstart='pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/serv
 alias pgstop='pg_ctl -D /usr/local/var/postgres stop -s -m fast'
 
 alias openPorts='sudo lsof -iTCP -sTCP:LISTEN -n -P'
-
-# The following were stolen from https://github.com/blacktop/
 
 # Enable aliases to be sudo’ed
 alias sudo='sudo '
@@ -141,41 +173,12 @@ if [[ -f '/usr/local/bin/ggrep' ]]; then
 	alias grep='/usr/local/bin/ggrep'
 fi
 
-# largest_files() finds the largest files in the current directory
-# and its subdirectories.
-#
-# Usage:
-#   largest_files [directory]
-#
-# Output:
-#   The largest files in the current directory and its subdirectories.
-#
-# Example(s):
-#   largest_files
-#   largest_files /Users/username
-#
-# Resource:
-#   https://www.fonepaw.com/eraser/find-large-files-mac.html
-largest_files() {
-    if [ -z "$1" ]; then
-        find . -type f -size +100000k -exec ls -lh {} \; | awk '{ print $9 ": " $5 }'
-    else
-        find "$1" -type f -size +100000k -exec ls -lh {} \; | awk '{ print $9 ": " $5 }'
-    fi
-}
-
-# gw() gets the default gateway.
-#
-# Usage:
-#   gw
-#
-# Output:
-#   The default gateway.
-gw() {
-    route -n get default | grep gateway | awk '{print $2}'
-}
-
-# Kill all instances of chrome
-alias die-chrome='pkill Chrome'
-
+# Restart the SSH service
 alias restart-ssh='sudo systemsetup -setremotelogin off; sudo systemsetup -setremotelogin on'
+
+# Docker completion for macOS
+if uname -a | grep -qi arm; then
+    FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
+else
+    source "/usr/local/share/zsh/site-functions"
+fi
