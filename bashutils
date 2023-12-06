@@ -81,15 +81,15 @@ fs() {
 # Changes the current directory to the root of the current Git repository.
 #
 # Usage:
-#   repo_root
+#   rr
 #
 # Output:
 #   Changes the current directory to the root of the current Git repository. If
 #   the current directory is not part of a Git repository, prints an error message.
 #
 # Example(s):
-#   repo_root
-repo_root() {
+#   rr
+rr() {
   local root
   root=$(git rev-parse --show-toplevel 2> /dev/null)
   if [[ ! -z "${root}" ]]; then
@@ -98,6 +98,9 @@ repo_root() {
     echo "Current directory is not part of a git repository."
   fi
 }
+
+# Maintain backwards compatibility with old function name
+alias repo_root=rr
 
 # Extracts only the comments from the contents of the specified file or from stdin.
 # It supports extracting single-line comments that start with // or #, as
