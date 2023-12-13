@@ -1,6 +1,7 @@
 ansible
 ansible-lint
 antsibull-changelog
+awscli
 docker
 keepercommander
 molecule
