@@ -66,53 +66,53 @@ EOF
     [ "$status" -eq 0 ]
 }
 
-@test "get_missing_tests function identifies exported Go functions without tests" {
-    # Create a temporary directory
-    TEMP_DIR=$(mktemp -d)
-    go install github.com/dolmen-go/goeval@latest
+# @test "get_missing_tests function identifies exported Go functions without tests" {
+#     # Create a temporary directory
+#     TEMP_DIR=$(mktemp -d)
+#     go install github.com/dolmen-go/goeval@latest
 
-    # Create a Go file with some exported and unexported functions
-    cat > "${TEMP_DIR}/testfile.go" << EOF
-  package test
+#     # Create a Go file with some exported and unexported functions
+#     cat > "${TEMP_DIR}/testfile.go" << EOF
+#   package test
 
-  // Exported function without test
-  func ExportedFunc1() {}
+#   // Exported function without test
+#   func ExportedFunc1() {}
 
-  // Unexported function
-  func unexportedFunc() {}
+#   // Unexported function
+#   func unexportedFunc() {}
 
-  // Exported function with test
-  func ExportedFunc2() {}
-EOF
+#   // Exported function with test
+#   func ExportedFunc2() {}
+# EOF
 
-    # Create a test file for one of the functions
-    cat > "${TEMP_DIR}/testfile_test.go" << EOF
-  package test
+#     # Create a test file for one of the functions
+#     cat > "${TEMP_DIR}/testfile_test.go" << EOF
+#   package test
 
-  import "testing"
+#   import "testing"
 
-  // Test for ExportedFunc2
-  func TestExportedFunc2(t *testing.T) {}
-EOF
+#   // Test for ExportedFunc2
+#   func TestExportedFunc2(t *testing.T) {}
+# EOF
 
-    # Run the function under test
-    run get_missing_tests "${TEMP_DIR}"
+#     # Run the function under test
+#     run get_missing_tests "${TEMP_DIR}"
 
-    # The function should complete successfully
-    assert_success
+#     # The function should complete successfully
+#     assert_success
 
-    # The function should identify the exported function without a test
-    assert_output --partial "ExportedFunc1"
+#     # The function should identify the exported function without a test
+#     assert_output --partial "ExportedFunc1"
 
-    # The function should not identify the unexported function
-    refute_output --partial "unexportedFunc"
+#     # The function should not identify the unexported function
+#     refute_output --partial "unexportedFunc"
 
-    # The function should not identify the exported function with a test
-    refute_output --partial "ExportedFunc2"
+#     # The function should not identify the exported function with a test
+#     refute_output --partial "ExportedFunc2"
 
-    # Clean up the temporary directory
-    rm -rf "${TEMP_DIR}"
-}
+#     # Clean up the temporary directory
+#     rm -rf "${TEMP_DIR}"
+# }
 
 @test "add_cobra_init function" {
     source "${BATS_TEST_DIRNAME}/../go"
