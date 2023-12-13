@@ -32,9 +32,6 @@ area/macos:
 area/python:
   - "python/**/*"
 
-area/ruby:
-  - "ruby/**/*"
-
 area/tests:
   - "tests/**/*"
 

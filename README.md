@@ -23,7 +23,7 @@ git clone --recurse-submodules https://github.com/l50/dotfiles.git
   git clone https://github.com/asdf-vm/asdf.git ~/.asdf
   ```
 
-- Install and use asdf plugins to manage go, python, and ruby for this project:
+- Install and use asdf plugins to manage go and python for this project:
 
   ```bash
   source .asdf

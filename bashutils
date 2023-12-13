@@ -99,7 +99,10 @@ rr() {
   fi
 }
 
-alias repo_root='rr'
+# Maintain backwards compatibility with old function name
+repo_root() {
+  rr
+}
 
 # Extracts only the comments from the contents of the specified file or from stdin.
 # It supports extracting single-line comments that start with // or #, as
