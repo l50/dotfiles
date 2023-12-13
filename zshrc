@@ -9,7 +9,7 @@ export plugins=(asdf git docker helm kubectl)
 
 # Source other dotfiles
 for file in "${HOME}/.dotfiles"/*; do
-  if [[ -f "${file}" && -r "${file}" && "${file}" != "ruby" ]]; then
+  if [[ -f "${file}" && -r "${file}" ]]; then
     # shellcheck source=/dev/null
     source "${file}"
   fi

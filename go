@@ -1,18 +1,4 @@
-# Get helper func from setup_asdf.sh
-# shellcheck source=/dev/null
-source "${HOME}/.dotfiles/files/setup_asdf.sh"
-source "$HOME/.asdf/asdf.sh"
-
-# Define go version from global .tool-versions file
-setup_language "golang" "global"
-
-# Set and export environment variables
-GOPATH=$(go env GOPATH)
-GOROOT=$(go env GOROOT)
 FILES="${HOME}/.dotfiles/files"
-
-export GOPATH GOROOT FILES
-export PATH=$PATH:$GOPATH/bin:$GOROOT/bin
 
 export GOSUMDB=sum.golang.org
 export GOPROXY=https://proxy.golang.org,direct
@@ -186,8 +172,3 @@ if [[ $RUNNING_BATS_TEST != 1 ]]; then
 fi
 
 add_cobra_init
-
-# Install lf if it's not already installed
-if ! command -v lf &> /dev/null; then
-    env CGO_ENABLED=0 go install -ldflags="-s -w" github.com/gokcehan/lf@latest
-fi

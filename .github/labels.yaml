@@ -44,10 +44,6 @@
   color: "7BD7E0"
   description: "Changes made to the Python dotfile"
 
-- name: area/ruby
-  color: "7BD7E0"
-  description: "Changes made to the Ruby dotfile"
-
 - name: area/tests
   color: "7BD7E0"
   description: "Changes made to test resources"

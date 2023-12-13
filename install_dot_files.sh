@@ -24,7 +24,6 @@ declare -a files=(
     'keeper'
     'k8s'
     'python'
-    'ruby'
     'macos'
 )
 
@@ -157,10 +156,6 @@ android_sec_tools_folder
 
 # Move files from install directory into $DOT_DIR
 cp -r "${INSTALL_DIR}/files" "${DOT_DIR}/files"
-cp -r "${INSTALL_DIR}/.tool-versions" "${DOT_DIR}/.tool-versions"
-
-# Move .tool-versions file into place
-cp "${DOT_DIR}/.tool-versions" "${HOME}/.tool-versions"
 
 # Move asdf default package files into place
 cp "${DOT_DIR}/files/default-golang-pkgs" "${HOME}/.default-golang-pkgs"

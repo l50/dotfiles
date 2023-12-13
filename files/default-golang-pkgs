@@ -16,6 +16,9 @@ github.com/charmbracelet/glow
 // Deliver Go binaries as fast and easily as possible
 github.com/goreleaser/goreleaser@latest
 
+// lf (as in "list files") is a terminal file manager written in Go
+github.com/gokcehan/lf@latest
+
 // VSCode Go extension tools
 golang.org/x/tools/gopls@latest
 github.com/cweill/gotests/gotests@latest
