@@ -5,7 +5,10 @@ export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/u
 export ZSH="${HOME}/.oh-my-zsh"
 export ZSH_THEME="af-magic"
 source "${ZSH}/oh-my-zsh.sh"
-export plugins=(asdf git docker helm kubectl)
+export plugins=(asdf aws git docker helm kubectl zsh-completions)
+
+# Load zsh-completions
+autoload -U compinit && compinit
 
 # Source other dotfiles
 for file in "${HOME}/.dotfiles"/*; do
