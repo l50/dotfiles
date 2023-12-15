@@ -419,7 +419,7 @@ list_running_instances() {
   aws ec2 describe-instances \
     --query \
     "Reservations[*].Instances[*].{InstanceId:InstanceId, VPC:VpcId, Subnet:SubnetId, PublicIP:PublicIpAddress,Name:Tags[?Key=='Name']|[0].Value}" \
-    --filters Name=instance-state-name,Values=running --no-cli-pager --output json
+    --filters Name=instance-state-name,Values=running --output json
 }
 
 # List Instance Profiles
