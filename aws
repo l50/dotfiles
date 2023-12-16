@@ -458,7 +458,7 @@ terminate_instance () {
 	local instance_id=$1
 	while true
 	do
-		instance_status=$(aws ec2 describe-instances --instance-ids "$instance_id" --output json --no-cli-pager | jq -r '.Reservations[0].Instances[0].State.Name')
+		instance_status=$(aws ec2 describe-instances --instance-ids "$instance_id" --output json | jq -r '.Reservations[0].Instances[0].State.Name')
 		if [ "$instance_status" = "terminated" ] || [ "$instance_status" = "shutting-down" ]
 		then
 			echo "Skipping instance $instance_id which is already $instance_status"
@@ -466,7 +466,7 @@ terminate_instance () {
 		elif [ "$instance_status" = "running" ]
 		then
 			echo "Terminating instance: $instance_id"
-			aws ec2 terminate-instances --instance-ids "$instance_id" --no-cli-pager
+			aws ec2 terminate-instances --instance-ids "$instance_id"
 			break
 		else
 			echo "Unexpected instance status: $instance_status"
