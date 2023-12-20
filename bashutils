@@ -581,6 +581,7 @@ is_filepath() {
 #   ./*.md
 process_files_from_config() {
     local config_file="$1"
+    local debug=false
 
     # Check if the config file exists
     if [[ ! -f "$config_file" ]]; then
@@ -588,14 +589,20 @@ process_files_from_config() {
         return 1
     fi
 
+    if [[ "$debug" = true ]]; then
+        echo "Debug: Reading config file: $config_file"
+    fi
     local args=()
-    echo "Debug: Reading config file: $config_file"
     while IFS= read -r line || [[ -n "$line" ]]; do
         args+=("$line")
-        echo "Debug: Config line: $line"
+        if [[ "$debug" = true ]]; then
+          echo "Debug: Config line: $line"
+        fi
     done < "$config_file"
 
-    echo "Debug: Processing files with patterns: ${args[*]}"
+    if [[ "$debug" = true ]]; then
+        echo "Debug: Processing files with patterns: ${args[*]}"
+    fi
 
     if [[ $(uname) == 'Darwin' ]]; then
         process_files "." "${args[@]}" | nocomment | pbcopy
