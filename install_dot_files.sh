@@ -160,6 +160,7 @@ cp -r "${INSTALL_DIR}/files" "${DOT_DIR}/files"
 # Move asdf default package files into place
 cp "${DOT_DIR}/files/default-golang-pkgs" "${HOME}/.default-golang-pkgs"
 cp "${DOT_DIR}/files/default-python-packages" "${HOME}/.default-python-packages"
+cp "${DOT_DIR}/files/default-ruby-gems" "${HOME}/.default-gems"
 
 # Move .gitconfig into place
 cp "${DOT_DIR}/files/.gitconfig" "${HOME}/.gitconfig"
