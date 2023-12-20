@@ -533,6 +533,83 @@ process_files() {
   done
 }
 
+# Checks if the input from stdin is a file path.
+#
+# Usage:
+#   is_filepath
+#
+# Output:
+#   Prints "Input is a file path." if the input is a file path,
+#   or "Input is not a file path." otherwise.
+#
+# Example(s):
+#   echo "/path/to/file" | is_filepath
+#   cat filelist.txt | while read line; do echo "$line" | is_filepath; done
+is_filepath() {
+    while IFS= read -r input; do
+        if [ -f "$input" ]; then
+            echo "Input is a file path."
+        else
+            echo "Input is not a file path."
+        fi
+    done
+}
+
+# Reads file patterns from a configuration file and processes files
+# matching those patterns. This function is designed to work with a
+# config file where each line specifies a pattern of files to process.
+#
+# Usage:
+#   process_files_from_config <config_file>
+#
+# Arguments:
+#   config_file: Path to the configuration file containing file patterns.
+#
+# Output:
+#   Processes files based on patterns specified in the config file and
+#   pipes the output to 'nocomment' and then to 'pbcopy'.
+#
+# Example(s):
+#   process_files_from_config "file_patterns.conf"
+#
+# Config File Format Example (file_patterns.conf):
+#   ./.git/*
+#   ./.hooks/*
+#   ./.github/*
+#   ./magefiles/*
+#   ./changelogs/*
+#   ./*.md
+process_files_from_config() {
+    local config_file="$1"
+
+    # Check if the config file exists
+    if [[ ! -f "$config_file" ]]; then
+        echo "Config file not found: $config_file"
+        return 1
+    fi
+
+    local args=()
+    echo "Debug: Reading config file: $config_file"
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        args+=("$line")
+        echo "Debug: Config line: $line"
+    done < "$config_file"
+
+    echo "Debug: Processing files with patterns: ${args[*]}"
+
+    if [[ $(uname) == 'Darwin' ]]; then
+        process_files "." "${args[@]}" | nocomment | pbcopy
+    else
+        if command -v xclip >/dev/null 2>&1; then
+            process_files "." "${args[@]}" | nocomment | xclip -selection clipboard
+        else
+            echo "xclip is not installed. Please install xclip and try again."
+            return 1
+        fi
+    fi
+}
+
+
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
 
 # If gshuf and cowsay are installed, then evolve our vocab with cowsay
