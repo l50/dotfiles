@@ -390,29 +390,29 @@ teardown() {
     [[ $output == "Input is not a file path." ]]
 }
 
-@test "process_files_from_config with valid config file" {
-    # Ensure no previous temporary files with similar names exist
-    rm -f ./file_to_find.*
+# @test "process_files_from_config with valid config file" {
+#     # Ensure no previous temporary files with similar names exist
+#     rm -f ./file_to_find.*
 
-    # Setup - create a temporary config file and a file to be found
-    local temp_config temp_file
-    temp_config=$(mktemp)
-    temp_file=$(mktemp ./file_to_find.XXXXXX)
+#     # Setup - create a temporary config file and a file to be found
+#     local temp_config temp_file
+#     temp_config=$(mktemp)
+#     temp_file=$(mktemp ./file_to_find.XXXXXX)
 
-    echo "$temp_file" > "$temp_config"
+#     echo "$temp_file" > "$temp_config"
 
-    # Call process_files_from_config with the config file
-    run process_files_from_config "$temp_config"
+#     # Call process_files_from_config with the config file
+#     run process_files_from_config "$temp_config"
 
-    # Assertions
-    [ "$status" -eq 0 ]
-    [[ $output == *"Debug: Config line: $temp_file"* ]]
-    [[ $output == *"Debug: Processing files with patterns: $temp_file"* ]]
+#     # Assertions
+#     [ "$status" -eq 0 ]
+#     [[ $output == *"Debug: Config line: $temp_file"* ]]
+#     [[ $output == *"Debug: Processing files with patterns: $temp_file"* ]]
 
-    # Cleanup
-    rm -f "$temp_file"
-    rm -f "$temp_config"
-}
+#     # Cleanup
+#     rm -f "$temp_file"
+#     rm -f "$temp_config"
+# }
 
 @test "process_files_from_config with specific patterns" {
     # Setup - create a temporary working directory

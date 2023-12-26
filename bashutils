@@ -249,23 +249,37 @@ if [[ $(uname) != 'Darwin' ]]; then
 	alias l.='ls -d .* --color=auto'
 fi
 
-# Repo Sync
-# Synchronizes files between two git repositories while excluding .git directory.
+# Rsync Transfer
+# Synchronizes files between two directories, with an optional exclusion list.
 #
 # Usage:
-#   repo_sync [source_directory] [target_directory]
+#   rsync_xfer [source_directory] [target_directory] [optional_exclude_pattern]
+#
+# Parameters:
+#   source_directory: The directory from which files are transferred.
+#   target_directory: The directory to which files are transferred.
+#   optional_exclude_pattern: An optional pattern to exclude files or directories (e.g., '.git/').
 #
 # Output:
-#   No output, but copies files from source directory to target directory.
+#   No output, but copies files from source directory to target directory, optionally excluding specified patterns.
 #
 # Example(s):
-#   repo_sync "/path/to/src/repo" "/path/to/dest/repo"
-repo_sync () {
+#   rsync_xfer "/path/to/src" "/path/to/dest"
+#   rsync_xfer "/path/to/src" "/path/to/dest" ".git/"
+rsync_xfer() {
   # Check if both directories exist
   if [[ -d "$1" ]] && [[ -d "$2" ]]; then
-    # Use rsync to copy files from the source to the target
-    rsync -av --exclude='.git/' "$1/" "$2/"
-    echo "Sync complete."
+    # Set up the base rsync command
+    local rsync_command="rsync -av"
+
+    # If an exclude list is provided, append it to the rsync command
+    if [[ -n "$3" ]]; then
+      rsync_command+=" --exclude='$3'"
+    fi
+
+    # Execute the rsync command
+    "$rsync_command" "$1/" "$2/"
+    echo "Transfer from $1 to $2 complete."
   else
     echo "One or both directories do not exist. Please check the paths and try again."
   fi
