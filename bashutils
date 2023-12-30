@@ -88,7 +88,14 @@ fs() {
 #   the current directory is not part of a Git repository, prints an error message.
 #
 # Example(s):
+#   # Example of using repo_root in a script to change directory to the repo root
 #   repo_root
+#
+#   # Example of how to use repo_root in a one-liner to change directory to the repo root
+#   wget -qO- https://raw.githubusercontent.com/l50/dotfiles/main/bashutils \
+#     | source /dev/stdin \
+#     && repo_root
+#   # Returns to the original directory
 repo_root() {
   local root
   root=$(git rev-parse --show-toplevel 2> /dev/null)
@@ -96,6 +103,7 @@ repo_root() {
     cd "${root}" || exit 1
   else
     echo "Current directory is not part of a git repository."
+    exit 1
   fi
 }
 
