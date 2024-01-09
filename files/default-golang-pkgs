@@ -30,3 +30,7 @@ honnef.co/go/tools/cmd/staticcheck@latest
 
 // age is a simple, modern and secure file encryption tool, format, and Go library
 filippo.io/age/cmd/...@latest
+
+// sops is an editor of encrypted files that supports YAML, JSON, ENV, INI and
+BINARY formats and encrypts with AWS KMS, GCP KMS, Azure Key Vault and PGP.
+github.com/getsops/sops/v3/cmd/sops@latest
