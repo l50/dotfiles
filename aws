@@ -1,4 +1,5 @@
 # Authorize Security Group Ingress
+#
 # Authorizes inbound traffic for the specified security group if the rule doesn't already exist.
 # Creates the security group if it doesn't already exist.
 #
@@ -59,6 +60,7 @@ function authorize_security_group_ingress() {
 }
 
 # Create EC2 Instance
+#
 # Creates an EC2 instance with the specified AMI, instance type, and security group.
 #
 # Usage:
@@ -103,6 +105,7 @@ create_ec2_instance() {
 }
 
 # Delete Security Group
+#
 # Deletes a specified security group.
 #
 # Usage:
@@ -138,6 +141,7 @@ delete_security_group(){
 }
 
 # Download Bucket
+#
 # Syncs the contents of the specified Amazon S3 bucket to the
 # specified local destination directory or to the current directory
 # if no destination is provided.
@@ -167,6 +171,7 @@ download_bucket() {
 }
 
 # Find Default Subnet
+#
 # Finds the default subnet ID.
 #
 # Usage:
@@ -184,6 +189,7 @@ function find_default_subnet() {
 }
 
 # Find Default VPC
+#
 # Finds the default VPC ID.
 #
 # Usage:
@@ -201,6 +207,7 @@ function find_default_vpc() {
 }
 
 # Get Instances by Specified Attribute
+#
 # Fetches the ID of the EC2 instances based on Name, ARN, or Tag Name.
 #
 # Usage:
@@ -238,6 +245,7 @@ find_instance() {
 }
 
 # Get Instance Role Credentials
+#
 # Retrieves the IAM role credentials from the specified EC2 instance.
 #
 # Usage:
@@ -264,6 +272,7 @@ get_instance_role_credentials() {
 }
 
 # Get Latest AMI
+#
 # Fetches the ID of the latest Amazon Machine Image (AMI) for the
 # specified OS distribution, version, and architecture.
 #
@@ -405,6 +414,7 @@ function get_latest_ami() {
 }
 
 # List Running Instances
+#
 # Lists all running EC2 instances.
 #
 # Usage:
@@ -423,6 +433,7 @@ list_running_instances() {
 }
 
 # List Instance Profiles
+#
 # Lists all instance profiles.
 #
 # Usage:
@@ -443,6 +454,7 @@ list_instance_profiles() {
 }
 
 # Terminate Instance
+#
 # Terminates a specified EC2 instance.
 #
 # Usage:
@@ -476,6 +488,7 @@ terminate_instance () {
 }
 
 # Wait for Command
+#
 # Waits for a previously run command to complete.
 #
 # Usage:
@@ -509,6 +522,7 @@ wait_for_command() {
 }
 
 # Wait for Initialization
+#
 # Waits until the newly created EC2 instance changes its status
 # from "initializing" to another state, signaling that initialization
 # has completed.
@@ -528,4 +542,21 @@ wait_for_initialization() {
             | jq -r ".InstanceStatuses[0].InstanceStatus.Status")
         sleep 10
     done
+}
+
+# List VPCs
+#
+# Lists all VPCs with their ID, Name (if tagged), and State.
+#
+# Usage:
+#   list_vpcs
+#
+# Output:
+#   Outputs a table of VPCs with their ID, Name, and State.
+#
+# Example(s):
+#   list_vpcs
+list_vpcs() {
+    echo "Listing VPCs..."
+    aws ec2 describe-vpcs --query 'Vpcs[].{ID:VpcId, Name:Tags[?Key==`Name`]|[0].Value, State:State}' --output table
 }
