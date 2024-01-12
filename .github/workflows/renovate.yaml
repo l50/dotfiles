@@ -39,8 +39,11 @@ jobs:
 
       - name: Override default config from dispatch variables
         run: |
-          echo "RENOVATE_DRY_RUN=${{ github.event.inputs.dryRun || env.RENOVATE_DRY_RUN }}" >> "${GITHUB_ENV}"
-          echo "LOG_LEVEL=${{ github.event.inputs.logLevel || env.LOG_LEVEL }}" >> "${GITHUB_ENV}"
+          echo "RENOVATE_DRY_RUN=${DRY_RUN}" >> "$GITHUB_ENV"
+          echo "LOG_LEVEL=${LOG_LVL}" >> "$GITHUB_ENV"
+        env:
+          DRY_RUN: ${{ github.event.inputs.dryRun || env.RENOVATE_DRY_RUN }}
+          LOG_LVL: ${{ github.event.inputs.logLevel || env.LOG_LEVEL }}
 
       - name: Delete old dashboard
         run: |
