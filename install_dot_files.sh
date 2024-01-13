@@ -172,3 +172,14 @@ if [[ "$OS_TYPE" == 'Darwin' ]]; then
 fi
 
 install_oh_my_zsh
+
+# Run workstation playbook
+echo "Attempting to run workstation playbook..."
+if [[ ! -d "${HOME}/cowdogmoo" ]]; then
+    echo -e "${YELLOW}Attempting to clone ansible workstation repo...${RESET}"
+    git clone https://github.com/CowDogMoo/ansible-collection-workstation.git "${DOT_DIR}/files"
+fi
+# shellcheck disable=SC1091
+source "${DOT_DIR}/python"
+run_playbook "${HOME}/cowdogmoo/ansible-collection-workstation/playbooks/workstation/workstation.yml" \
+    "${HOME}/cowdogmoo/ansible-collection-workstation/playbooks/workstation/molecule/default/inventory"
