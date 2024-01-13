@@ -272,7 +272,6 @@ get_instance_role_credentials() {
 }
 
 # Get Latest AMI
-#
 # Fetches the ID of the latest Amazon Machine Image (AMI) for the
 # specified OS distribution, version, and architecture.
 #
@@ -283,19 +282,7 @@ get_instance_role_credentials() {
 #   Outputs the ID of the AMI.
 #
 # Example(s):
-#   get_latest_ami "ubuntu" "20.04" "amd64"
-# Get Latest AMI
-# Fetches the ID of the latest Amazon Machine Image (AMI) for the
-# specified OS distribution, version, and architecture.
-#
-# Usage:
-#   get_latest_ami [distro] [version] [architecture]
-#
-# Output:
-#   Outputs the ID of the AMI.
-#
-# Example(s):
-#   get_latest_ami "ubuntu" "20.04" "amd64"
+#   get_latest_ami "ubuntu" "22.04" "amd64"
 function get_latest_ami() {
     local distro=$1
     local version=$2
@@ -559,4 +546,49 @@ wait_for_initialization() {
 list_vpcs() {
     echo "Listing VPCs..."
     aws ec2 describe-vpcs --query 'Vpcs[].{ID:VpcId, Name:Tags[?Key==`Name`]|[0].Value, State:State}' --output table
+}
+
+# Clear and Delete S3 Bucket
+#
+# Clears all versions of all objects and delete markers from the specified S3
+# bucket, then deletes the bucket itself.
+#
+# Usage:
+#   clear_and_delete_s3_bucket "bucket-name"
+#   where "bucket-name" is the name of the S3 bucket you want to clear and delete.
+#
+# Output:
+#   No direct output, but the specified S3 bucket and all its contents are irreversibly deleted.
+#
+# Example(s):
+#   clear_and_delete_s3_bucket "my-example-bucket"
+clear_and_delete_s3_bucket() {
+    local bucket_name=$1
+
+    echo "Clearing and deleting S3 bucket: $bucket_name"
+
+    # Input validation
+    if [ -z "$bucket_name" ]; then
+        echo "No bucket name provided. Usage: clear_and_delete_s3_bucket <bucket-name>"
+        return 1
+    fi
+
+    # Delete all versions of all objects in the bucket
+    aws s3api list-object-versions --bucket "$bucket_name" | \
+    jq -r '.Versions[] | .Key + " " + .VersionId' | \
+    while read -r key version; do
+        aws s3api delete-object --bucket "$bucket_name" --key "$key" --version-id "$version"
+    done
+
+    # Delete all delete markers
+    aws s3api list-object-versions --bucket "$bucket_name" | \
+    jq -r '.DeleteMarkers[] | .Key + " " + .VersionId' | \
+    while read -r key version; do
+        aws s3api delete-object --bucket "$bucket_name" --key "$key" --version-id "$version"
+    done
+
+    # Delete the bucket
+    aws s3api delete-bucket --bucket "$bucket_name"
+
+    echo "Successfully deleted S3 bucket: $bucket_name"
 }
