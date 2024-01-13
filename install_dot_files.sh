@@ -9,7 +9,7 @@
 # Jayson Grace, jayson.e.grace@gmail.com
 # ----------------------------------------------------------------------------
 # Stop execution of script if an error occurs
-set -e
+set -ex
 
 DOT_DIR="${HOME}/.dotfiles"
 OLD_DOT_DIR="${DOT_DIR}.old"
