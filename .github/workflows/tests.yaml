@@ -53,11 +53,12 @@ jobs:
       - name: Run dotfiles installation script
         run: bash install_dot_files.sh
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        if: ${{ failure() }}
-        with:
-          limit-access-to-actor: true
+        # For debugging:
+        # - name: Setup tmate session
+        #   uses: mxschmitt/action-tmate@v3
+        #   if: ${{ failure() }}
+        #   with:
+        #     limit-access-to-actor: true
 
   bats_tests:
     needs: setup
