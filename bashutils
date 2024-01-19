@@ -248,7 +248,7 @@ alias cloneSite="wget --mirror --convert-links --adjust-extension --page-requisi
 # Get Public IP and Geolocation data
 alias publicIP="curl -s https://ipapi.co/\$(curl -s ifconfig.me)/json | jq"
 
-# If we are not on an OSX system
+# If we are not on a macOS system
 if [[ $(uname) != 'Darwin' ]]; then
 	alias open="xdg-open"
 	alias openPorts="netstat -ntlp | grep LISTEN"
@@ -643,6 +643,32 @@ process_files_from_config() {
     fi
 }
 
+# Checks the permissions associated with the provided GitHub token by sending a request to the GitHub API.
+# It retrieves the scopes that the token has been granted and prints them to stdout.
+# If the GITHUB_TOKEN is not set, it prints a reminder to set the token and returns with a non-zero status code.
+# This function requires the GITHUB_TOKEN environment variable to be set and uses the curl command to send the request.
+# The grep command is used to filter and display the 'x-oauth-scopes' header from the response.
+#
+# Usage:
+#   gh_token_perms
+#
+# Output:
+#   Prints the list of scopes associated with the GITHUB_TOKEN to stdout, or an error message to stderr.
+#
+# Example(s):
+#   gh_token_perms
+#
+# Note:
+#   Ensure that the GITHUB_TOKEN environment variable is correctly set before calling this function.
+gh_token_perms() {
+  if [[ -z "$GITHUB_TOKEN" ]]; then
+    echo "GITHUB_TOKEN is not set. Please set it and try again."
+    return 1
+  fi
+
+  curl -sS -f -I -H "Authorization: token ${GITHUB_TOKEN}" \
+    https://api.github.com | command grep -i x-oauth-scopes
+}
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
 
