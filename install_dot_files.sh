@@ -173,19 +173,25 @@ fi
 
 install_oh_my_zsh
 
+# Target directory for cloning
+ANSIBLE_DIR="${DOT_DIR}/files/ansible-collection-workstation"
+
 # Run workstation playbook
 echo "Checking if the ansible workstation repository is already cloned..."
-if [[ ! -d "${TARGET_DIR}" ]]; then
-    echo -e "${YELLOW}Attempting to clone ansible workstation repo into ${TARGET_DIR}...${RESET}"
+if [[ ! -d "${ANSIBLE_DIR}" ]]; then
+    echo -e "${YELLOW}Attempting to clone ansible workstation repo into ${ANSIBLE_DIR}...${RESET}"
     # Make sure the parent directory exists
     mkdir -p "${DOT_DIR}/files"
     # Clone the repository
-    git clone https://github.com/CowDogMoo/ansible-collection-workstation.git "${DOT_DIR}/files/ansible-collection-workstation"
+    git -C "${DOT_DIR}/files" clone https://github.com/CowDogMoo/ansible-collection-workstation.git || {
+        echo "Failed to clone repository. Exiting."
+        exit 1
+    }
 else
-    echo -e "${GREEN}The ansible workstation repository is already cloned in ${TARGET_DIR}.${RESET}"
+    echo -e "${GREEN}The ansible workstation repository is already cloned in ${ANSIBLE_DIR}.${RESET}"
 fi
 
 # shellcheck disable=SC1091
 source "${DOT_DIR}/python"
-run_playbook "${HOME}/cowdogmoo/ansible-collection-workstation/playbooks/workstation/workstation.yml" \
-    "${HOME}/cowdogmoo/ansible-collection-workstation/playbooks/workstation/molecule/default/inventory"
+run_playbook "${DOT_DIR}/files/ansible-collection-workstation/playbooks/workstation/workstation.yml" \
+    "${DOT_DIR}/files/ansible-collection-workstation/playbooks/workstation/molecule/default/inventory"
