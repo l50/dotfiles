@@ -174,11 +174,17 @@ fi
 install_oh_my_zsh
 
 # Run workstation playbook
-echo "Attempting to run workstation playbook..."
-if [[ ! -d "${HOME}/cowdogmoo" ]]; then
-    echo -e "${YELLOW}Attempting to clone ansible workstation repo...${RESET}"
-    git clone https://github.com/CowDogMoo/ansible-collection-workstation.git "${DOT_DIR}/files"
+echo "Checking if the ansible workstation repository is already cloned..."
+if [[ ! -d "${TARGET_DIR}" ]]; then
+    echo -e "${YELLOW}Attempting to clone ansible workstation repo into ${TARGET_DIR}...${RESET}"
+    # Make sure the parent directory exists
+    mkdir -p "${DOT_DIR}/files"
+    # Clone the repository
+    git clone https://github.com/CowDogMoo/ansible-collection-workstation.git "${DOT_DIR}/files/ansible-collection-workstation"
+else
+    echo -e "${GREEN}The ansible workstation repository is already cloned in ${TARGET_DIR}.${RESET}"
 fi
+
 # shellcheck disable=SC1091
 source "${DOT_DIR}/python"
 run_playbook "${HOME}/cowdogmoo/ansible-collection-workstation/playbooks/workstation/workstation.yml" \
