@@ -643,31 +643,42 @@ process_files_from_config() {
     fi
 }
 
-# Checks the permissions associated with the provided GitHub token by sending a request to the GitHub API.
-# It retrieves the scopes that the token has been granted and prints them to stdout.
-# If the GITHUB_TOKEN is not set, it prints a reminder to set the token and returns with a non-zero status code.
-# This function requires the GITHUB_TOKEN environment variable to be set and uses the curl command to send the request.
-# The grep command is used to filter and display the 'x-oauth-scopes' header from the response.
+# Checks the authentication status and token permissions associated with the GitHub CLI (gh).
+# It uses the `gh auth status` command to retrieve the authentication status
+# and the token permissions. If the GH_TOKEN is not set, it prints a reminder
+# to set the token and returns with a non-zero status code. This function
+# requires the GH_TOKEN environment variable to be set and uses the
+# `gh auth status` command to retrieve the token information.
+# The function checks for the presence of the GitHub CLI (gh) and ensures it's
+# installed before attempting to check the token status.
 #
 # Usage:
 #   gh_token_perms
 #
 # Output:
-#   Prints the list of scopes associated with the GITHUB_TOKEN to stdout, or an error message to stderr.
+#   Prints the authentication status and the list of scopes associated
+#   with the GH_TOKEN to stdout, or an error message to stderr if the
+#   GitHub CLI is not installed or GH_TOKEN is not set.
 #
 # Example(s):
 #   gh_token_perms
 #
 # Note:
-#   Ensure that the GITHUB_TOKEN environment variable is correctly set before calling this function.
+#   Ensure that the GH_TOKEN environment variable is correctly set and the
+#   GitHub CLI (gh) is installed before calling this function.
 gh_token_perms() {
-  if [[ -z "$GITHUB_TOKEN" ]]; then
-    echo "GITHUB_TOKEN is not set. Please set it and try again."
+  if [[ -z "$GH_TOKEN" ]]; then
+    echo "GH_TOKEN is not set. Please set it and try again."
     return 1
   fi
 
-  curl -sS -f -I -H "Authorization: token ${GITHUB_TOKEN}" \
-    https://api.github.com | command grep -i x-oauth-scopes
+  # Check if curl is installed
+  if ! command -v gh >/dev/null 2>&1; then
+    echo "Error: gh is not installed. Please install gh cli and try again."
+    return 1
+  fi
+
+  gh auth status --show-token
 }
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
