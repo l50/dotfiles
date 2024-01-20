@@ -26,6 +26,8 @@ jobs:
     steps:
       - name: Set up git repository
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+        with:
+          submodules: recursive
 
       - name: Install asdf cli
         uses: asdf-vm/actions/setup@6a442392015fbbdd8b48696d41e0051b2698b2e4 # v2
