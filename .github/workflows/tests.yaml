@@ -141,7 +141,9 @@ jobs:
         shell: /bin/bash -e {0}
 
       - name: Install the dotfiles
-        run: bash install_dot_files.sh
+        run: |
+          source ~/.zshrc # Required for run_playbook
+          bash install_dot_files.sh
 
       - name: Confirm dotfiles are installed and working
         run: |
