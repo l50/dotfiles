@@ -129,16 +129,24 @@ jobs:
               # Resource: https://stackoverflow.com/questions/57946173/github-actions-run-step-on-specific-os
           fi
 
-          # Get ohmyzsh
-          bash -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-        shell: zsh -e {0}
-
       - name: Install the dotfiles
         run: |
-          source ~/.zshrc # Required for run_playbook
+          set -x  # Enable verbose output
+          # Get ohmyzsh
+          zsh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+          if source ~/.zshrc; then
+            echo "Sourced .zshrc successfully"
+          else
+            echo "Failed to source .zshrc"
+            exit 1
+          fi
           chmod +x install_dot_files.sh
-          ./install_dot_files.sh
-        shell: zsh -e {0}
+          if ./install_dot_files.sh; then
+            echo "Dotfiles installed successfully"
+          else
+            echo "Dotfiles installation failed"
+            exit 1
+          fi
 
       - name: Confirm dotfiles are installed and working
         run: |
@@ -149,9 +157,9 @@ jobs:
           cat ~/.cobra.yaml
         shell: zsh -e {0}
 
-      # For debugging:
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        if: ${{ failure() }}
-        with:
-          limit-access-to-actor: true
+        # # For debugging:
+        # - name: Setup tmate session
+        #   uses: mxschmitt/action-tmate@v3
+        #   if: ${{ failure() }}
+        #   with:
+        #     limit-access-to-actor: true
