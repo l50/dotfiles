@@ -138,12 +138,11 @@ jobs:
 
           # Get ohmyzsh
           bash -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-        shell: /bin/bash -e {0}
 
       - name: Install the dotfiles
         run: |
-          source ~/.zshrc # Required for run_playbook
-          bash install_dot_files.sh
+          zsh -c "source ~/.zshrc"
+          zsh install_dot_files.sh
 
       - name: Confirm dotfiles are installed and working
         run: |
@@ -152,4 +151,4 @@ jobs:
           ipaddr
           go version
           cat ~/.cobra.yaml
-        shell: zsh {0}
+        shell: zsh -e {0}
