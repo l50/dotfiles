@@ -108,7 +108,7 @@ install_oh_my_zsh() {
     # Check if oh-my-zsh is installed
     if [ ! -d "${HOME}/.oh-my-zsh" ]; then
         echo -e "${BLUE}Installing oh-my-zsh, please wait...${RESET}"
-        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+        CHSH=no RUNZSH=no sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
     else
         echo -e "${YELLOW}oh-my-zsh is already installed.${RESET}"
     fi
