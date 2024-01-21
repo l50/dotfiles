@@ -131,15 +131,7 @@ jobs:
 
       - name: Install the dotfiles
         run: |
-          set -x  # Enable verbose output
-          # Get ohmyzsh
-          zsh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-          if source ~/.zshrc; then
-            echo "Sourced .zshrc successfully"
-          else
-            echo "Failed to source .zshrc"
-            exit 1
-          fi
+          set -x # Enable verbose output
           chmod +x install_dot_files.sh
           if ./install_dot_files.sh; then
             echo "Dotfiles installed successfully"
@@ -151,11 +143,11 @@ jobs:
       - name: Confirm dotfiles are installed and working
         run: |
           ls -lart ~/.dotfiles
-          source ~/.zshrc
+          source ~/.zshrc # Required for run_playbook
           ipaddr
           go version
           cat ~/.cobra.yaml
-        shell: zsh -e {0}
+        shell: zsh {0}
 
         # # For debugging:
         # - name: Setup tmate session
