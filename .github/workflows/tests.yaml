@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
 
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
       git_user:
@@ -17,45 +16,7 @@ on:
         default: jayson.e.grace@gmail.com
 
 jobs:
-  # setup:
-  #   name: Install and test my personal dotfiles
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     matrix:
-  #       os: [ubuntu-latest, macos-latest]
-  # steps:
-  #   - name: Set up git repository
-  #     uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
-  #     with:
-  #       submodules: recursive
-
-  # - name: Install asdf cli
-  #   uses: asdf-vm/actions/setup@6a442392015fbbdd8b48696d41e0051b2698b2e4 # v2
-
-  # - name: Set up Python
-  #   uses: actions/setup-python@v4
-
-  # - name: Install dependencies
-  #   run: |
-  #     if [[ "${RUNNER_OS}" == "Linux" ]]; then
-  #         sudo apt-get update
-  #         sudo apt-get install -y curl git zsh
-  #     fi
-  #     python3 -m pip install ansible
-  #     ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,main
-
-  # - name: Install the dotfiles
-  #   run: |
-  #     chmod +x install_dot_files.sh
-  #     if ./install_dot_files.sh; then
-  #       echo "Dotfiles installed successfully"
-  #     else
-  #       echo "Dotfiles installation failed"
-  #       exit 1
-  #     fi
-
   bats_tests:
-    # needs: setup
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -77,7 +38,6 @@ jobs:
 
       - name: Install the dotfiles
         run: |
-          set -x # Enable verbose output
           chmod +x install_dot_files.sh
           if ./install_dot_files.sh; then
             echo "Dotfiles installed successfully"
@@ -102,7 +62,6 @@ jobs:
           # bats tests/{test-go,test-bashutils}.bats # for when I have time to make things work in github actions
 
   dotfile_test:
-    # needs: setup
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -145,10 +104,3 @@ jobs:
           which go
           which run_playbook
         shell: zsh {0}
-
-        # # For debugging:
-        # - name: Setup tmate session
-        #   uses: mxschmitt/action-tmate@v3
-        #   if: ${{ failure() }}
-        #   with:
-        #     limit-access-to-actor: true
