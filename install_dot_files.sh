@@ -174,15 +174,12 @@ fi
 install_oh_my_zsh
 
 # Target directory for cloning
-ANSIBLE_DIR="cowdogmoo/ansible-collection-workstation"
+ANSIBLE_DIR="$HOME/cowdogmoo/ansible-collection-workstation"
 
 # Run workstation playbook
 echo "Checking if the ansible workstation repository is already cloned..."
 if [[ ! -d "${ANSIBLE_DIR}" ]]; then
     echo -e "${YELLOW}Attempting to clone ansible workstation repo into ${ANSIBLE_DIR}...${RESET}"
-    # Make sure the parent directory exists
-    mkdir -p "${DOT_DIR}/files/cowdogmoo"
-    # Clone ansible-collection-workstation
     git clone https://github.com/CowDogMoo/ansible-collection-workstation.git "${ANSIBLE_DIR}"
 else
     echo -e "${GREEN}The ansible workstation repository is already cloned in ${ANSIBLE_DIR}.${RESET}"
