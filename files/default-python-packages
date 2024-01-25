@@ -2,6 +2,7 @@ ansible
 ansible-lint
 antsibull-changelog
 awscli
+awsume
 docker
 keepercommander
 molecule
