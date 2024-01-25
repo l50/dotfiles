@@ -3,6 +3,7 @@ ansible-lint
 antsibull-changelog
 awscli
 awsume
+checkov
 docker
 keepercommander
 molecule
