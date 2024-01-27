@@ -592,3 +592,57 @@ clear_and_delete_s3_bucket() {
 
     echo "Successfully deleted S3 bucket: $bucket_name"
 }
+
+list_vpc_subnets() {
+    local vpc_id=$1
+    if [[ -z "$vpc_id" ]]; then
+        echo "No VPC ID provided. Usage: list_vpc_subnets <vpc-id>"
+        return 1
+    fi
+
+    echo "Getting subnets associated with $vpc_id..."
+    subnets=$(aws ec2 describe-subnets \
+        --filters "Name=vpc-id,Values=$vpc_id" \
+        --query "Subnets[].SubnetId" \
+        --output text | tr '\t' '\n')
+
+    for subnet_id in $subnets; do
+        if [[ -n "$subnet_id" ]]; then  # Check if subnet_id is not empty
+            is_public=$(is_subnet_public "$subnet_id")
+            if [[ $is_public == "True" ]]; then
+                echo "$subnet_id is Public"
+            else
+                echo "$subnet_id is Private"
+            fi
+        fi
+    done
+}
+
+get_subnet_route_table() {
+    local subnet_id=$1
+    aws ec2 describe-route-tables \
+        --filters "Name=association.subnet-id,Values=$subnet_id" \
+        --query "RouteTables[].RouteTableId" \
+        --output text
+}
+
+is_subnet_public() {
+    local subnet_id=$1
+    local route_table_id=$(get_subnet_route_table "$subnet_id")
+
+    if [[ -z "$route_table_id" ]]; then
+        echo "False"
+        return
+    fi
+
+    local igw_route=$(aws ec2 describe-route-tables \
+        --route-table-ids $route_table_id \
+        --query "RouteTables[*].Routes[?GatewayId && GatewayId != 'local' && starts_with(GatewayId, 'igw-')]" \
+        --output text)
+
+    if [[ -n "$igw_route" ]]; then
+        echo "True"
+    else
+        echo "False"
+    fi
+}
