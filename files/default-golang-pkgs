@@ -37,5 +37,3 @@ github.com/getsops/sops/v3/cmd/sops@latest
 
 // Cloud orchestration
 github.com/hashicorp/terraform@latest
-github.com/hashicorp/packer@latest
-github.com/gruntwork-io/terragrunt@latest
