@@ -22,8 +22,7 @@ unstick_term_pods() {
 }
 
 # Get events in an input namespace
-kge()
-      {
+kge() {
     NS=${1:-default}
     if [[ $NS == 'all' ]]; then
         kubectl get events --all-namespaces \
@@ -35,8 +34,7 @@ kge()
 }
 
 # Get Load Balancer IP addresses in an input namespace
-kglbip()
-         {
+kglbip() {
     NS=${1:-default}
     if [[ $NS == 'all' ]]; then
         kubectl get svc --all-namespaces \
@@ -51,6 +49,8 @@ kglbip()
 # https://github.com/ahmetb/kubectl-aliases
 # https://stackoverflow.com/questions/55373686/how-to-switch-namespace-in-kubernetes
 alias k='kubectl'
+alias kd='kubectl describe'
+alias kg='kubectl get'
 alias kgp='kubectl get pods'
 alias kgn='kubectl get nodes'
 alias krm='kubectl delete'
