@@ -99,3 +99,7 @@ remove_finalizers() {
         echo "Failed to remove finalizers from $resource $name in namespace $namespace."
     fi
 }
+
+function delete_non_running_pods() {
+  kubectl get pods --all-namespaces --field-selector=status.phase!=Running -o json | kubectl delete -f -
+}
