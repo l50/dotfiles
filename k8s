@@ -1,7 +1,6 @@
 # Fix pods stuck in a terminating state
 # across an input namespace.
-unstick_term_pods()
-                     {
+unstick_term_pods() {
     NS=${1:-default}
     if [[ "${NS}" == 'all' ]]; then
         kubectl get pods --all-namespaces \
@@ -48,6 +47,9 @@ kglbip()
     fi
 }
 
+# Resources:
+# https://github.com/ahmetb/kubectl-aliases
+# https://stackoverflow.com/questions/55373686/how-to-switch-namespace-in-kubernetes
 alias k='kubectl'
 alias kgp='kubectl get pods'
 alias kgn='kubectl get nodes'
@@ -61,9 +63,39 @@ alias kgsvcwn='kubectl get service --watch --namespace'
 alias kgsvcslwn='kubectl get service --show-labels --watch --namespace'
 alias kgwf='kubectl get --watch -f'
 
-# Autocomplete
-if [ $commands[kubectl] ]; then source <(kubectl completion zsh); fi
+# Remove Finalizers from Kubernetes Resources
+#
+# This function patches a specified Kubernetes resource to remove its finalizers,
+# allowing it to be deleted if it's stuck in a terminating state. It's useful for
+# cleaning up resources that are not being properly cleaned up due to finalizer issues.
+#
+# Usage:
+#   remove_finalizers <resource> <name> <namespace>
+#   - <resource> is the type of the Kubernetes resource (e.g., deployments, pods)
+#   - <name> is the name of the specific resource instance
+#   - <namespace> is the namespace where the resource is located
+#
+# Output:
+#   Outputs a success message if the finalizers were successfully removed.
+#   If the operation fails, it outputs a failure message with the resource details.
+#
+# Example(s):
+#   remove_finalizers helmrepositories.source.toolkit.fluxcd.io ingress-traefik flux-system
+#   This example removes finalizers from a HelmRepository named ingress-traefik in the flux-system namespace.
+remove_finalizers() {
+    local resource="$1"
+    local name="$2"
+    local namespace="$3"
 
-# Resources:
-# https://github.com/ahmetb/kubectl-aliases
-# https://stackoverflow.com/questions/55373686/how-to-switch-namespace-in-kubernetes
+    if [[ -z "$resource" || -z "$name" || -z "$namespace" ]]; then
+        echo "Usage: remove_finalizers <resource> <name> <namespace>"
+        return 1
+    fi
+
+    kubectl patch "$resource" "$name" -n "$namespace" --type json -p '[{"op": "remove", "path": "/metadata/finalizers"}]'
+    if [ $? -eq 0 ]; then
+        echo "Successfully removed finalizers from $resource $name in namespace $namespace."
+    else
+        echo "Failed to remove finalizers from $resource $name in namespace $namespace."
+    fi
+}

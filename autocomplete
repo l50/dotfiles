@@ -19,3 +19,6 @@ source /usr/local/bin/aws_zsh_completer.sh
 
 # Load flux cli autocompletions
 source "$HOME/.flux_completion"
+
+# Load kubectl autocompletions
+if [[ ${commands[kubectl]} ]]; then source <(kubectl completion zsh); fi
