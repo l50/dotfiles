@@ -760,3 +760,32 @@ list_iam_user_policies() {
         aws iam list-attached-group-policies --group-name "$group_name" --output json
     done
 }
+
+# Delete Unused Elastic IPs (EIPs)
+#
+# Deletes all Elastic IP addresses (EIPs) that are not associated with any running instances.
+# This function uses AWS CLI to find and release any unassociated EIPs, helping to avoid unnecessary charges.
+#
+# Usage:
+#   delete_unused_eips
+#   No arguments are required. Simply run the function to check and release all unassociated EIPs.
+#
+# Output:
+#   For each EIP released, it outputs a success message with the allocation ID of the released EIP.
+#   If an EIP cannot be released, it outputs a failure message with the allocation ID.
+#
+# Example(s):
+#   delete_unused_eips
+delete_unused_eips() {
+    echo "Deleting all unused EIPs..."
+
+    # Get all unused EIPs, output in JSON, then parse with jq
+    aws ec2 describe-addresses --query 'Addresses[?InstanceId==null].AllocationId' --output json | jq -r '.[]' | while IFS= read -r id; do
+        if [ -n "$id" ]; then
+            # Delete the EIP
+            aws ec2 release-address --allocation-id "$id" && echo "Successfully deleted EIP with allocation ID: $id" || echo "Failed to delete EIP with allocation ID: $id"
+        fi
+    done
+
+    echo "Finished deleting all unused EIPs."
+}
