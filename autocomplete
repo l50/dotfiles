@@ -1,0 +1,21 @@
+# Get the user's shell
+user_shell=$(basename "$SHELL")
+
+# Specify the shell based on the user's shell
+if [ "$user_shell" = "zsh" ] || [ "$user_shell" = "bash" ]; then
+    # Make sure the flux completion file is only created if it doesn't exist
+    if [ ! -f "$HOME/.flux_completion" ]; then
+        flux completion $user_shell > "$HOME/.flux_completion"
+    fi
+else
+    echo "Unsupported shell: $user_shell"
+fi
+
+# Load zsh-completions
+autoload -U compinit && compinit
+
+# Load aws cli autocompletions
+source /usr/local/bin/aws_zsh_completer.sh
+
+# Load flux cli autocompletions
+source "$HOME/.flux_completion"

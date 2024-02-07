@@ -7,16 +7,6 @@ export ZSH_THEME="af-magic"
 source "${ZSH}/oh-my-zsh.sh"
 export plugins=(asdf aws git docker helm kubectl zsh-completions)
 
-# Load zsh-completions
-autoload -U compinit && compinit
-
-# Load aws cli autocompletions
-source /usr/local/bin/aws_zsh_completer.sh
-
-# Load flux cli autocompletions
-# shellcheck source=/dev/null
-. <(flux completion bash)
-
 # Source other dotfiles
 for file in "${HOME}/.dotfiles"/*; do
   if [[ -f "${file}" && -r "${file}" ]]; then
@@ -48,3 +38,6 @@ fi
 
 # Remove the % from the end of terminal output
 export PROMPT_EOL_MARK=''
+export ASDF_PATH="/Users/l/.asdf"
+export PATH="$ASDF_PATH/bin:$ASDF_PATH/shims:$PATH"
+. "$ASDF_PATH/asdf.sh"
