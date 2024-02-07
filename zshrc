@@ -13,6 +13,10 @@ autoload -U compinit && compinit
 # Load aws cli autocompletions
 source /usr/local/bin/aws_zsh_completer.sh
 
+# Load flux cli autocompletions
+# shellcheck source=/dev/null
+. <(flux completion bash)
+
 # Source other dotfiles
 for file in "${HOME}/.dotfiles"/*; do
   if [[ -f "${file}" && -r "${file}" ]]; then
