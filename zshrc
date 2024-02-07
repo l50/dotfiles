@@ -10,6 +10,9 @@ export plugins=(asdf aws git docker helm kubectl zsh-completions)
 # Load zsh-completions
 autoload -U compinit && compinit
 
+# Load aws cli autocompletions
+source /usr/local/bin/aws_zsh_completer.sh
+
 # Source other dotfiles
 for file in "${HOME}/.dotfiles"/*; do
   if [[ -f "${file}" && -r "${file}" ]]; then
