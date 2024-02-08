@@ -38,6 +38,6 @@ fi
 
 # Remove the % from the end of terminal output
 export PROMPT_EOL_MARK=''
-export ASDF_PATH="/Users/l/.asdf"
+export ASDF_PATH="$HOME/.asdf"
 export PATH="$ASDF_PATH/bin:$ASDF_PATH/shims:$PATH"
 . "$ASDF_PATH/asdf.sh"
