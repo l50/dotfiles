@@ -185,6 +185,16 @@ else
     echo -e "${GREEN}The ansible workstation repository is already cloned in ${ANSIBLE_DIR}.${RESET}"
 fi
 
+# Install zsh-completions
+# if [[ ! -d $DOT_DIR/files/zsh-autocomplete ]]; then
+#     echo -e "${YELLOW}Attempting to clone zsh-autocomplete into ${DOT_DIR}/files/zsh-autocomplete...${RESET}"
+#     git clone --depth 1 -- https://github.com/marlonrichert/zsh-autocomplete.git "${DOT_DIR}/files/zsh-autocomplete"
+# else 
+#     pushd $DOT_DIR/files/zsh-autocomplete || exit 1
+#     git pull
+#     popd || exit1
+# fi
+
 # shellcheck disable=SC1091
 source "${DOT_DIR}/python"
 run_playbook "${ANSIBLE_DIR}/playbooks/workstation/workstation.yml" \
