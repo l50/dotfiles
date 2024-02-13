@@ -789,3 +789,91 @@ delete_unused_eips() {
 
     echo "Finished deleting all unused EIPs."
 }
+
+# Detach an IAM policy from all entities and delete it
+#
+# Detaches the specified IAM policy from all roles it's attached to and then deletes the policy.
+#
+# Usage:
+#   detach_delete_iam_policy "arn:aws:iam::accountID:policy/policy-name"
+#   where "arn:aws:iam::accountID:policy/policy-name" is the ARN of the IAM policy you want to detach and delete.
+#
+# Output:
+#   Detaches the policy from all roles and deletes it.
+#
+# Example(s):
+#
+#   AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+#   detach_delete_iam_policy "arn:aws:iam::$AWS_ACCOUNT_ID:policy/test-eks-...."
+detach_delete_iam_policy() {
+    local policy_arn=$1
+
+    if [[ -z "$policy_arn" ]]; then
+        echo "No policy ARN provided. Usage: detach_delete_iam_policy <policy-arn>"
+        return 1
+    fi
+
+    # List roles attached to the policy
+    local attached_roles
+    attached_roles=$(aws iam list-entities-for-policy --policy-arn "$policy_arn" --query 'PolicyRoles[].RoleName' --output text)
+
+    # Detach policy from each role
+    for role_name in $attached_roles; do
+        echo "Detaching policy from role: $role_name"
+        aws iam detach-role-policy --role-name "$role_name" --policy-arn "$policy_arn"
+    done
+
+    # Delete the policy
+    echo "Deleting policy: $policy_arn"
+    aws iam delete-policy --policy-arn "$policy_arn"
+}
+
+# Find IAM resources with a specific keyword in their name or tag
+#
+# Searches for IAM users, roles, policies, and groups that have a specific keyword in their name or tag.
+# The keyword is provided as an input string to the function.
+#
+# Usage:
+#   find_iam_resources_with_keyword "keyword"
+#   where "keyword" is the string you want to search for in the name or tag of IAM resources.
+#
+# Output:
+#   Lists the IAM resources that match the keyword in their name or tag.
+#
+# Example(s):
+#   find_iam_resources_with_keyword "terratest-"
+find_iam_resources_with_keyword() {
+    local input_string=$1
+    local resource_types=("user" "role" "policy" "group")
+
+    if [[ -z "$input_string" ]]; then
+        echo "No input string provided. Usage: find_iam_resources_with_keyword <keyword>"
+        return 1
+    fi
+
+    echo "Searching for IAM resources with '$input_string' in the name or tag..."
+
+    for resource_type in "${resource_types[@]}"; do
+        echo "Checking IAM $resource_type(s)..."
+        case $resource_type in
+        "user")
+            # List IAM users with keyword in the name
+            aws iam list-users --query "Users[?contains(UserName, \`$input_string\`)].[UserName]" --output text
+            ;;
+        "role")
+            # List IAM roles with keyword in the name
+            aws iam list-roles --query "Roles[?contains(RoleName, \`$input_string\`)].[RoleName]" --output text
+            ;;
+        "policy")
+            # List IAM policies with keyword in the name
+            aws iam list-policies --query "Policies[?contains(PolicyName, \`$input_string\`)].[PolicyName]" --output text
+            ;;
+        "group")
+            # List IAM groups with keyword in the name
+            aws iam list-groups --query "Groups[?contains(GroupName, \`$input_string\`)].[GroupName]" --output text
+            ;;
+        esac
+    done
+
+    echo "Finished searching for IAM resources."
+}
