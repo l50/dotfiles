@@ -880,74 +880,86 @@ find_iam_resources_with_keyword() {
 
 # Cleans up IAM resources based on input criteria
 #
-# Reads role names from standard input (stdin) and processes each role that matches the specified criteria (e.g., having "terratest-" in the name). For each matching role, the function:
-# - Removes the role from any instance profiles it's associated with.
-# - Detaches all managed policies attached to the role.
-# - Deletes all inline policies attached to the role.
-# - Attempts to delete the role itself.
-# Additionally, if an instance profile is left empty after removing a role, it is also deleted.
+# This function processes IAM resources that match specified criteria. It reads
+# resource names (roles and policies) from standard input (stdin) and performs
+# the following actions:
+# - For roles:
+#   - Removes the role from any instance profiles it's associated with.
+#   - Detaches all managed policies attached to the role.
+#   - Deletes all inline policies attached to the role.
+#   - Attempts to delete the role itself.
+# - For policies:
+#   - Detaches the policy from any roles it's attached to.
+#   - Deletes the policy.
 #
 # Usage:
-#   Pipe the output of a command that lists IAM roles into this function to clean them up. Ensure each line of the input contains the name of one IAM role.
+#   Pipe the output of a command that lists IAM roles and policies into this function
+#   to clean them up. Ensure each line of the input contains the ARN of one IAM resource.
 #   Example: find_iam_resources_with_keyword 'terratest-' | clean_up_iam_resources
 #
 # Input:
-#   Role names are expected to be read from stdin, one per line. Each role name should meet the criteria for processing (e.g., prefixed with "terratest-").
+#   Resource ARNs are expected to be read from stdin, one per line. Each
+#   resource ARN should meet the criteria for processing
+#   (e.g., prefixed with "terratest-" or belonging to a specific AWS account).
 #
 # Output:
-#   Outputs the actions taken for each role, including removing from instance profiles, detaching policies, deleting inline policies, and deleting the role. If an instance profile is deleted, this action is also output.
+#   Outputs the actions taken for each resource, including detaching and deleting
+#   policies, removing roles from instance profiles, and deleting roles. If any
+#   errors occur, they are also output.
 #
 # Example(s):
-#   echo "terratest-example-role" | clean_up_iam_resources
-#   This example processes a single role named "terratest-example-role", removing it from any instance profiles, detaching and deleting policies, and then deleting the role.
+#   echo "arn:aws:iam::123456789012:role/terratest-example-role" | clean_up_iam_resources
+#   This example processes a single role named "terratest-example-role", removing
+#   it from any instance profiles, detaching and deleting policies, and then deleting the role.
+#
+#   echo "arn:aws:iam::123456789012:policy/terratest-example-policy" | clean_up_iam_resources
+#   This example processes a single policy named "terratest-example-policy", detaching it
+#   from any roles and then deleting the policy.
 clean_up_iam_resources() {
-    # Read role names from stdin
+    # Read resource names from stdin
     while IFS= read -r line; do
-        role_name=$(echo "$line" | awk '{print $1}')
-        if [[ "$role_name" =~ terratest- ]]; then
-            # List instance profiles the role is a part of and remove the role from them
+        resource_name=$(echo "$line" | awk '{print $NF}')  # Get the last word in the line
+
+        if [[ "$resource_name" =~ ^arn:aws:iam::[0-9]+:policy/.+ ]]; then
+            # Detach and delete policies
+            policy_arn=$resource_name
+            roles=$(aws iam list-entities-for-policy --policy-arn "$policy_arn" --query 'PolicyRoles[].RoleName' --output text)
+            for role in $roles; do
+                echo "Detaching policy $policy_arn from $role"
+                aws iam detach-role-policy --role-name "$role" --policy-arn "$policy_arn"
+            done
+            echo "Deleting policy: $policy_arn"
+            aws iam delete-policy --policy-arn "$policy_arn"
+        elif [[ "$resource_name" =~ ^[a-zA-Z0-9+=,.@_-]+$ ]]; then
+            # Process roles
+            role_name=$resource_name
+            # List and remove instance profiles, detach policies, delete inline policies, and delete the role
             instance_profiles=$(aws iam list-instance-profiles-for-role --role-name "$role_name" --query 'InstanceProfiles[].InstanceProfileName' --output text)
-            if [ ! -z "$instance_profiles" ]; then
-                for profile in $instance_profiles; do
-                    echo "Removing role $role_name from instance profile $profile"
-                    aws iam remove-role-from-instance-profile --instance-profile-name "$profile" --role-name "$role_name"
-                    # Check if the instance profile has other roles attached
-                    remaining_roles=$(aws iam get-instance-profile --instance-profile-name "$profile" --query 'InstanceProfile.Roles' --output text)
-                    if [ -z "$remaining_roles" ]; then
-                        # If no other roles are attached, delete the instance profile
-                        echo "Deleting instance profile: $profile"
-                        aws iam delete-instance-profile --instance-profile-name "$profile"
-                    else
-                        echo "Instance profile $profile has other roles attached, not deleting."
-                    fi
-                done
-            fi
+            for profile in $instance_profiles; do
+                echo "Removing role $role_name from instance profile $profile"
+                aws iam remove-role-from-instance-profile --instance-profile-name "$profile" --role-name "$role_name"
+            done
 
-            # List and detach attached managed policies
             policies=$(aws iam list-attached-role-policies --role-name "$role_name" --query 'AttachedPolicies[].PolicyArn' --output text)
-            if [ ! -z "$policies" ]; then
-                for policy_arn in $policies; do
-                    echo "Detaching policy $policy_arn from $role_name"
-                    aws iam detach-role-policy --role-name "$role_name" --policy-arn "$policy_arn"
-                done
-            fi
+            for policy_arn in $policies; do
+                echo "Detaching policy $policy_arn from $role_name"
+                aws iam detach-role-policy --role-name "$role_name" --policy-arn "$policy_arn"
+            done
 
-            # List and delete all inline policies
             inline_policies=$(aws iam list-role-policies --role-name "$role_name" --query 'PolicyNames' --output text)
-            if [ ! -z "$inline_policies" ]; then
-                for policy_name in $inline_policies; do
-                    echo "Deleting inline policy $policy_name from $role_name"
-                    aws iam delete-role-policy --role-name "$role_name" --policy-name "$policy_name"
-                done
-            fi
+            for policy_name in $inline_policies; do
+                echo "Deleting inline policy $policy_name from $role_name"
+                aws iam delete-role-policy --role-name "$role_name" --policy-name "$policy_name"
+            done
 
-            # Attempt to delete the role
             echo "Attempting to delete role: $role_name"
             if aws iam delete-role --role-name "$role_name"; then
                 echo "Successfully deleted role: $role_name"
             else
                 echo "Failed to delete role: $role_name. Check for any remaining dependencies."
             fi
+        else
+            echo "Invalid resource name: $resource_name"
         fi
     done
 }
