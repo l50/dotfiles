@@ -15,7 +15,8 @@
 #   taint_terraform_resources
 taint_terraform_resources() {
     # Get the list of resources from terraform state
-    local resources=$(terraform state list)
+    local resources
+    resources=$(terraform state list)
 
     # Loop through each resource
     for resource in $resources; do
