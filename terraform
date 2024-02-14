@@ -1,0 +1,32 @@
+# Taints all Terraform-managed resources in the current state
+#
+# This function taints all Terraform-managed resources in the current state,
+# excluding data sources. Tainting a resource marks it for recreation during
+# the next Terraform apply.
+#
+# Usage:
+#   taint_terraform_resources
+#
+# Output:
+#   Outputs the progress of tainting each resource, including any errors
+#   encountered during the process.
+#
+# Example(s):
+#   taint_terraform_resources
+taint_terraform_resources() {
+    # Get the list of resources from terraform state
+    local resources=$(terraform state list)
+
+    # Loop through each resource
+    for resource in $resources; do
+        # Check if the resource is not a data source
+        if [[ ! $resource == data.* ]]; then
+            # Taint the resource and check for errors
+            if ! terraform taint "$resource"; then
+                echo "Error: Unable to taint resource $resource"
+            else
+                echo "Tainted resource $resource"
+            fi
+        fi
+    done
+}
