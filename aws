@@ -963,3 +963,47 @@ clean_up_iam_resources() {
         fi
     done
 }
+
+# Deletes an EKS cluster and its associated node groups
+#
+# This function deletes an Amazon EKS cluster and all of its associated node groups.
+# The name of the EKS cluster to delete is provided as an input string to the function.
+#
+# Usage:
+#   delete_eks_cluster_and_node_groups "cluster-name"
+#   where "cluster-name" is the name of the EKS cluster you want to delete.
+#
+# Output:
+#   Outputs the progress of deleting the node groups and the EKS cluster, including
+#   waiting for each deletion to complete.
+#
+# Example(s):
+#   delete_eks_cluster_and_node_groups "test-tt-test-wndq2t"
+delete_eks_cluster_and_node_groups() {
+    local CLUSTER_NAME=$1
+
+    if [[ -z "$CLUSTER_NAME" ]]; then
+        echo "No cluster name provided. Usage: delete_eks_cluster_and_node_groups <cluster-name>"
+        return 1
+    fi
+
+    # Get the list of node groups associated with the cluster
+    local NODE_GROUPS
+    NODE_GROUPS=$(aws eks list-nodegroups --cluster-name "$CLUSTER_NAME" --query 'nodegroups[*]' --output text)
+
+    # Delete each node group
+    for NODE_GROUP in $NODE_GROUPS; do
+        echo "Deleting node group $NODE_GROUP from cluster $CLUSTER_NAME..."
+        aws eks delete-nodegroup --cluster-name "$CLUSTER_NAME" --nodegroup-name "$NODE_GROUP"
+        echo "Waiting for node group $NODE_GROUP to be deleted..."
+        aws eks wait nodegroup-deleted --cluster-name "$CLUSTER_NAME" --nodegroup-name "$NODE_GROUP"
+    done
+
+    # Delete the EKS cluster
+    echo "Deleting EKS cluster $CLUSTER_NAME..."
+    aws eks delete-cluster --name "$CLUSTER_NAME"
+    echo "Waiting for EKS cluster $CLUSTER_NAME to be deleted..."
+    aws eks wait cluster-deleted --name "$CLUSTER_NAME"
+
+    echo "EKS cluster $CLUSTER_NAME and its node groups have been successfully deleted."
+}
