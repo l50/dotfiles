@@ -1,4 +1,4 @@
-golang 1.21.7
+golang 1.22.0
 python 3.12.2
 ruby 3.3.0
 kubectl 1.28.2
