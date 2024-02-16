@@ -36,6 +36,9 @@ if [[ -f "${HOME}/.dotfiles/.dotinstalldir" ]]; then
     && git pull origin main &> /dev/null && bash install_dot_files.sh)"
 fi
 
+# ZSH autocomplete
+fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
+
 # Remove the % from the end of terminal output
 export PROMPT_EOL_MARK=''
 export ASDF_PATH="$HOME/.asdf"
