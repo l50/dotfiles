@@ -176,9 +176,9 @@ fi
 # Restart the SSH service
 alias restart-ssh='sudo systemsetup -setremotelogin off; sudo systemsetup -setremotelogin on'
 
-# Docker completion for macOS
-if uname -a | grep -qi arm; then
-    FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
-else
-    source "/usr/local/share/zsh/site-functions"
-fi
+# # Docker completion for macOS
+# if uname -a | grep -qi arm; then
+#     FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
+# else
+#     source "/usr/local/share/zsh/site-functions"
+# fi

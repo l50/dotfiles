@@ -25,6 +25,7 @@ declare -a files=(
     'k8s'
     'python'
     'macos'
+    'terraform'
 )
 
 ##### (Cosmetic) Color output

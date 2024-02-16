@@ -37,3 +37,11 @@ github.com/getsops/sops/v3/cmd/sops@latest
 
 // Cloud orchestration
 github.com/hashicorp/terraform@latest
+
+// VSCode Go extension tools
+golang.org/x/lint/golint@latest
+golang.org/x/tools/cmd/goimports@latest
+github.com/fzipp/gocyclo/cmd/gocyclo@latest
+github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+github.com/go-critic/go-critic/cmd/gocritic@latest
+github.com/goreleaser/goreleaser@latest
