@@ -1,6 +1,7 @@
 ansible
 ansible-lint
 antsibull-changelog
+aws-consoler
 awscli
 checkov
 docker
