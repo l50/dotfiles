@@ -27,8 +27,8 @@ if [ -f "${HOME}/.work" ]; then
   source "${HOME}/.work"
 fi
 
-# Set default editor to vim
-export EDITOR='vim'
+# Set default editor to vscode
+export EDITOR='code --wait'
 
 # Add the dot-update command
 if [[ -f "${HOME}/.dotfiles/.dotinstalldir" ]]; then
