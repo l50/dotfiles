@@ -1,3 +1,25 @@
+# Useful aliases for kubectl
+# Resources:
+# https://github.com/ahmetb/kubectl-aliases
+# https://stackoverflow.com/questions/55373686/how-to-switch-namespace-in-kubernetes
+alias k='kubectl'
+alias kd='k describe'
+alias kg='k get'
+alias kdp='kd pods'
+alias kgp='kg pods'
+alias kgn='kg nodes'
+alias kgi='kg ingress'
+alias kgs='kg services'
+alias krm='k delete'
+alias krmf='krm -f'
+alias krming='k delete ingress'
+alias krmingl='k delete ingress -l'
+alias krmingall='k delete ingress --all-namespaces'
+alias kgsvcoyaml='kg service -o=yaml'
+alias kgsvcwn='kg service --watch --namespace'
+alias kgsvcslwn='kg service --show-labels --watch --namespace'
+alias kgwf='kg --watch -f'
+
 # Fix pods stuck in a terminating state
 # across an input namespace.
 unstick_term_pods() {
@@ -11,8 +33,10 @@ unstick_term_pods() {
         done
     elif [[ "${NS}" != '' ]]; then
         kubectl get pods -n "${NS}" \
-                                | grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox} Terminating \
-                                                                                      | while read line; do
+                                | grep \
+                                --color=auto \
+                                --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox} Terminating \
+                                | while read line; do
                 pod_name=$(echo $line | awk '{print $1}')
                 kubectl delete pods $pod_name -n "${NS}" --grace-period=0 --force
             done
@@ -44,24 +68,6 @@ kglbip() {
             -o jsonpath='{range .items[?(@.spec.type=="LoadBalancer")]}{.metadata.name}:{.status.loadBalancer.ingress[0].ip}{"\n"}{end}'
     fi
 }
-
-# Resources:
-# https://github.com/ahmetb/kubectl-aliases
-# https://stackoverflow.com/questions/55373686/how-to-switch-namespace-in-kubernetes
-alias k='kubectl'
-alias kd='kubectl describe'
-alias kg='kubectl get'
-alias kgp='kubectl get pods'
-alias kgn='kubectl get nodes'
-alias krm='kubectl delete'
-alias krmf='kubectl delete -f'
-alias krming='kubectl delete ingress'
-alias krmingl='kubectl delete ingress -l'
-alias krmingall='kubectl delete ingress --all-namespaces'
-alias kgsvcoyaml='kubectl get service -o=yaml'
-alias kgsvcwn='kubectl get service --watch --namespace'
-alias kgsvcslwn='kubectl get service --show-labels --watch --namespace'
-alias kgwf='kubectl get --watch -f'
 
 # Remove Finalizers from Kubernetes Resources
 #
