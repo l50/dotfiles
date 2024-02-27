@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Taints all Terraform-managed resources in the current state
 #
 # This function taints all Terraform-managed resources in the current state,
@@ -29,5 +31,39 @@ taint_terraform_resources() {
                 echo "Tainted resource $resource"
             fi
         fi
+    done
+}
+
+# Removes all resources from Terragrunt state after confirmation
+#
+# This function prompts the user for confirmation before removing all resources
+# from the Terragrunt state. It lists all resources in the state and removes
+# them one by one, displaying the progress.
+#
+# Usage:
+#   nuke_terragrunt_state
+#
+# Output:
+#   Displays the progress of removing each resource, including any errors
+#   encountered during the process.
+#
+# Example(s):
+#   nuke_terragrunt_state
+nuke_terragrunt_state() {
+    if [[ ! -f $HOME/.dotfiles/common ]]; then
+        echo "Error: Unable to find common functions file"
+        return 1
+    fi
+
+    # shellcheck disable=SC1091
+    source "$HOME/.dotfiles/common"
+    if ! ru_sure "Are you sure you want to remove all resources from Terragrunt state?"; then
+        return
+    fi
+
+    # List all Terragrunt state resources and remove them
+    terragrunt state list | while read -r resource; do
+        echo "Removing $resource..."
+        terragrunt state rm "$resource"
     done
 }

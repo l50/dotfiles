@@ -18,6 +18,7 @@ declare -a files=(
     'android'
     'aws'
     'bashutils'
+    'common'
     'containers'
     'docker'
     'go'
