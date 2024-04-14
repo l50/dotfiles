@@ -1,5 +1,5 @@
 golang 1.22.2
-python 3.12.2
+python 3.12.3
 ruby 3.3.0
 helm 3.14.3
 kubectl 1.29.3
