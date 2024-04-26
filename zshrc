@@ -36,8 +36,13 @@ if [[ -f "${HOME}/.dotfiles/.dotinstalldir" ]]; then
     && git pull origin main &> /dev/null && bash install_dot_files.sh)"
 fi
 
-# ZSH autocomplete
-fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
+### ZSH autocomplete ###
+# Install zsh-completions if it doesn't exist
+if [[ ! -d "${HOME}/.oh-my-zsh/custom/plugins/zsh-completions" ]]; then
+  git clone https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions
+fi
+# Add zsh-completions to the fpath
+fpath+=${ZSH_CUSTOM:-${ZSH:-$HOME/.oh-my-zsh}/custom}/plugins/zsh-completions/src
 
 # Remove the % from the end of terminal output
 export PROMPT_EOL_MARK=''
