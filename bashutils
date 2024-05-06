@@ -245,8 +245,8 @@ alias diff="colordiff"
 # Used to clone a web site - takes a website as the parameter
 alias cloneSite="wget --mirror --convert-links --adjust-extension --page-requisites --no-parent"
 
-# Get Public IP and Geolocation data
-alias publicIP="curl -s https://ipapi.co/\$(curl -s ifconfig.me)/json | jq"
+# Get public IPv4 and IPv6
+alias publicIP="echo 'IPv4:'; curl -4 icanhazip.com; echo 'IPv6:'; curl -6 icanhazip.com"
 
 # If we are not on a macOS system
 if [[ $(uname) != 'Darwin' ]]; then
