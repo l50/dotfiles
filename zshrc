@@ -7,6 +7,10 @@ export ZSH_THEME="af-magic"
 source "${ZSH}/oh-my-zsh.sh"
 export plugins=(asdf aws git docker helm kubectl zsh-completions)
 
+export ASDF_PATH="$HOME/.asdf"
+export PATH="$ASDF_PATH/bin:$ASDF_PATH/shims:$PATH"
+. "$ASDF_PATH/asdf.sh"
+
 # Source other dotfiles
 for file in "${HOME}/.dotfiles"/*; do
   if [[ -f "${file}" && -r "${file}" ]]; then
@@ -46,6 +50,3 @@ fpath+=${ZSH_CUSTOM:-${ZSH:-$HOME/.oh-my-zsh}/custom}/plugins/zsh-completions/sr
 
 # Remove the % from the end of terminal output
 export PROMPT_EOL_MARK=''
-export ASDF_PATH="$HOME/.asdf"
-export PATH="$ASDF_PATH/bin:$ASDF_PATH/shims:$PATH"
-. "$ASDF_PATH/asdf.sh"

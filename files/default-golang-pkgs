@@ -19,6 +19,9 @@ github.com/goreleaser/goreleaser@latest
 // lf (as in "list files") is a terminal file manager written in Go
 github.com/gokcehan/lf@latest
 
+// Shell formatter
+mvdan.cc/sh/v3/cmd/shfmt@latest
+
 // VSCode Go extension tools
 golang.org/x/tools/gopls@latest
 github.com/cweill/gotests/gotests@latest
