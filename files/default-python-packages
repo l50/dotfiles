@@ -3,6 +3,7 @@ ansible-lint
 antsibull-changelog
 aws-consoler
 awscli
+awsume
 checkov
 docker
 keepercommander
