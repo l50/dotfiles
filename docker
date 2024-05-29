@@ -4,7 +4,7 @@ zstyle ':completion:*:*:docker:*' option-stacking yes
 zstyle ':completion:*:*:docker-*:*' option-stacking yes
 
 # Docker utilities
-alias cleanseDocker='docker system prune -f'
+alias cleanseDocker='docker system prune -f -a'
 alias createDataContainer="docker create -v /tmp --name datacontainer ubuntu"
 alias updateDockerImages="docker images | \
     cut -d ' ' -f 1 | xargs -I {} docker pull {} 2>&1"
