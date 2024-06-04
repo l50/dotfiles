@@ -471,3 +471,39 @@ EOF
     [ "$status" -eq 1 ]
     [[ $output == *"Config file not found: $non_existing_config"* ]]
 }
+
+@test "create_zip_with_extension with specific extension" {
+    # Setup - create a temporary working directory
+    local temp_working_dir
+    temp_working_dir=$(mktemp -d)
+
+    # Change to the temporary directory
+    pushd "$temp_working_dir"
+
+    # Create a temporary directory with files
+    local temp_directory
+    temp_directory=$(mktemp -d)
+
+    # Create files with different extensions
+    touch "$temp_directory/file1.go"
+    touch "$temp_directory/file2.go"
+    touch "$temp_directory/file1.txt"
+    touch "$temp_directory/file2.txt"
+
+    # Call create_zip_with_extension with the directory, zip file name, and extension
+    local zipfile="test.zip"
+    local extension="go"
+    run create_zip_with_extension "$temp_directory" "$zipfile" "$extension"
+
+    # Assertions
+    [ "$status" -eq 0 ]
+    [ -f "$zipfile" ]
+    unzip -l "$zipfile" | grep "file1.go"
+    unzip -l "$zipfile" | grep "file2.go"
+    ! unzip -l "$zipfile" | grep "file1.txt"
+    ! unzip -l "$zipfile" | grep "file2.txt"
+
+    # Cleanup - return to the original directory and remove the temporary directory
+    popd
+    rm -rf "$temp_working_dir"
+}

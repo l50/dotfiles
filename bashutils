@@ -681,6 +681,47 @@ gh_token_perms() {
   gh auth status --show-token
 }
 
+# Create a zip file containing only files with a specific extension from a directory.
+#
+# Usage:
+#   create_zip_with_extension [directory] [zipfile] [extension]
+#
+# Parameters:
+#   directory: The directory containing files to be zipped.
+#   zipfile: The name of the zip file to be created.
+#   extension: The file extension to filter files by.
+#
+# Output:
+#   Creates a zip file containing only files with the specified extension from the directory.
+#
+# Example(s):
+#   create_zip_with_extension "/path/to/directory" "files.zip" "go"
+create_zip_with_extension() {
+    local DIRECTORY="$1"
+    local ZIPFILE="$2"
+    local EXTENSION="$3"
+
+    # Validate input
+    if [ -z "$DIRECTORY" ] || [ -z "$ZIPFILE" ] || [ -z "$EXTENSION" ]; then
+        echo "Error: Missing arguments. Usage: create_zip_with_extension [directory] [zipfile] [extension]"
+        return 1
+    fi
+
+    # Check if directory exists
+    if [ ! -d "$DIRECTORY" ]; then
+        echo "Error: Directory '$DIRECTORY' does not exist."
+        return 1
+    fi
+
+    # Create the zip file with only files of the specified extension
+    if ! find "$DIRECTORY" -type f -name "*.${EXTENSION}" | zip -@ "$ZIPFILE"; then
+        echo "Error: Failed to create zip file '$ZIPFILE'."
+        return 1
+    fi
+
+    echo "Created '$ZIPFILE' containing ${EXTENSION} files from '$DIRECTORY'."
+}
+
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
 
 # If gshuf and cowsay are installed, then evolve our vocab with cowsay
