@@ -12,7 +12,7 @@ alias pc="pre-commit"
 alias keeper_update='python3 -m pip install --upgrade keepercommander'
 
 # AWSume alias to source the AWSume script
-alias awsume=". $(asdf which awsume)"
+#alias awsume=". $(asdf which awsume)"
 # Auto-Complete function for AWSume
 fpath=(~/.awsume/zsh-autocomplete/ $fpath)
 
