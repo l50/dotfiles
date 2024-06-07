@@ -1117,13 +1117,11 @@ find_iam_resources_with_keyword() {
 #   This example processes a single policy named "terratest-example-policy", detaching it
 #   from any roles and then deleting the policy.
 clean_up_iam_resources() {
-    # Read resource names from stdin
     while IFS= read -r line; do
-        resource_name=$(echo "$line" | awk '{print $NF}')  # Get the last word in the line
+        resource_arn=$(echo "$line" | awk '{print $1}')
 
-        if [[ "$resource_name" =~ ^arn:aws:iam::[0-9]+:policy/.+ ]]; then
-            # Detach and delete policies
-            policy_arn=$resource_name
+        if [[ "$resource_arn" =~ ^arn:aws:iam::[0-9]+:policy/.+ ]]; then
+            policy_arn=$resource_arn
             roles=$(aws iam list-entities-for-policy --policy-arn "$policy_arn" --query 'PolicyRoles[].RoleName' --output text)
             for role in $roles; do
                 echo "Detaching policy $policy_arn from $role"
@@ -1131,28 +1129,23 @@ clean_up_iam_resources() {
             done
             echo "Deleting policy: $policy_arn"
             aws iam delete-policy --policy-arn "$policy_arn"
-        elif [[ "$resource_name" =~ ^[a-zA-Z0-9+=,.@_-]+$ ]]; then
-            # Process roles
-            role_name=$resource_name
-            # List and remove instance profiles, detach policies, delete inline policies, and delete the role
+        elif [[ "$resource_arn" =~ ^arn:aws:iam::[0-9]+:role/.+ ]]; then
+            role_name=$(echo "$resource_arn" | awk -F'/' '{print $2}')
             instance_profiles=$(aws iam list-instance-profiles-for-role --role-name "$role_name" --query 'InstanceProfiles[].InstanceProfileName' --output text)
             for profile in $instance_profiles; do
                 echo "Removing role $role_name from instance profile $profile"
                 aws iam remove-role-from-instance-profile --instance-profile-name "$profile" --role-name "$role_name"
             done
-
             policies=$(aws iam list-attached-role-policies --role-name "$role_name" --query 'AttachedPolicies[].PolicyArn' --output text)
             for policy_arn in $policies; do
                 echo "Detaching policy $policy_arn from $role_name"
                 aws iam detach-role-policy --role-name "$role_name" --policy-arn "$policy_arn"
             done
-
             inline_policies=$(aws iam list-role-policies --role-name "$role_name" --query 'PolicyNames' --output text)
             for policy_name in $inline_policies; do
                 echo "Deleting inline policy $policy_name from $role_name"
                 aws iam delete-role-policy --role-name "$role_name" --policy-name "$policy_name"
             done
-
             echo "Attempting to delete role: $role_name"
             if aws iam delete-role --role-name "$role_name"; then
                 echo "Successfully deleted role: $role_name"
@@ -1160,7 +1153,7 @@ clean_up_iam_resources() {
                 echo "Failed to delete role: $role_name. Check for any remaining dependencies."
             fi
         else
-            echo "Invalid resource name: $resource_name"
+            echo "Invalid resource ARN: $resource_arn"
         fi
     done
 }
