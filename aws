@@ -104,57 +104,67 @@ create_ec2_instance() {
     echo "${INSTANCE_ID}"
 }
 
-# Delete Security Group
+# Delete Security Groups
 #
-# Deletes a specified security group by its ID or name.
+# Deletes specified security groups, including detaching network interfaces and removing rules.
 #
 # Usage:
-#   delete_security_group "security-group-id"
-#   delete_security_group "security-group-name"
+#   delete_security_groups security_group_names
 #
 # Output:
-#   Deletes the specified security group if it exists. If it doesn't exist,
-#   the function outputs a message indicating so.
-#   If the function fails to delete the security group, it retries up to a
-#   maximum number of attempts before giving up.
+#   Deletes the specified security groups, handling dependencies.
 #
 # Example(s):
-#   delete_security_group "sg-0123456789abcdef0"
-#   delete_security_group "my-security-group"
-delete_security_group() {
-    local sec_grp="$1"
-    local sec_grp_ids=()
-    local max_attempts=5
-    local attempt=1
+#   delete_security_groups "sg1" "sg2"
+delete_security_groups() {
+    local security_group_names=("$@")
 
-    # Use the list_security_groups function to get the IDs of the matching security groups
-    if [[ "$sec_grp" == sg-* ]]; then
-        sec_grp_ids+=("$sec_grp")
-    else
-        while IFS= read -r line; do
-            sec_grp_ids+=("$line")
-        done < <(list_security_groups "$sec_grp")
-    fi
+    for sg_name in "${security_group_names[@]}"; do
+        # Get the security group ID
+        sg_id=$(aws ec2 describe-security-groups --query "SecurityGroups[?GroupName=='$sg_name'].GroupId" --output text)
 
-    for sec_grp_id in "${sec_grp_ids[@]}"; do
-        while (( attempt <= max_attempts )); do
-            # Try to delete the security group
-            if aws ec2 delete-security-group --group-id="$sec_grp_id" > /dev/null 2>&1; then
-                # If successful, exit the loop
-                echo "Successfully deleted security group with ID: $sec_grp_id"
-                break
-            else
-                # If unsuccessful, increment the attempt counter and try again
-                echo "Failed to delete security group with ID: $sec_grp_id. Attempt $attempt of $max_attempts. Retrying in 5 seconds..."
-                (( attempt++ ))
-                sleep 5
-            fi
-        done
+        if [ -z "$sg_id" ]; then
+            echo "Security group $sg_name not found."
+            continue
+        fi
 
-        if (( attempt > max_attempts )); then
-            echo "Unable to delete security group with ID: $sec_grp_id after $max_attempts attempts."
+        echo "Processing security group $sg_name with ID $sg_id."
+
+        # Detach network interfaces
+        network_interfaces=$(aws ec2 describe-network-interfaces --filters Name=group-id,Values="$sg_id" --query 'NetworkInterfaces[*].NetworkInterfaceId' --output text)
+        if [ -n "$network_interfaces" ]; then
+            network_interface_ids=($(echo "$network_interfaces" | tr ' ' '\n'))  # Split the space-separated string into an array
+            for ni in "${network_interface_ids[@]}"; do
+                ni=$(echo "$ni" | xargs)  # Trim whitespace
+                echo "Detaching network interface $ni from security group $sg_name."
+                attachment_id=$(aws ec2 describe-network-interfaces --network-interface-ids "$ni" --query 'NetworkInterfaces[0].Attachment.AttachmentId' --output text)
+                if [ -n "$attachment_id" ]; then
+                    if ! aws ec2 detach-network-interface --attachment-id "$attachment_id"; then
+                        echo "Failed to detach network interface $ni from security group $sg_name. Check your permissions."
+                    fi
+                fi
+            done
+        fi
+
+        # Remove all inbound rules
+        inbound_rules=$(aws ec2 describe-security-groups --group-ids "$sg_id" --query 'SecurityGroups[0].IpPermissions' --output json)
+        if [ "$inbound_rules" != "[]" ]; then
+            aws ec2 revoke-security-group-ingress --group-id "$sg_id" --ip-permissions "$inbound_rules"
+        fi
+
+        # Remove all outbound rules
+        outbound_rules=$(aws ec2 describe-security-groups --group-ids "$sg_id" --query 'SecurityGroups[0].IpPermissionsEgress' --output json)
+        if [ "$outbound_rules" != "[]" ]; then
+            aws ec2 revoke-security-group-egress --group-id "$sg_id" --ip-permissions "$outbound_rules"
+        fi
+
+        # Attempt to delete the security group
+        if ! aws ec2 delete-security-group --group-id "$sg_id" --no-cli-pager; then
+            echo "Failed to delete security group $sg_name with ID $sg_id. Check for dependent objects or permissions."
         fi
     done
+
+    echo "Security groups processing completed."
 }
 
 # Download Bucket
@@ -597,9 +607,14 @@ delete_security_groups() {
         # Detach network interfaces
         network_interfaces=$(aws ec2 describe-network-interfaces --filters Name=group-id,Values="$sg_id" --query 'NetworkInterfaces[*].NetworkInterfaceId' --output text)
         if [ -n "$network_interfaces" ]; then
-            for ni in $network_interfaces; do
+            network_interface_ids=($(echo "$network_interfaces" | tr ' ' '\n'))  # Split the space-separated string into an array
+            for ni in "${network_interface_ids[@]}"; do
+                ni=$(echo "$ni" | xargs)  # Trim whitespace
                 echo "Detaching network interface $ni from security group $sg_name."
-                aws ec2 detach-network-interface --attachment-id "$(aws ec2 describe-network-interfaces --network-interface-ids "$ni" --query 'NetworkInterfaces[0].Attachment.AttachmentId' --output text)"
+                attachment_id=$(aws ec2 describe-network-interfaces --network-interface-ids "$ni" --query 'NetworkInterfaces[0].Attachment.AttachmentId' --output text)
+                if [ -n "$attachment_id" ]; then
+                    aws ec2 detach-network-interface --attachment-id "$attachment_id"
+                fi
             done
         fi
 
@@ -621,6 +636,7 @@ delete_security_groups() {
 
     echo "Security groups processing completed."
 }
+
 
 # Terminate Instance
 #
