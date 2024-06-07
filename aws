@@ -465,6 +465,53 @@ list_instance_profiles() {
     done
 }
 
+# Delete Instance Profiles
+#
+# Deletes instance profiles based on input criteria. It reads instance profile names
+# from standard input (stdin) and performs the following actions:
+# - Removes the role from the instance profile.
+# - Deletes the instance profile itself.
+#
+# Usage:
+#   Pipe the output of list_instance_profiles into this function to delete them.
+#   Or provide a specific instance profile name as an argument to delete it.
+#
+# Input:
+#   Instance profile names are expected to be read from stdin, one per line.
+#   If a specific instance profile name is provided as an argument, it will be deleted.
+#
+# Output:
+#   Outputs the actions taken for each instance profile, including removing roles
+#   and deleting the instance profile. If any errors occur, they are also output.
+#
+# Example(s):
+#   list_instance_profiles | delete_instance_profile
+#   delete_instance_profile example-instance-profile
+delete_instance_profile() {
+    if [[ -n "$1" ]]; then
+        echo "$1" | delete_instance_profile_from_input
+    else
+        delete_instance_profile_from_input
+    fi
+}
+
+delete_instance_profile_from_input() {
+    while IFS= read -r instance_profile_name; do
+        # List the roles in the instance profile
+        roles=$(aws iam get-instance-profile --instance-profile-name "$instance_profile_name" --query 'InstanceProfile.Roles[].RoleName' --output text)
+
+        # Remove each role from the instance profile
+        for role in $roles; do
+            echo "Removing role $role from instance profile $instance_profile_name"
+            aws iam remove-role-from-instance-profile --instance-profile-name "$instance_profile_name" --role-name "$role"
+        done
+
+        # Delete the instance profile
+        echo "Deleting instance profile: $instance_profile_name"
+        aws iam delete-instance-profile --instance-profile-name "$instance_profile_name"
+    done
+}
+
 # List Running Instances
 #
 # Lists all running EC2 instances.
@@ -544,7 +591,11 @@ delete_security_groups() {
         # Detach network interfaces
         network_interfaces=$(aws ec2 describe-network-interfaces --filters Name=group-id,Values="$sg_id" --query 'NetworkInterfaces[*].NetworkInterfaceId' --output text)
         if [ -n "$network_interfaces" ]; then
-            mapfile -t network_interface_ids <<< "$network_interfaces"  # Split the space-separated string into an array
+            network_interface_ids=()
+            while IFS= read -r line; do
+                network_interface_ids+=("$line")
+            done <<< "$network_interfaces"
+
             for ni in "${network_interface_ids[@]}"; do
                 ni=$(echo "$ni" | xargs)  # Trim whitespace
                 echo "Detaching network interface $ni from security group $sg_name."
