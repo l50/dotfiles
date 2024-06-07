@@ -104,69 +104,6 @@ create_ec2_instance() {
     echo "${INSTANCE_ID}"
 }
 
-# Delete Security Groups
-#
-# Deletes specified security groups, including detaching network interfaces and removing rules.
-#
-# Usage:
-#   delete_security_groups security_group_names
-#
-# Output:
-#   Deletes the specified security groups, handling dependencies.
-#
-# Example(s):
-#   delete_security_groups "sg1" "sg2"
-delete_security_groups() {
-    local security_group_names=("$@")
-
-    for sg_name in "${security_group_names[@]}"; do
-        # Get the security group ID
-        sg_id=$(aws ec2 describe-security-groups --query "SecurityGroups[?GroupName=='$sg_name'].GroupId" --output text)
-
-        if [ -z "$sg_id" ]; then
-            echo "Security group $sg_name not found."
-            continue
-        fi
-
-        echo "Processing security group $sg_name with ID $sg_id."
-
-        # Detach network interfaces
-        network_interfaces=$(aws ec2 describe-network-interfaces --filters Name=group-id,Values="$sg_id" --query 'NetworkInterfaces[*].NetworkInterfaceId' --output text)
-        if [ -n "$network_interfaces" ]; then
-            network_interface_ids=($(echo "$network_interfaces" | tr ' ' '\n'))  # Split the space-separated string into an array
-            for ni in "${network_interface_ids[@]}"; do
-                ni=$(echo "$ni" | xargs)  # Trim whitespace
-                echo "Detaching network interface $ni from security group $sg_name."
-                attachment_id=$(aws ec2 describe-network-interfaces --network-interface-ids "$ni" --query 'NetworkInterfaces[0].Attachment.AttachmentId' --output text)
-                if [ -n "$attachment_id" ]; then
-                    if ! aws ec2 detach-network-interface --attachment-id "$attachment_id"; then
-                        echo "Failed to detach network interface $ni from security group $sg_name. Check your permissions."
-                    fi
-                fi
-            done
-        fi
-
-        # Remove all inbound rules
-        inbound_rules=$(aws ec2 describe-security-groups --group-ids "$sg_id" --query 'SecurityGroups[0].IpPermissions' --output json)
-        if [ "$inbound_rules" != "[]" ]; then
-            aws ec2 revoke-security-group-ingress --group-id "$sg_id" --ip-permissions "$inbound_rules"
-        fi
-
-        # Remove all outbound rules
-        outbound_rules=$(aws ec2 describe-security-groups --group-ids "$sg_id" --query 'SecurityGroups[0].IpPermissionsEgress' --output json)
-        if [ "$outbound_rules" != "[]" ]; then
-            aws ec2 revoke-security-group-egress --group-id "$sg_id" --ip-permissions "$outbound_rules"
-        fi
-
-        # Attempt to delete the security group
-        if ! aws ec2 delete-security-group --group-id "$sg_id" --no-cli-pager; then
-            echo "Failed to delete security group $sg_name with ID $sg_id. Check for dependent objects or permissions."
-        fi
-    done
-
-    echo "Security groups processing completed."
-}
-
 # Download Bucket
 #
 # Syncs the contents of the specified Amazon S3 bucket to the
@@ -607,7 +544,7 @@ delete_security_groups() {
         # Detach network interfaces
         network_interfaces=$(aws ec2 describe-network-interfaces --filters Name=group-id,Values="$sg_id" --query 'NetworkInterfaces[*].NetworkInterfaceId' --output text)
         if [ -n "$network_interfaces" ]; then
-            network_interface_ids=($(echo "$network_interfaces" | tr ' ' '\n'))  # Split the space-separated string into an array
+            mapfile -t network_interface_ids <<< "$network_interfaces"  # Split the space-separated string into an array
             for ni in "${network_interface_ids[@]}"; do
                 ni=$(echo "$ni" | xargs)  # Trim whitespace
                 echo "Detaching network interface $ni from security group $sg_name."
@@ -636,7 +573,6 @@ delete_security_groups() {
 
     echo "Security groups processing completed."
 }
-
 
 # Terminate Instance
 #
