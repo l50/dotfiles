@@ -4,6 +4,7 @@
 alias k='kubectl'
 alias ka='kapply'
 alias kaf='ka -f'
+alias kak='k apply -k'
 alias kd='kdesc'
 alias kdd='kdesc deployment'
 alias kdi='kdesc ingress'
