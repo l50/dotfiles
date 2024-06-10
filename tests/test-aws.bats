@@ -24,7 +24,7 @@ export RUNNING_BATS_TEST=1
     # Mocking aws CLI responses
     aws_mock() {
         case "$*" in
-            "ec2 describe-security-groups --query SecurityGroups[?GroupName=='test-sg'].GroupId --output text")
+            "ec2 describe-security-groups --filters Name=group-name,Values=test-sg --query SecurityGroups[0].GroupId --output text")
                 echo "sg-12345678"
                 ;;
             "ec2 describe-security-groups --group-ids sg-12345678 --query SecurityGroups[0].IpPermissions --output json")

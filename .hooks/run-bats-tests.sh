@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ex
 
 # Check if GITHUB_TOKEN is not set
 if [[ -z $GITHUB_TOKEN ]]; then

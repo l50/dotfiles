@@ -564,7 +564,7 @@ list_security_groups() {
 
 # Delete Security Groups
 #
-# Deletes specified security groups by name or ID, including detaching network interfaces 
+# Deletes specified security groups by name or ID, including detaching network interfaces
 # and removing rules.
 #
 # Usage:
