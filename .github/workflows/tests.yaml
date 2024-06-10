@@ -27,6 +27,11 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Set up temporary git config to satisfy tests
+        run: |
+          git config --global user.email "${{ github.event.inputs.git_email }}"
+          git config --global user.name "${{ github.event.inputs.git_user }}"
+
       - name: Install dependencies
         run: |
           if [[ "${RUNNER_OS}" == "Linux" ]]; then
@@ -43,6 +48,11 @@ jobs:
           python3 -m pip install ansible
           ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,main
 
+      - name: Set up temporary git config to satisfy tests
+        run: |
+          git config --global user.email "${{ github.event.inputs.git_email }}"
+          git config --global user.name "${{ github.event.inputs.git_user }}"
+
       - name: Install the dotfiles
         run: |
           source venv/bin/activate
@@ -58,11 +68,6 @@ jobs:
         uses: mig4/setup-bats@af9a00deb21b5d795cabfeaa8d9060410377686d # v1
         with:
           bats-version: 1.2.1
-
-      - name: Set up temporary git config to satisfy tests
-        run: |
-          git config --global user.email "${{ github.event.inputs.git_email }}"
-          git config --global user.name "${{ github.event.inputs.git_user }}"
 
       - name: Run Bats tests
         run: |
