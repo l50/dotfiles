@@ -5,15 +5,6 @@ on:
     branches: [main]
 
   workflow_dispatch:
-    inputs:
-      git_user:
-        description: Username to associate with running this action
-        required: true
-        default: Jayson Grace
-      git_email:
-        description: Email to associate with running this action
-        required: true
-        default: jayson.e.grace@gmail.com
 
 jobs:
   bats_tests:
@@ -29,8 +20,8 @@ jobs:
 
       - name: Set up git config
         run: |
-          git config --global user.email "${{ github.event.inputs.git_email }}"
-          git config --global user.name "${{ github.event.inputs.git_user }}"
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
 
       - name: Install dependencies
         run: |
@@ -82,8 +73,8 @@ jobs:
 
       - name: Set up git config
         run: |
-          git config --global user.email "${{ github.event.inputs.git_email }}"
-          git config --global user.name "${{ github.event.inputs.git_user }}"
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
 
       - name: Install asdf cli
         uses: asdf-vm/actions/setup@6a442392015fbbdd8b48696d41e0051b2698b2e4 # v2
