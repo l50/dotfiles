@@ -6,6 +6,12 @@ load '../go'
 
 export RUNNING_BATS_TEST=1
 
+setup() {
+    git config --global user.email "action@github.com"
+    git config --global user.name "GitHub Action"
+}
+
+
 @test "pull_repos function" {
     # Cleanup any existing repository
     rm -rf /tmp/testrepo*
