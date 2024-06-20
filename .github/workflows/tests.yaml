@@ -33,7 +33,7 @@ jobs:
         run: |
           if [[ "${RUNNER_OS}" == "Linux" ]]; then
               sudo apt-get update
-              sudo apt-get install -y curl git zsh python3-venv
+              sudo apt-get install -y curl git zsh
           elif [[ "${RUNNER_OS}" == "macOS" ]]; then
               brew install curl git zsh
           fi
@@ -48,8 +48,9 @@ jobs:
 
       - name: Create global Ansible config
         run: |
+          PYTHON_PATH=$(python3 -c 'import sys; print(sys.executable)')
           echo "[defaults]" > $HOME/ansible.cfg
-          echo "interpreter_python = $(pipx which python)" >> $HOME/ansible.cfg
+          echo "interpreter_python = $PYTHON_PATH" >> $HOME/ansible.cfg
           export ANSIBLE_CONFIG=$HOME/ansible.cfg
 
       - name: Install the dotfiles
@@ -100,7 +101,7 @@ jobs:
         run: |
           if [[ "${RUNNER_OS}" == "Linux" ]]; then
               sudo apt-get update
-              sudo apt-get install -y curl git zsh python3-venv
+              sudo apt-get install -y curl git zsh
           elif [[ "${RUNNER_OS}" == "macOS" ]]; then
               brew install curl git zsh
           fi
@@ -115,8 +116,9 @@ jobs:
 
       - name: Create global Ansible config
         run: |
+          PYTHON_PATH=$(python3 -c 'import sys; print(sys.executable)')
           echo "[defaults]" > $HOME/ansible.cfg
-          echo "interpreter_python = $(pipx which python)" >> $HOME/ansible.cfg
+          echo "interpreter_python = $PYTHON_PATH" >> $HOME/ansible.cfg
           export ANSIBLE_CONFIG=$HOME/ansible.cfg
 
       - name: Install the dotfiles
