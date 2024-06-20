@@ -50,6 +50,12 @@ jobs:
           "molecule-plugins[docker]"
           ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,main
 
+      - name: Create global Ansible config
+        run: |
+          echo "[defaults]" > $HOME/ansible.cfg
+          echo "interpreter_python = $(pwd)/venv/bin/python3" >> $HOME/ansible.cfg
+          export ANSIBLE_CONFIG=$HOME/ansible.cfg
+
       - name: Install the dotfiles
         run: |
           source venv/bin/activate
@@ -115,6 +121,12 @@ jobs:
           molecule-docker \
           "molecule-plugins[docker]"
           ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,main
+
+      - name: Create global Ansible config
+        run: |
+          echo "[defaults]" > $HOME/ansible.cfg
+          echo "interpreter_python = $(pwd)/venv/bin/python3" >> $HOME/ansible.cfg
+          export ANSIBLE_CONFIG=$HOME/ansible.cfg
 
       - name: Install the dotfiles
         run: |
