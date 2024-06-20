@@ -111,6 +111,9 @@ jobs:
       - name: Install the dotfiles
         run: |
           chmod +x install_dot_files.sh
+          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            export PATH=$PATH:/Users/runner/hostedtoolcache/Python/3.12.4/arm64/bin
+          fi
           if ./install_dot_files.sh; then
             echo "Dotfiles installed successfully"
           else
