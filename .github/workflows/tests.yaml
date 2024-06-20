@@ -28,12 +28,16 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Add Python to PATH
+        run: |
+          echo "${{ runner.tool_cache }}/Python/3.x.x/bin" >> $GITHUB_PATH
+
       - name: Install dependencies
         run: |
-          if [[ "${RUNNER_OS}" == "Linux" ]]; then
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
               sudo apt-get update
               sudo apt-get install -y curl git zsh
-          elif [[ "${RUNNER_OS}" == "macOS" ]]; then
+          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
               brew install curl git zsh
           fi
 
@@ -51,7 +55,6 @@ jobs:
             echo "Dotfiles installation failed"
             exit 1
           fi
-        shell: bash
 
       - name: Setup BATS
         uses: mig4/setup-bats@af9a00deb21b5d795cabfeaa8d9060410377686d # v1
@@ -84,15 +87,19 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Add Python to PATH
+        run: |
+          echo "${{ runner.tool_cache }}/Python/3.x.x/bin" >> $GITHUB_PATH
+
       - name: Install asdf cli
         uses: asdf-vm/actions/setup@6a442392015fbbdd8b48696d41e0051b2698b2e4 # v2
 
       - name: Install dependencies
         run: |
-          if [[ "${RUNNER_OS}" == "Linux" ]]; then
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
               sudo apt-get update
               sudo apt-get install -y curl git zsh
-          elif [[ "${RUNNER_OS}" == "macOS" ]]; then
+          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
               brew install curl git zsh
           fi
 
@@ -110,7 +117,6 @@ jobs:
             echo "Dotfiles installation failed"
             exit 1
           fi
-        shell: bash
 
       - name: Confirm dotfiles are installed and working
         run: |
