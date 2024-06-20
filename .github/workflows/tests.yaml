@@ -10,18 +10,24 @@ jobs:
   bats_tests:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
     steps:
-      - name: Set up git repository
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      - name: Clone git repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           submodules: recursive
 
-      - name: Set up git config
+      - name: Setup git config
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
+
+      - name: Setup Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
+        with:
+          python-version: "3.x"
 
       - name: Install dependencies
         run: |
@@ -32,11 +38,16 @@ jobs:
               brew install curl git zsh
           fi
 
-      - name: Set up Python virtual environment
+      - name: Configure Python virtual environment
         run: |
           python3 -m venv venv
           source venv/bin/activate
-          python3 -m pip install ansible
+          python3 -m pip install --upgrade \
+          ansible-core \
+          docker \
+          molecule \
+          molecule-docker \
+          "molecule-plugins[docker]"
           ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,main
 
       - name: Install the dotfiles
@@ -66,18 +77,23 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
     steps:
-      - name: Set up git repository
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      - name: Clone git repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           submodules: recursive
 
-      - name: Set up git config
+      - name: Setup git config
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
 
       - name: Install asdf cli
         uses: asdf-vm/actions/setup@6a442392015fbbdd8b48696d41e0051b2698b2e4 # v2
+
+      - name: Set up Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
+        with:
+          python-version: "3.x"
 
       - name: Install dependencies
         run: |
@@ -92,7 +108,12 @@ jobs:
         run: |
           python3 -m venv venv
           source venv/bin/activate
-          python3 -m pip install ansible
+          python3 -m pip install --upgrade \
+          ansible-core \
+          docker \
+          molecule \
+          molecule-docker \
+          "molecule-plugins[docker]"
           ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,main
 
       - name: Install the dotfiles
