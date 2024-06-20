@@ -23,18 +23,13 @@ jobs:
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
 
-      - name: Setup Python
-        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
-        with:
-          python-version: "3.12.4"
-
       - name: Install dependencies
         run: |
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
               sudo apt-get update
               sudo apt-get install -y curl git zsh
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-              brew install curl git zsh
+              brew install curl git zsh python3
           fi
 
       - name: Install ansible and the workstation collection
