@@ -33,31 +33,21 @@ jobs:
         run: |
           if [[ "${RUNNER_OS}" == "Linux" ]]; then
               sudo apt-get update
-              sudo apt-get install -y curl git zsh
+              sudo apt-get install -y curl git zsh python3-venv
           elif [[ "${RUNNER_OS}" == "macOS" ]]; then
               brew install curl git zsh
           fi
 
-      - name: Install pipx and dependencies
+      - name: Set up Python virtual environment
         run: |
-          export PIPX_HOME="$HOME/.local/pipx"
-          export PIPX_BIN_DIR="$HOME/.local/bin"
-          mkdir -p $PIPX_HOME $PIPX_BIN_DIR
-          python3 -m pip install --user pipx
-          python3 -m pipx ensurepath
-          pipx install ansible-core
-          pipx inject ansible-core docker molecule molecule-docker "molecule-plugins[docker]"
+          python3 -m venv venv
+          source venv/bin/activate
+          python3 -m pip install ansible
           ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,main
-
-      - name: Create global Ansible config
-        run: |
-          PYTHON_PATH=$(python3 -c 'import sys; print(sys.executable)')
-          echo "[defaults]" > $HOME/ansible.cfg
-          echo "interpreter_python = $PYTHON_PATH" >> $HOME/ansible.cfg
-          export ANSIBLE_CONFIG=$HOME/ansible.cfg
 
       - name: Install the dotfiles
         run: |
+          source venv/bin/activate
           chmod +x install_dot_files.sh
           if ./install_dot_files.sh; then
             echo "Dotfiles installed successfully"
@@ -73,6 +63,7 @@ jobs:
 
       - name: Run Bats tests
         run: |
+          source venv/bin/activate
           bats tests/test-go.bats
 
   dotfile_test:
@@ -92,43 +83,33 @@ jobs:
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
 
-      - name: Install asdf cli
-        uses: asdf-vm/actions/setup@6a442392015fbbdd8b48696d41e0051b2698b2e4 # v2
-
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
         with:
           python-version: "3.x"
+
+      - name: Install asdf cli
+        uses: asdf-vm/actions/setup@6a442392015fbbdd8b48696d41e0051b2698b2e4 # v2
 
       - name: Install dependencies
         run: |
           if [[ "${RUNNER_OS}" == "Linux" ]]; then
               sudo apt-get update
-              sudo apt-get install -y curl git zsh
+              sudo apt-get install -y curl git zsh python3-venv
           elif [[ "${RUNNER_OS}" == "macOS" ]]; then
               brew install curl git zsh
           fi
 
-      - name: Install pipx and dependencies
+      - name: Set up Python virtual environment
         run: |
-          export PIPX_HOME="$HOME/.local/pipx"
-          export PIPX_BIN_DIR="$HOME/.local/bin"
-          mkdir -p $PIPX_HOME $PIPX_BIN_DIR
-          python3 -m pip install --user pipx
-          python3 -m pipx ensurepath
-          pipx install ansible-core
-          pipx inject ansible-core docker molecule molecule-docker "molecule-plugins[docker]"
+          python3 -m venv venv
+          source venv/bin/activate
+          python3 -m pip install ansible
           ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,main
-
-      - name: Create global Ansible config
-        run: |
-          PYTHON_PATH=$(python3 -c 'import sys; print(sys.executable)')
-          echo "[defaults]" > $HOME/ansible.cfg
-          echo "interpreter_python = $PYTHON_PATH" >> $HOME/ansible.cfg
-          export ANSIBLE_CONFIG=$HOME/ansible.cfg
 
       - name: Install the dotfiles
         run: |
+          source venv/bin/activate
           chmod +x install_dot_files.sh
           if ./install_dot_files.sh; then
             echo "Dotfiles installed successfully"
@@ -139,6 +120,7 @@ jobs:
 
       - name: Confirm dotfiles are installed and working
         run: |
+          source venv/bin/activate
           source ~/.zshrc
           cat ~/.zshrc
           source ~/.dotfiles/python
