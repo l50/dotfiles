@@ -51,6 +51,7 @@ jobs:
             echo "Dotfiles installation failed"
             exit 1
           fi
+        shell: bash
 
       - name: Setup BATS
         uses: mig4/setup-bats@af9a00deb21b5d795cabfeaa8d9060410377686d # v1
@@ -109,6 +110,7 @@ jobs:
             echo "Dotfiles installation failed"
             exit 1
           fi
+        shell: bash
 
       - name: Confirm dotfiles are installed and working
         run: |
