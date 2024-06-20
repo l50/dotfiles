@@ -70,15 +70,6 @@ jobs:
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
 
-      - name: Setup Python
-        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
-        with:
-          python-version: "3.x"
-
-      - name: Add Python to PATH
-        run: |
-          echo "${{ runner.tool_cache }}/Python/3.x.x/bin" >> $GITHUB_PATH
-
       - name: Install asdf cli
         uses: asdf-vm/actions/setup@6a442392015fbbdd8b48696d41e0051b2698b2e4 # v2
 
