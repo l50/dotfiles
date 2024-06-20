@@ -28,10 +28,6 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Add Python to PATH
-        run: |
-          echo "${{ runner.tool_cache }}/Python/3.x.x/bin" >> $GITHUB_PATH
-
       - name: Install dependencies
         run: |
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
