@@ -27,18 +27,25 @@ jobs:
         run: |
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
               sudo apt-get update
-              sudo apt-get install -y curl git zsh
+              sudo apt-get install -y curl git zsh python3-venv
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
               brew install curl git zsh python3
           fi
 
+      - name: Setup Python virtual environment
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+
       - name: Install ansible and the workstation collection
         run: |
+          source venv/bin/activate
           python3 -m pip install ansible
           ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,main
 
       - name: Install the dotfiles
         run: |
+          source venv/bin/activate
           chmod +x install_dot_files.sh
           if ./install_dot_files.sh; then
             echo "Dotfiles installed successfully"
@@ -54,6 +61,7 @@ jobs:
 
       - name: Run Bats tests
         run: |
+          source venv/bin/activate
           bats tests/test-go.bats
 
   dotfile_test:
@@ -89,18 +97,25 @@ jobs:
         run: |
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
               sudo apt-get update
-              sudo apt-get install -y curl git zsh
+              sudo apt-get install -y curl git zsh python3-venv
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-              brew install curl git zsh
+              brew install curl git zsh python3
           fi
+
+      - name: Setup Python virtual environment
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
 
       - name: Install ansible and the workstation collection
         run: |
+          source venv/bin/activate
           python3 -m pip install ansible
           ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,main
 
       - name: Install the dotfiles
         run: |
+          source venv/bin/activate
           chmod +x install_dot_files.sh
           if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
             export PATH=$PATH:/Users/runner/hostedtoolcache/Python/3.12.4/arm64/bin
