@@ -38,27 +38,22 @@ jobs:
               brew install curl git zsh
           fi
 
-      - name: Configure Python virtual environment
+      - name: Install pipx and dependencies
         run: |
-          python3 -m venv venv
-          source venv/bin/activate
-          python3 -m pip install --upgrade \
-          ansible-core \
-          docker \
-          molecule \
-          molecule-docker \
-          "molecule-plugins[docker]"
+          python3 -m pip install --user pipx
+          python3 -m pipx ensurepath
+          pipx install ansible-core
+          pipx inject ansible-core docker molecule molecule-docker "molecule-plugins[docker]"
           ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,main
 
       - name: Create global Ansible config
         run: |
           echo "[defaults]" > $HOME/ansible.cfg
-          echo "interpreter_python = $(pwd)/venv/bin/python3" >> $HOME/ansible.cfg
+          echo "interpreter_python = $(pipx which python)" >> $HOME/ansible.cfg
           export ANSIBLE_CONFIG=$HOME/ansible.cfg
 
       - name: Install the dotfiles
         run: |
-          source venv/bin/activate
           chmod +x install_dot_files.sh
           if ./install_dot_files.sh; then
             echo "Dotfiles installed successfully"
@@ -74,12 +69,12 @@ jobs:
 
       - name: Run Bats tests
         run: |
-          source venv/bin/activate
           bats tests/test-go.bats
 
   dotfile_test:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
     steps:
@@ -110,27 +105,22 @@ jobs:
               brew install curl git zsh
           fi
 
-      - name: Set up Python virtual environment
+      - name: Install pipx and dependencies
         run: |
-          python3 -m venv venv
-          source venv/bin/activate
-          python3 -m pip install --upgrade \
-          ansible-core \
-          docker \
-          molecule \
-          molecule-docker \
-          "molecule-plugins[docker]"
+          python3 -m pip install --user pipx
+          python3 -m pipx ensurepath
+          pipx install ansible-core
+          pipx inject ansible-core docker molecule molecule-docker "molecule-plugins[docker]"
           ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,main
 
       - name: Create global Ansible config
         run: |
           echo "[defaults]" > $HOME/ansible.cfg
-          echo "interpreter_python = $(pwd)/venv/bin/python3" >> $HOME/ansible.cfg
+          echo "interpreter_python = $(pipx which python)" >> $HOME/ansible.cfg
           export ANSIBLE_CONFIG=$HOME/ansible.cfg
 
       - name: Install the dotfiles
         run: |
-          source venv/bin/activate
           chmod +x install_dot_files.sh
           if ./install_dot_files.sh; then
             echo "Dotfiles installed successfully"
@@ -141,7 +131,6 @@ jobs:
 
       - name: Confirm dotfiles are installed and working
         run: |
-          source venv/bin/activate
           source ~/.zshrc
           cat ~/.zshrc
           source ~/.dotfiles/python
