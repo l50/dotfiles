@@ -2,7 +2,7 @@ ansible
 ansible-lint
 antsibull-changelog
 aws-consoler
-awscli
+awscliv2
 awsume
 checkov
 docker
