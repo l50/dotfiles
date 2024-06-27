@@ -24,7 +24,7 @@ export RUNNING_BATS_TEST=1
     # Mocking aws CLI responses
     aws_mock() {
         case "$*" in
-            "ec2 describe-security-groups --filters Name=group-name,Values=test-sg --query SecurityGroups[0].GroupId --output text")
+            "ec2 describe-security-groups --filters Name=group-name,Values=test-sg --query SecurityGroups[*].GroupId --output text")
                 echo "sg-12345678"
                 ;;
             "ec2 describe-security-groups --group-ids sg-12345678 --query SecurityGroups[0].IpPermissions --output json")
@@ -53,5 +53,5 @@ export RUNNING_BATS_TEST=1
 
     run delete_security_groups "test-sg"
     assert_success
-    assert_output --partial "Deleted security group test-sg with ID sg-12345678"
+    assert_output --partial "Deleted security group with ID sg-12345678 on attempt 1."
 }

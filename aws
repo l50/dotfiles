@@ -574,88 +574,89 @@ list_security_groups() {
 #   Deletes the specified security groups, handling dependencies.
 #
 # Example(s):
-#   delete_security_groups "sg-0cec4d85ba446428c" "my-security-group"
+#   delete_security_groups "sg-0cec4d85ba446428c"
+#   delete_security_groups "my-security-group"
+#   delete_security_groups "arn:aws:ec2:us-east-1:123445667:security-group/sg-0123456789abcdef0"
 delete_security_groups() {
-    local security_group_identifiers=("$@")
+    local search_pattern=$1
 
-    for sg_identifier in "${security_group_identifiers[@]}"; do
-        echo "Looking up security group: $sg_identifier"
+    # Get the security group IDs matching the pattern
+    sg_ids=$(aws ec2 describe-security-groups \
+        --filters Name=group-name,Values="$search_pattern" \
+        --query "SecurityGroups[*].GroupId" \
+        --output text)
 
-        # Determine if the identifier is a name or an ID
-        if [[ $sg_identifier == sg-* ]]; then
-            # It is an ID
-            sg_id=$sg_identifier
-        else
-            # It is a name, get the security group ID
-            sg_id=$(aws ec2 describe-security-groups \
-                --filters Name=group-name,Values="$sg_identifier" \
-                --query "SecurityGroups[0].GroupId" \
+    if [ -z "$sg_ids" ]; then
+        echo "No security groups found for pattern $search_pattern."
+        return
+    fi
+
+    # Iterate over each security group ID in parallel
+    echo "$sg_ids" | tr '\t' '\n' | while IFS= read -r sg_id; do
+        {
+            sg_id=$(echo "$sg_id" | xargs)  # Trim any whitespace
+            echo "Processing security group with ID $sg_id."
+
+            # Remove all inbound rules
+            inbound_rules=$(aws ec2 describe-security-groups \
+                --group-ids "$sg_id" \
+                --query 'SecurityGroups[0].IpPermissions' \
+                --output json)
+            if [ "$inbound_rules" != "[]" ]; then
+                echo "Revoking inbound rules for security group $sg_id"
+                aws ec2 revoke-security-group-ingress \
+                    --group-id "$sg_id" \
+                    --ip-permissions "$inbound_rules"
+            fi
+
+            # Remove all outbound rules
+            outbound_rules=$(aws ec2 describe-security-groups \
+                --group-ids "$sg_id" \
+                --query 'SecurityGroups[0].IpPermissionsEgress' \
+                --output json)
+            if [ "$outbound_rules" != "[]" ]; then
+                echo "Revoking outbound rules for security group $sg_id"
+                aws ec2 revoke-security-group-egress \
+                    --group-id "$sg_id" \
+                    --ip-permissions "$outbound_rules"
+            fi
+
+            # Detach network interfaces
+            network_interfaces=$(aws ec2 describe-network-interfaces \
+                --filters Name=group-id,Values="$sg_id" \
+                --query 'NetworkInterfaces[*].NetworkInterfaceId' \
                 --output text)
-        fi
+            if [ -n "$network_interfaces" ]; then
+                for ni in $network_interfaces; do
+                    ni=$(echo "$ni" | xargs)  # Trim whitespace
+                    echo "Detaching network interface $ni from security group $sg_id."
+                    attachment_id=$(aws ec2 describe-network-interfaces \
+                        --network-interface-ids "$ni" \
+                        --query 'NetworkInterfaces[0].Attachment.AttachmentId' \
+                        --output text)
+                    if [ -n "$attachment_id" ]; then
+                        aws ec2 detach-network-interface --attachment-id "$attachment_id"
+                        aws ec2 delete-network-interface --network-interface-id "$ni"
+                    fi
+                done
+            fi
 
-        if [ -z "$sg_id" ] || [ "$sg_id" == "None" ]; then
-            echo "Security group $sg_identifier not found."
-            continue
-        fi
-
-        echo "Processing security group $sg_identifier with ID $sg_id."
-
-        # Remove all inbound rules
-        inbound_rules=$(aws ec2 describe-security-groups \
-            --group-ids "$sg_id" \
-            --query 'SecurityGroups[0].IpPermissions' \
-            --output json)
-        if [ "$inbound_rules" != "[]" ]; then
-            echo "Revoking inbound rules for security group $sg_id"
-            aws ec2 revoke-security-group-ingress \
-                --group-id "$sg_id" \
-                --ip-permissions "$inbound_rules"
-        fi
-
-        # Remove all outbound rules
-        outbound_rules=$(aws ec2 describe-security-groups \
-            --group-ids "$sg_id" \
-            --query 'SecurityGroups[0].IpPermissionsEgress' \
-            --output json)
-        if [ "$outbound_rules" != "[]" ]; then
-            echo "Revoking outbound rules for security group $sg_id"
-            aws ec2 revoke-security-group-egress \
-                --group-id "$sg_id" \
-                --ip-permissions "$outbound_rules"
-        fi
-
-        # Detach network interfaces
-        network_interfaces=$(aws ec2 describe-network-interfaces \
-            --filters Name=group-id,Values="$sg_id" \
-            --query 'NetworkInterfaces[*].NetworkInterfaceId' \
-            --output text)
-        if [ -n "$network_interfaces" ]; then
-            for ni in $network_interfaces; do
-                ni=$(echo "$ni" | xargs)  # Trim whitespace
-                echo "Detaching network interface $ni from security group $sg_identifier."
-                attachment_id=$(aws ec2 describe-network-interfaces \
-                    --network-interface-ids "$ni" \
-                    --query 'NetworkInterfaces[0].Attachment.AttachmentId' \
-                    --output text)
-                if [ -n "$attachment_id" ]; then
-                    aws ec2 detach-network-interface --attachment-id "$attachment_id"
-                    aws ec2 delete-network-interface --network-interface-id "$ni"
+            # Attempt to delete the security group with retries
+            for attempt in {1..3}; do
+                echo "Attempting to delete security group with ID $sg_id (Attempt $attempt)"
+                if aws ec2 delete-security-group --group-id "$sg_id"; then
+                    echo "Deleted security group with ID $sg_id on attempt $attempt."
+                    break
+                else
+                    echo "Failed to delete security group with ID $sg_id on attempt $attempt. Retrying..."
+                    sleep 5
                 fi
             done
-        fi
-
-        # Attempt to delete the security group with retries
-        for attempt in {1..3}; do
-            echo "Attempting to delete security group $sg_identifier with ID $sg_id (Attempt $attempt)"
-            if aws ec2 delete-security-group --group-id "$sg_id"; then
-                echo "Deleted security group $sg_identifier with ID $sg_id on attempt $attempt."
-                break
-            else
-                echo "Failed to delete security group $sg_identifier with ID $sg_id on attempt $attempt. Retrying..."
-                sleep 5
-            fi
-        done
+        } &
     done
+
+    # Wait for all background processes to complete
+    wait
 
     echo "Security groups processing completed."
 }
@@ -1241,9 +1242,11 @@ delete_eks_cluster_and_node_groups() {
 #   scheduling the deletion of keys and deleting the aliases.
 #
 # Example(s):
+#   Search for and delete KMS keys with "tt-test" in their alias:
 #   delete_kms_keys_with_string "tt-test"
-#   This example searches for KMS keys with "tt-test" in their alias names, schedules them for deletion,
-#   and deletes the associated aliases.
+#
+#   Delete all KMS keys with an empty string in their alias:
+#   delete_kms_keys_with_string ' '
 delete_kms_keys_with_string() {
     local search_string=$1
 
@@ -1254,30 +1257,44 @@ delete_kms_keys_with_string() {
 
     # Get a list of KMS aliases with the search string in the name
     local ALIAS_LIST
-    ALIAS_LIST=$(aws kms list-aliases --region $AWS_DEFAULT_REGION --query 'Aliases[?contains(AliasName, `'"$search_string"'`)].AliasName' --output text)
+    if [[ "$search_string" == " " ]]; then
+        # Only select aliases that are exactly a single space
+        ALIAS_LIST=$(aws kms list-aliases --region "$AWS_DEFAULT_REGION" \
+            --query "Aliases[?AliasName==' '].AliasName" --output text)
+    else
+        ALIAS_LIST=$(aws kms list-aliases --region "$AWS_DEFAULT_REGION" \
+            --query "Aliases[?contains(AliasName, \`$search_string\`)].AliasName" --output text)
+    fi
 
-    # Iterate over each alias and delete the associated key
-    for ALIAS in $ALIAS_LIST; do
-        echo "Processing alias: $ALIAS"
+    # Process each alias in parallel
+    echo "$ALIAS_LIST" | tr '\t' '\n' | while IFS= read -r ALIAS; do
+        {
+            if [[ -n "$ALIAS" ]]; then
+                echo "Processing alias: $ALIAS"
 
-        # Get the key ID associated with the alias
-        local KEY_ID
-        KEY_ID=$(aws kms list-aliases --region $AWS_DEFAULT_REGION --query 'Aliases[?AliasName==`'"$ALIAS"'`].TargetKeyId' --output text)
+                # Get the key ID associated with the alias
+                KEY_ID=$(aws kms list-aliases --region "$AWS_DEFAULT_REGION" \
+                    --query "Aliases[?AliasName=='$ALIAS'].TargetKeyId" --output text)
 
-        if [ -n "$KEY_ID" ]; then
-            echo "Deleting key with alias: $ALIAS and key ID: $KEY_ID"
+                if [[ -n "$KEY_ID" ]]; then
+                    echo "Deleting key with alias: $ALIAS and key ID: $KEY_ID"
 
-            # Schedule key deletion (keys are not deleted immediately but scheduled for deletion)
-            aws kms schedule-key-deletion --key-id "$KEY_ID" --pending-window-in-days 7 --region $AWS_DEFAULT_REGION
+                    # Schedule key deletion (keys are not deleted immediately but scheduled for deletion)
+                    aws kms schedule-key-deletion --key-id "$KEY_ID" --pending-window-in-days 7 --region "$AWS_DEFAULT_REGION"
 
-            echo "Scheduled deletion for key ID: $KEY_ID"
+                    echo "Scheduled deletion for key ID: $KEY_ID"
 
-            # Delete the alias
-            aws kms delete-alias --alias-name "$ALIAS" --region $AWS_DEFAULT_REGION
+                    # Delete the alias
+                    aws kms delete-alias --alias-name "$ALIAS" --region "$AWS_DEFAULT_REGION"
 
-            echo "Deleted alias: $ALIAS"
-        else
-            echo "No key associated with alias: $ALIAS"
-        fi
+                    echo "Deleted alias: $ALIAS"
+                else
+                    echo "No key associated with alias: $ALIAS"
+                fi
+            fi
+        } &
     done
+
+    # Wait for all background processes to complete
+    wait
 }
