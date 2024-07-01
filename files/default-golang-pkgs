@@ -48,3 +48,6 @@ github.com/fzipp/gocyclo/cmd/gocyclo@latest
 github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 github.com/go-critic/go-critic/cmd/gocritic@latest
 github.com/goreleaser/goreleaser@latest
+
+// Parse and filter YAML documents from CLI
+github.com/mikefarah/yq/v4@latest
