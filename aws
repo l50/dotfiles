@@ -527,7 +527,7 @@ delete_instance_profile_from_input() {
 list_running_instances() {
   aws ec2 describe-instances \
     --query \
-    "Reservations[*].Instances[*].{InstanceId:InstanceId, VPC:VpcId, Subnet:SubnetId, PublicIP:PublicIpAddress,Name:Tags[?Key=='Name']|[0].Value}" \
+    "Reservations[*].Instances[*].{InstanceId:InstanceId, VPC:VpcId, Subnet:SubnetId, PublicIP:PublicIpAddress, PrivateIP:PrivateIpAddress, Name:Tags[?Key=='Name']|[0].Value}" \
     --filters Name=instance-state-name,Values=running --output json
 }
 
