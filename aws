@@ -661,7 +661,6 @@ delete_security_groups() {
     echo "Security groups processing completed."
 }
 
-
 # Terminate Instance
 #
 # Terminates a specified EC2 instance.
@@ -1297,4 +1296,52 @@ delete_kms_keys_with_string() {
 
     # Wait for all background processes to complete
     wait
+}
+
+# Cleans up S3 buckets based on input criteria
+#
+# This function lists and deletes S3 buckets that match a specified criteria. It deletes all objects
+# (including versions and delete markers) within the bucket before deleting the bucket itself.
+#
+# Usage:
+#   clean_up_s3_buckets "bucket-selection-criteria"
+#   where "bucket-selection-criteria" is the string used to match bucket names.
+#
+# Output:
+#   Outputs the progress of deleting objects and the bucket, including any errors encountered.
+#
+# Example(s):
+#   clean_up_s3_buckets "pt-fleet-admiral"
+clean_up_s3_buckets() {
+    local bucket_selection_criteria=$1
+
+    if [[ -z "$bucket_selection_criteria" ]]; then
+        echo "No bucket selection criteria provided. Usage: clean_up_s3_buckets <bucket-selection-criteria>"
+        return 1
+    fi
+
+    # List all buckets with the selection criteria
+    local buckets=()
+    while IFS= read -r line; do
+        buckets+=("$line")
+    done < <(aws s3 ls | grep -i "$bucket_selection_criteria" | awk '{print $3}')
+
+    for bucket in "${buckets[@]}"; do
+        echo "Deleting objects from bucket: ${bucket}"
+
+        # Remove all versions of all objects from the bucket
+        aws s3api list-object-versions --bucket "$bucket" --output json | jq -r '.Versions[] | .Key + " " + .VersionId' | while read -r key versionId; do
+            aws s3api delete-object --bucket "$bucket" --key "$key" --version-id "$versionId"
+        done
+
+        # Remove all delete markers (needed for versioned buckets)
+        aws s3api list-object-versions --bucket "$bucket" --output json | jq -r '.DeleteMarkers[] | .Key + " " + .VersionId' | while read -r key versionId; do
+            aws s3api delete-object --bucket "$bucket" --key "$key" --version-id "$versionId"
+        done
+
+        echo "Deleting bucket: ${bucket}"
+
+        # Delete the bucket
+        aws s3 rb s3://"$bucket" --force
+    done
 }
