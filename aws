@@ -1327,21 +1327,20 @@ clean_up_s3_buckets() {
     done < <(aws s3 ls | grep -i "$bucket_selection_criteria" | awk '{print $3}')
 
     for bucket in "${buckets[@]}"; do
-        echo "Deleting objects from bucket: ${bucket}"
+        (
+            echo "Deleting objects from bucket: ${bucket}"
 
-        # Remove all versions of all objects from the bucket
-        aws s3api list-object-versions --bucket "$bucket" --output json | jq -r '.Versions[] | .Key + " " + .VersionId' | while read -r key versionId; do
-            aws s3api delete-object --bucket "$bucket" --key "$key" --version-id "$versionId"
-        done
+            # Remove all versions of all objects from the bucket
+            aws s3api list-object-versions --bucket "$bucket" --output json | jq -r '.Versions[] | .Key + " " + .VersionId' | xargs -P 10 -n 2 aws s3api delete-object --bucket "$bucket" --key {} --version-id {}
 
-        # Remove all delete markers (needed for versioned buckets)
-        aws s3api list-object-versions --bucket "$bucket" --output json | jq -r '.DeleteMarkers[] | .Key + " " + .VersionId' | while read -r key versionId; do
-            aws s3api delete-object --bucket "$bucket" --key "$key" --version-id "$versionId"
-        done
+            # Remove all delete markers (needed for versioned buckets)
+            aws s3api list-object-versions --bucket "$bucket" --output json | jq -r '.DeleteMarkers[] | .Key + " " + .VersionId' | xargs -P 10 -n 2 aws s3api delete-object --bucket "$bucket" --key {} --version-id {}
 
-        echo "Deleting bucket: ${bucket}"
+            echo "Deleting bucket: ${bucket}"
 
-        # Delete the bucket
-        aws s3 rb s3://"$bucket" --force
+            # Delete the bucket
+            aws s3 rb s3://"$bucket" --force
+        ) &
     done
+    wait
 }
