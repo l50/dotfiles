@@ -43,6 +43,82 @@ create_ec2_instance() {
     echo "${INSTANCE_ID}"
 }
 
+# Delete Instance Profiles
+#
+# Deletes instance profiles based on input criteria. It reads instance profile names
+# from standard input (stdin) and performs the following actions:
+# - Removes the role from the instance profile.
+# - Deletes the instance profile itself.
+#
+# Usage:
+#   Pipe the output of list_instance_profiles into this function to delete them.
+#   Or provide a specific instance profile name as an argument to delete it.
+#
+# Input:
+#   Instance profile names are expected to be read from stdin, one per line.
+#   If a specific instance profile name is provided as an argument, it will be deleted.
+#
+# Output:
+#   Outputs the actions taken for each instance profile, including removing roles
+#   and deleting the instance profile. If any errors occur, they are also output.
+#
+# Example(s):
+#   list_instance_profiles | delete_instance_profile
+#   delete_instance_profile example-instance-profile
+delete_instance_profile() {
+    if [[ -n "$1" ]]; then
+        echo "$1" | delete_instance_profile_from_input
+    else
+        delete_instance_profile_from_input
+    fi
+}
+
+delete_instance_profile_from_input() {
+    while IFS= read -r instance_profile_name; do
+        # List the roles in the instance profile
+        roles=$(aws iam get-instance-profile --instance-profile-name "$instance_profile_name" --query 'InstanceProfile.Roles[].RoleName' --output text)
+
+        # Remove each role from the instance profile
+        for role in $roles; do
+            echo "Removing role $role from instance profile $instance_profile_name"
+            aws iam remove-role-from-instance-profile --instance-profile-name "$instance_profile_name" --role-name "$role"
+        done
+
+        # Delete the instance profile
+        echo "Deleting instance profile: $instance_profile_name"
+        aws iam delete-instance-profile --instance-profile-name "$instance_profile_name"
+    done
+}
+
+# Delete Unused Elastic IPs (EIPs)
+#
+# Deletes all Elastic IP addresses (EIPs) that are not associated with any running instances.
+# This function uses AWS CLI to find and release any unassociated EIPs, helping to avoid unnecessary charges.
+#
+# Usage:
+#   delete_unused_eips
+#   No arguments are required. Simply run the function to check and release all unassociated EIPs.
+#
+# Output:
+#   For each EIP released, it outputs a success message with the allocation ID of the released EIP.
+#   If an EIP cannot be released, it outputs a failure message with the allocation ID.
+#
+# Example(s):
+#   delete_unused_eips
+delete_unused_eips() {
+    echo "Deleting all unused EIPs..."
+
+    # Get all unused EIPs, output in JSON, then parse with jq
+    aws ec2 describe-addresses --query 'Addresses[?InstanceId==null].AllocationId' --output json | jq -r '.[]' | while IFS= read -r id; do
+        if [ -n "$id" ]; then
+            # Delete the EIP
+            aws ec2 release-address --allocation-id "$id" && echo "Successfully deleted EIP with allocation ID: $id" || echo "Failed to delete EIP with allocation ID: $id"
+        fi
+    done
+
+    echo "Finished deleting all unused EIPs."
+}
+
 # Get Instances by Specified Attribute
 #
 # Fetches the ID of the EC2 instances based on Name, ARN, or Tag Name.
@@ -315,6 +391,27 @@ get_latest_ami () {
 		return 1
 	fi
 	echo "$AMI_ID"
+}
+
+# List Instance Profiles
+#
+# Lists all instance profiles.
+#
+# Usage:
+#   list_instance_profiles
+#
+# Output:
+#   Outputs a list of instance profiles.
+#
+# Example(s):
+#   list_instance_profiles
+list_instance_profiles() {
+    INSTANCE_PROFILE_NAMES=$(aws iam list-instance-profiles --query "InstanceProfiles[].InstanceProfileName" --output text | tr '\t' '\n')
+
+    # For each instance profile, print the name
+    for INSTANCE_PROFILE_NAME in $INSTANCE_PROFILE_NAMES; do
+        echo "$INSTANCE_PROFILE_NAME"
+    done
 }
 
 # List Running Instances
