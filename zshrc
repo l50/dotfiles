@@ -19,6 +19,26 @@ for file in "${HOME}/.dotfiles"/*; do
   fi
 done
 
+# Source cloud dotfiles
+for provider in "${HOME}/.dotfiles/cloud"/*; do
+  if [[ -d "${provider}" ]]; then
+    for file in "${provider}"/*; do
+      if [[ -f "${file}" && -r "${file}" ]]; then
+        # shellcheck source=/dev/null
+        source "${file}"
+      fi
+      if [[ -d "${file}" ]]; then
+        for script in "${file}"/*; do
+          if [[ -f "${script}" && -r "${script}" ]]; then
+            # shellcheck source=/dev/null
+            source "${script}"
+          fi
+        done
+      fi
+    done
+  fi
+done
+
 # Mac OS specific dotfile
 if [[ "$(uname)" == 'Darwin' ]]; then
   # shellcheck source=/dev/null
