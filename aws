@@ -150,21 +150,9 @@ wait_for_command() {
 }
 
 # Source cloud dotfiles
-for provider in "${HOME}/.dotfiles/cloud"/*; do
-  if [[ -d "${provider}" ]]; then
-    for file in "${provider}"/*; do
-      if [[ -f "${file}" && -r "${file}" ]]; then
-        # shellcheck source=/dev/null
-        source "${file}"
-      fi
-      if [[ -d "${file}" ]]; then
-        for script in "${file}"/*; do
-          if [[ -f "${script}" && -r "${script}" ]]; then
-            # shellcheck source=/dev/null
-            source "${script}"
-          fi
-        done
-      fi
-    done
+for file in "${HOME}/.dotfiles/cloud"/*; do
+  if [[ -f "${file}" && -r "${file}" ]]; then
+    # shellcheck source=/dev/null
+    source "${file}"
   fi
 done
