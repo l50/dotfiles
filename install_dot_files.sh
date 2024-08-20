@@ -27,6 +27,7 @@ declare -a files=(
     'python'
     'macos'
     'terraform'
+    'cloud'
 )
 
 ##### (Cosmetic) Color output
@@ -71,39 +72,33 @@ android_sec_tools_folder() {
 
 # Creates a launchd job to update the dotfiles every day at 10AM
 setup_auto_update() {
-        file_name='dotfile-update'
-        launchd_path="${HOME}/Library/LaunchAgents"
-        plist_name="net.techvomit.$(whoami).${file_name}"
+    file_name='dotfile-update'
+    launchd_path="${HOME}/Library/LaunchAgents"
+    plist_name="net.techvomit.$(whoami).${file_name}"
 
-        # Only run this if we haven't already created the job
-        if [[ ! -f "${launchd_path}/${plist_name}.plist" ]]; then
-            # vars to populate template
-            working_dir=$(cat "${DOT_DIR}/.dotinstalldir")
-            plist_command="install_dot_files.sh"
+    # Only run this if we haven't already created the job
+    if [[ ! -f "${launchd_path}/${plist_name}.plist" ]]; then
+        working_dir=$(cat "${DOT_DIR}/.dotinstalldir")
+        plist_command="install_dot_files.sh"
 
-            cp "templates/${file_name}.tmpl" "${launchd_path}/${plist_name}.plist"
+        cp "templates/${file_name}.tmpl" "${launchd_path}/${plist_name}.plist"
 
-            # WORKINGDIR
-            sed -i '' "s|WORKINGDIR|${working_dir}|" "${launchd_path}/${plist_name}.plist"
+        sed -i '' "s|WORKINGDIR|${working_dir}|" "${launchd_path}/${plist_name}.plist"
+        sed -i '' "s|DOTUPDATECOMMAND|${plist_command}|" "${launchd_path}/${plist_name}.plist"
 
-            # DOTUPDATECOMMAND
-            sed -i '' "s|DOTUPDATECOMMAND|${plist_command}|" "${launchd_path}/${plist_name}.plist"
-
-            # Enable it
-            launchctl load "${launchd_path}/${plist_name}.plist"
+        launchctl load "${launchd_path}/${plist_name}.plist"
     fi
 }
 
 # Downloads and installs my Brewfile to $HOME/.brewfile/Brewfile
 setup_brewfile() {
-        brewfile_path="${HOME}/.config/brewfile"
-        brewfile_dl='https://raw.githubusercontent.com/l50/homebrew-brewfile/main/Brewfile'
-        # Create $brewfile_path if it doesn't already exist.
-        if [[ ! -d "${brewfile_path}" ]]; then
-            mkdir "${brewfile_path}"
+    brewfile_path="${HOME}/.config/brewfile"
+    brewfile_dl='https://raw.githubusercontent.com/l50/homebrew-brewfile/main/Brewfile'
+    if [[ ! -d "${brewfile_path}" ]]; then
+        mkdir "${brewfile_path}"
     fi
-        echo -e "${YELLOW}Attempting to get latest Brewfile, please wait...${RESET}"
-        wget -q "${brewfile_dl}" -O "${brewfile_path}/Brewfile"
+    echo -e "${YELLOW}Attempting to get latest Brewfile, please wait...${RESET}"
+    wget -q "${brewfile_dl}" -O "${brewfile_path}/Brewfile"
 }
 
 install_oh_my_zsh() {
@@ -122,7 +117,7 @@ git pull origin main &> /dev/null
 
 # Backup old zshrc (if one exists)
 if [[ -f "${HOME}/.zshrc" ]]; then
-    echo -e "${YELLOW}Backup up old zshrc, please wait...${RESET}"
+    echo -e "${YELLOW}Backing up old zshrc, please wait...${RESET}"
     mv "${HOME}/.zshrc" "${HOME}/.zshrc.old"
 fi
 
@@ -139,15 +134,16 @@ fi
 # create dotfiles directory in homedir
 mkdir -p "${DOT_DIR}"
 
-# Move zshrc in place
 cp ./zshrc "${HOME}/.zshrc"
-
-# Move tmux config into place
 cp ./tmux.conf "${HOME}/.tmux.conf"
 
-# Put dotfiles in their place in the DOT_DIR
+# Copy dotfiles and handle nested cloud directory
 for file in "${files[@]}"; do
-    cp "${file}" "${DOT_DIR}"
+    if [[ "$file" == "cloud" ]]; then
+        cp -r "${file}"/* "${DOT_DIR}/cloud"
+    else
+        cp "${file}" "${DOT_DIR}"
+    fi
 done
 
 echo "${INSTALL_DIR}" >> "${DOT_DIR}/.dotinstalldir"
@@ -158,7 +154,6 @@ android_sec_tools_folder
 
 # Move files from install directory into $DOT_DIR
 cp -r "${INSTALL_DIR}/files" "${DOT_DIR}/files"
-
 # Move asdf default package files into place
 cp "${DOT_DIR}/files/default-golang-pkgs" "${HOME}/.default-golang-pkgs"
 cp "${DOT_DIR}/files/default-python-packages" "${HOME}/.default-python-packages"
