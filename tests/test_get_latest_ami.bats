@@ -3,18 +3,22 @@
 # Load dependencies
 load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
-load '../aws'
+load '../cloud/aws/ec2.sh'
 
 @test "get_latest_ami function with valid input for Ubuntu 22.04 amd64" {
-    run get_latest_ami "ubuntu" "22.04" "amd64" "test"
-    assert_output --partial "ami-"
+    echo "Running test for Ubuntu 22.04 amd64..." >&2
+    run get_latest_ami "ubuntu" "22.04" "amd64"
+    echo "Output: $output" >&2  # Debug output
     assert_success
+    assert_output --partial "ami-"
 }
 
 @test "get_latest_ami function with valid input for Debian 12 amd64" {
-    run get_latest_ami "debian" "12" "amd64" "test"
-    assert_output --partial "ami-"
+    echo "Running test for Debian 12 amd64..." >&2
+    run get_latest_ami "debian" "12" "amd64"
+    echo "Output: $output" >&2  # Debug output
     assert_success
+    assert_output --partial "ami-"
 }
 
 @test "get_latest_ami function with unsupported distro" {

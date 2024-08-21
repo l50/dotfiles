@@ -32,7 +32,7 @@ clear_and_delete_s3_buckets() {
 
     # Iterate through each bucket and delete its contents and the bucket itself
     for bucket in "${buckets[@]}"; do
-        (
+        (   
             echo "Deleting objects from bucket: ${bucket}"
 
             # Remove all versions of all objects from the bucket

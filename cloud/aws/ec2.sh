@@ -377,9 +377,7 @@ get_latest_ami()  {
             ;;
     esac
 
-    amiNamePattern=$(printf "%s" "$amiNamePattern" "$version")
     echo "Searching for AMIs with pattern: $amiNamePattern and owner: $owner"
-    wait
     AMI_ID=$(aws ec2 describe-images \
         --filters "Name=name,Values=$amiNamePattern" \
         --owners "$owner" \
