@@ -135,26 +135,26 @@ delete_unused_eips() {
 #   INSTANCES=$(find_instance "name" "my-instance")
 #   INSTANCES=$(find_instance "arn" "arn:aws:ec2:region:account-ID-without-hyphens:instance/instance-id")
 find_instance() {
-  ATTRIBUTE_TYPE="$1"
-  ATTRIBUTE_VALUE="$2"
+    ATTRIBUTE_TYPE="$1"
+    ATTRIBUTE_VALUE="$2"
 
-  JSON=$(aws ec2 describe-instances --output json)
+    JSON=$(aws ec2 describe-instances --output json)
 
-  case $ATTRIBUTE_TYPE in
-    "arn")
-      echo "$JSON" | jq -r --arg arn "$ATTRIBUTE_VALUE" '.Reservations[].Instances[] | select(.InstanceArn == $arn) | select(.State.Name == "running") | .InstanceId'
-      ;;
-    "name")
-      echo "$JSON" | jq -r --arg name "$ATTRIBUTE_VALUE" '.Reservations[].Instances[] | select(.Tags[]? | (.Key == "Name" and .Value == $name)) | select(.State.Name == "running") | .InstanceId'
-      ;;
-    "tag")
-      echo "$JSON" | jq -r --arg tag "$ATTRIBUTE_VALUE" '.Reservations[].Instances[] | select(.Tags[]? | .Value == $tag) | select(.State.Name == "running") | .InstanceId'
-      ;;
-    *)
-      echo "Invalid attribute type. Use arn, name, or tag."
-      return 1
-      ;;
-  esac
+    case $ATTRIBUTE_TYPE in
+        "arn")
+            echo "$JSON" | jq -r --arg arn "$ATTRIBUTE_VALUE" '.Reservations[].Instances[] | select(.InstanceArn == $arn) | select(.State.Name == "running") | .InstanceId'
+            ;;
+        "name")
+            echo "$JSON" | jq -r --arg name "$ATTRIBUTE_VALUE" '.Reservations[].Instances[] | select(.Tags[]? | (.Key == "Name" and .Value == $name)) | select(.State.Name == "running") | .InstanceId'
+            ;;
+        "tag")
+            echo "$JSON" | jq -r --arg tag "$ATTRIBUTE_VALUE" '.Reservations[].Instances[] | select(.Tags[]? | .Value == $tag) | select(.State.Name == "running") | .InstanceId'
+            ;;
+        *)
+            echo "Invalid attribute type. Use arn, name, or tag."
+            return 1
+            ;;
+    esac
 }
 
 # Get Instance Role Credentials
@@ -196,201 +196,200 @@ get_instance_role_credentials() {
 #
 # Example(s):
 #   get_latest_ami "ubuntu" "22.04" "amd64"
-get_latest_ami () {
-	local distro=$1
-	local version=$2
-	local architecture=$3
+get_latest_ami()  {
+    local distro=$1
+    local version=$2
+    local architecture=$3
 
-	# Validate inputs
-	if [[ -z "$distro" || -z "$version" || -z "$architecture" ]]; then
-		echo "Usage: get_latest_ami <distro> <version> <architecture>"
-		echo "Example: get_latest_ami debian 12 amd64"
-		return 1
-	fi
+    # Validate inputs
+    if [[ -z "$distro" || -z "$version" || -z "$architecture" ]]; then
+        echo "Usage: get_latest_ami <distro> <version> <architecture>"
+        echo "Example: get_latest_ami debian 12 amd64"
+        return 1
+    fi
 
-	case "$distro" in
-		"ubuntu")
-			case "$version" in
-				"22.04")
-					case "$architecture" in
-						"amd64")
-							amiNamePattern="ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"
-							;;
-						"arm64")
-							amiNamePattern="ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-*"
-							;;
-						*)
-							echo "Unsupported architecture: $architecture for Ubuntu"
-							return 1
-							;;
-					esac
-					;;
-				"20.04")
-					case "$architecture" in
-						"amd64")
-							amiNamePattern="ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"
-							;;
-						"arm64")
-							amiNamePattern="ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*"
-							;;
-						*)
-							echo "Unsupported architecture: $architecture for Ubuntu"
-							return 1
-							;;
-					esac
-					;;
-				"18.04")
-					case "$architecture" in
-						"amd64")
-							amiNamePattern="ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"
-							;;
-						"arm64")
-							amiNamePattern="ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-arm64-server-*"
-							;;
-						*)
-							echo "Unsupported architecture: $architecture for Ubuntu"
-							return 1
-							;;
-					esac
-					;;
-				*)
-					echo "Unsupported version: $version for Ubuntu"
-					return 1
-					;;
-			esac
-			owner="099720109477"
-			;;
-		"centos")
-			case "$version" in
-				"7")
-					case "$architecture" in
-						"x86_64")
-							amiNamePattern="CentOS Linux 7 x86_64 HVM EBS*"
-							;;
-						"arm64")
-							amiNamePattern="CentOS Linux 7 arm64 HVM EBS*"
-							;;
-						*)
-							echo "Unsupported architecture: $architecture for CentOS"
-							return 1
-							;;
-					esac
-					;;
-				"8")
-					case "$architecture" in
-						"x86_64")
-							amiNamePattern="CentOS 8 x86_64 AMI*"
-							;;
-						"arm64")
-							amiNamePattern="CentOS 8 arm64 AMI*"
-							;;
-						*)
-							echo "Unsupported architecture: $architecture for CentOS"
-							return 1
-							;;
-					esac
-					;;
-				*)
-					echo "Unsupported version: $version for CentOS"
-					return 1
-					;;
-			esac
-			owner="679593333241"
-			;;
-		"debian")
-			case "$version" in
-				"10")
-					case "$architecture" in
-						"amd64")
-							amiNamePattern="debian-10-amd64-*"
-							;;
-						"arm64")
-							amiNamePattern="debian-10-arm64-*"
-							;;
-						*)
-							echo "Unsupported architecture: $architecture for Debian"
-							return 1
-							;;
-					esac
-					;;
-				"11")
-					case "$architecture" in
-						"amd64")
-							amiNamePattern="debian-11-amd64-*"
-							;;
-						"arm64")
-							amiNamePattern="debian-11-arm64-*"
-							;;
-						*)
-							echo "Unsupported architecture: $architecture for Debian"
-							return 1
-							;;
-					esac
-					;;
-				"12")
-					case "$architecture" in
-						"amd64")
-							amiNamePattern="debian-12-amd64-*"
-							;;
-						"arm64")
-							amiNamePattern="debian-12-arm64-*"
-							;;
-						*)
-							echo "Unsupported architecture: $architecture for Debian"
-							return 1
-							;;
-					esac
-					;;
-				*)
-					echo "Unsupported version: $version for Debian"
-					return 1
-					;;
-			esac
-			owner="136693071363"
-			;;
-		"kali")
-			case "$version" in
-				"2023.1")
-					case "$architecture" in
-						"amd64")
-							amiNamePattern="kali-linux-2023.1-amd64*"
-							;;
-						"arm64")
-							amiNamePattern="kali-linux-2023.1-arm64*"
-							;;
-						*)
-							echo "Unsupported architecture: $architecture for Kali"
-							return 1
-							;;
-					esac
-					;;
-				*)
-					echo "Unsupported version: $version for Kali"
-					return 1
-					;;
-			esac
-			owner="679593333241"
-			;;
-		*)
-			echo "Unsupported distribution: $distro"
-			return 1
-			;;
-	esac
+    case "$distro" in
+        "ubuntu")
+            case "$version" in
+                "22.04")
+                    case "$architecture" in
+                        "amd64")
+                            amiNamePattern="ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"
+                            ;;
+                        "arm64")
+                            amiNamePattern="ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-*"
+                            ;;
+                        *)
+                            echo "Unsupported architecture: $architecture for Ubuntu"
+                            return 1
+                            ;;
+                    esac
+                    ;;
+                "20.04")
+                    case "$architecture" in
+                        "amd64")
+                            amiNamePattern="ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"
+                            ;;
+                        "arm64")
+                            amiNamePattern="ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*"
+                            ;;
+                        *)
+                            echo "Unsupported architecture: $architecture for Ubuntu"
+                            return 1
+                            ;;
+                    esac
+                    ;;
+                "18.04")
+                    case "$architecture" in
+                        "amd64")
+                            amiNamePattern="ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"
+                            ;;
+                        "arm64")
+                            amiNamePattern="ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-arm64-server-*"
+                            ;;
+                        *)
+                            echo "Unsupported architecture: $architecture for Ubuntu"
+                            return 1
+                            ;;
+                    esac
+                    ;;
+                *)
+                    echo "Unsupported version: $version for Ubuntu"
+                    return 1
+                    ;;
+            esac
+            owner="099720109477"
+            ;;
+        "centos")
+            case "$version" in
+                "7")
+                    case "$architecture" in
+                        "x86_64")
+                            amiNamePattern="CentOS Linux 7 x86_64 HVM EBS*"
+                            ;;
+                        "arm64")
+                            amiNamePattern="CentOS Linux 7 arm64 HVM EBS*"
+                            ;;
+                        *)
+                            echo "Unsupported architecture: $architecture for CentOS"
+                            return 1
+                            ;;
+                    esac
+                    ;;
+                "8")
+                    case "$architecture" in
+                        "x86_64")
+                            amiNamePattern="CentOS 8 x86_64 AMI*"
+                            ;;
+                        "arm64")
+                            amiNamePattern="CentOS 8 arm64 AMI*"
+                            ;;
+                        *)
+                            echo "Unsupported architecture: $architecture for CentOS"
+                            return 1
+                            ;;
+                    esac
+                    ;;
+                *)
+                    echo "Unsupported version: $version for CentOS"
+                    return 1
+                    ;;
+            esac
+            owner="679593333241"
+            ;;
+        "debian")
+            case "$version" in
+                "10")
+                    case "$architecture" in
+                        "amd64")
+                            amiNamePattern="debian-10-amd64-*"
+                            ;;
+                        "arm64")
+                            amiNamePattern="debian-10-arm64-*"
+                            ;;
+                        *)
+                            echo "Unsupported architecture: $architecture for Debian"
+                            return 1
+                            ;;
+                    esac
+                    ;;
+                "11")
+                    case "$architecture" in
+                        "amd64")
+                            amiNamePattern="debian-11-amd64-*"
+                            ;;
+                        "arm64")
+                            amiNamePattern="debian-11-arm64-*"
+                            ;;
+                        *)
+                            echo "Unsupported architecture: $architecture for Debian"
+                            return 1
+                            ;;
+                    esac
+                    ;;
+                "12")
+                    case "$architecture" in
+                        "amd64")
+                            amiNamePattern="debian-12-amd64-*"
+                            ;;
+                        "arm64")
+                            amiNamePattern="debian-12-arm64-*"
+                            ;;
+                        *)
+                            echo "Unsupported architecture: $architecture for Debian"
+                            return 1
+                            ;;
+                    esac
+                    ;;
+                *)
+                    echo "Unsupported version: $version for Debian"
+                    return 1
+                    ;;
+            esac
+            owner="136693071363"
+            ;;
+        "kali")
+            case "$version" in
+                "2023.1")
+                    case "$architecture" in
+                        "amd64")
+                            amiNamePattern="kali-linux-2023.1-amd64*"
+                            ;;
+                        "arm64")
+                            amiNamePattern="kali-linux-2023.1-arm64*"
+                            ;;
+                        *)
+                            echo "Unsupported architecture: $architecture for Kali"
+                            return 1
+                            ;;
+                    esac
+                    ;;
+                *)
+                    echo "Unsupported version: $version for Kali"
+                    return 1
+                    ;;
+            esac
+            owner="679593333241"
+            ;;
+        *)
+            echo "Unsupported distribution: $distro"
+            return 1
+            ;;
+    esac
 
-	amiNamePattern=$(printf "%s" "$amiNamePattern" "$version")
-	echo "Searching for AMIs with pattern: $amiNamePattern and owner: $owner"
-	wait
-	AMI_ID=$(aws ec2 describe-images \
+    amiNamePattern=$(printf "%s" "$amiNamePattern" "$version")
+    echo "Searching for AMIs with pattern: $amiNamePattern and owner: $owner"
+    wait
+    AMI_ID=$(aws ec2 describe-images \
         --filters "Name=name,Values=$amiNamePattern" \
         --owners "$owner" \
         --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
         --output text)
-	if [ -z "$AMI_ID" ]
-	then
-		echo "No images found for distro: $distro, version: $version, architecture: $architecture"
-		return 1
-	fi
-	echo "$AMI_ID"
+    if [ -z "$AMI_ID" ]; then
+        echo "No images found for distro: $distro, version: $version, architecture: $architecture"
+        return 1
+    fi
+    echo "$AMI_ID"
 }
 
 # List Instance Profiles
@@ -427,10 +426,10 @@ list_instance_profiles() {
 # Example(s):
 #   list_running_instances
 list_running_instances() {
-  aws ec2 describe-instances \
-    --query \
-    "Reservations[*].Instances[*].{InstanceId:InstanceId, VPC:VpcId, Subnet:SubnetId, PublicIP:PublicIpAddress, PrivateIP:PrivateIpAddress, Name:Tags[?Key=='Name']|[0].Value}" \
-    --filters Name=instance-state-name,Values=running --output json
+    aws ec2 describe-instances \
+        --query \
+        "Reservations[*].Instances[*].{InstanceId:InstanceId, VPC:VpcId, Subnet:SubnetId, PublicIP:PublicIpAddress, PrivateIP:PrivateIpAddress, Name:Tags[?Key=='Name']|[0].Value}" \
+        --filters Name=instance-state-name,Values=running --output json
 }
 
 # Terminate Instance
@@ -446,25 +445,22 @@ list_running_instances() {
 #
 # Example(s):
 #   terminate_instance "i-0abcd1234efgh5678"
-terminate_instance () {
-	local instance_id=$1
-	while true
-	do
-		instance_status=$(aws ec2 describe-instances --instance-ids "$instance_id" --output json | jq -r '.Reservations[0].Instances[0].State.Name')
-		if [ "$instance_status" = "terminated" ] || [ "$instance_status" = "shutting-down" ]
-		then
-			echo "Skipping instance $instance_id which is already $instance_status"
-			break
-		elif [ "$instance_status" = "running" ]
-		then
-			echo "Terminating instance: $instance_id"
-			aws ec2 terminate-instances --instance-ids "$instance_id"
-			break
-		else
-			echo "Unexpected instance status: $instance_status"
-			exit 1
-		fi
-	done
+terminate_instance()  {
+    local instance_id=$1
+    while true; do
+        instance_status=$(aws ec2 describe-instances --instance-ids "$instance_id" --output json | jq -r '.Reservations[0].Instances[0].State.Name')
+        if [ "$instance_status" = "terminated" ] || [ "$instance_status" = "shutting-down" ]; then
+            echo "Skipping instance $instance_id which is already $instance_status"
+            break
+        elif [ "$instance_status" = "running" ]; then
+            echo "Terminating instance: $instance_id"
+            aws ec2 terminate-instances --instance-ids "$instance_id"
+            break
+        else
+            echo "Unexpected instance status: $instance_status"
+            exit 1
+        fi
+    done
 }
 
 # Wait for Initialization

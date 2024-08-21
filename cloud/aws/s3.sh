@@ -66,16 +66,16 @@ clear_and_delete_s3_buckets() {
 #   download_bucket "mybucket" "$HOME"
 #   download_bucket "mybucket"
 download_bucket() {
-	bucket="${1}"
-	if [[ -z "${bucket}" ]]; then
-		echo "You need to supply a bucket!"
-		echo "Example: download_bucket mybucket $HOME"
-		return 1
-	fi
-	dest="${2}"
-	if [[ -z "${dest}" ]]; then
-		dest='.'
-	fi
+    bucket="${1}"
+    if [[ -z "${bucket}" ]]; then
+        echo "You need to supply a bucket!"
+        echo "Example: download_bucket mybucket $HOME"
+        return 1
+    fi
+    dest="${2}"
+    if [[ -z "${dest}" ]]; then
+        dest='.'
+    fi
 
-	aws s3 sync "s3://${1}" "${dest}"
+    aws s3 sync "s3://${1}" "${dest}"
 }

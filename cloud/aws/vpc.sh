@@ -29,9 +29,9 @@ function find_default_subnet() {
 # Example(s):
 #   find_default_vpc
 find_default_vpc() {
-  aws ec2 describe-vpcs \
-    --filters "Name=isDefault,Values=true" \
-    --output text --query 'Vpcs[0].VpcId'
+    aws ec2 describe-vpcs \
+        --filters "Name=isDefault,Values=true" \
+        --output text --query 'Vpcs[0].VpcId'
 }
 
 # Get Subnet Route Table
@@ -127,7 +127,7 @@ is_subnet_public() {
 #   list_vpcs
 list_vpcs() {
     echo "Listing VPCs..."
-    aws ec2 describe-vpcs --query "Vpcs[].{ID:VpcId, Name:Tags[?Key==`Name`]|[0].Value, State:State}" --output table
+    aws ec2 describe-vpcs --query "Vpcs[].{ID:VpcId, Name:Tags[?Key==$(Name)]|[0].Value, State:State}" --output table
 }
 
 # List VPC Subnets

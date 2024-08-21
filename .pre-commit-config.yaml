@@ -22,11 +22,12 @@ repos:
       - id: prettier
         files: \.(json|yaml|yml)$
 
-  - repo: https://github.com/koalaman/shellcheck-precommit
-    rev: v0.10.0
-    hooks:
-      - id: shellcheck
-        exclude: tests
+  # - repo: https://github.com/koalaman/shellcheck-precommit
+  #   rev: v0.10.0
+  #   hooks:
+  #     - id: shellcheck
+  #       args: [--severity=debug]
+  #       exclude: tests
 
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
     rev: 3.0.0

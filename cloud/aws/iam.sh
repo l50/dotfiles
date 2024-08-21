@@ -146,22 +146,22 @@ find_iam_resources_with_keyword() {
     for resource_type in "${resource_types[@]}"; do
         echo "Checking IAM $resource_type(s)..."
         case $resource_type in
-        "user")
-            # List IAM users with keyword in the name
-            aws iam list-users --query "Users[].[UserName, UserId, CreateDate, Path]" --output text | grep -i "$input_string"
-            ;;
-        "role")
-            # List IAM roles with keyword in the name
-            aws iam list-roles --query "Roles[].[RoleName, Arn, CreateDate, Description, MaxSessionDuration, Path, RoleId, RoleName]" --output text | grep -i "$input_string"
-            ;;
-        "policy")
-            # List IAM policies with keyword in the name
-            aws iam list-policies --query "Policies[].[PolicyName, Arn, CreateDate, DefaultVersionId, Path, PolicyId]" --output text | grep -i "$input_string"
-            ;;
-        "group")
-            # List IAM groups with keyword in the name
-            aws iam list-groups --query "Groups[].[GroupName, Arn, CreateDate, Path]" --output text | grep -i "$input_string"
-            ;;
+            "user")
+                # List IAM users with keyword in the name
+                aws iam list-users --query "Users[].[UserName, UserId, CreateDate, Path]" --output text | grep -i "$input_string"
+                ;;
+            "role")
+                # List IAM roles with keyword in the name
+                aws iam list-roles --query "Roles[].[RoleName, Arn, CreateDate, Description, MaxSessionDuration, Path, RoleId, RoleName]" --output text | grep -i "$input_string"
+                ;;
+            "policy")
+                # List IAM policies with keyword in the name
+                aws iam list-policies --query "Policies[].[PolicyName, Arn, CreateDate, DefaultVersionId, Path, PolicyId]" --output text | grep -i "$input_string"
+                ;;
+            "group")
+                # List IAM groups with keyword in the name
+                aws iam list-groups --query "Groups[].[GroupName, Arn, CreateDate, Path]" --output text | grep -i "$input_string"
+                ;;
         esac
     done
 
