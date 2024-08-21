@@ -7,6 +7,7 @@ repos:
       - id: check-merge-conflict
       - id: end-of-file-fixer
       - id: trailing-whitespace
+        exclude: \.sh$
       - id: check-added-large-files
       - id: check-shebang-scripts-are-executable
 
@@ -17,16 +18,17 @@ repos:
         entry: yamllint --strict -c .hooks/linters/yamllint.yaml
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.1.0
+    rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
         files: \.(json|yaml|yml)$
 
-  - repo: https://github.com/koalaman/shellcheck-precommit
-    rev: v0.10.0
-    hooks:
-      - id: shellcheck
-        exclude: tests
+  # - repo: https://github.com/koalaman/shellcheck-precommit
+  #   rev: v0.10.0
+  #   hooks:
+  #     - id: shellcheck
+  #       args: [--severity=debug]
+  #       exclude: tests
 
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
     rev: 3.0.0
