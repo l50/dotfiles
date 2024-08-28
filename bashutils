@@ -461,7 +461,7 @@ check_gh_token_perms() {
   ORG=$1
   REQUIRED_TOOLS=("jq" "curl")
     for tool in "${REQUIRED_TOOLS[@]}"; do
-      if ! command -v $tool >/dev/null 2>&1; then
+      if ! command -v "$tool" >/dev/null 2>&1; then
         echo "Error: $tool is not installed. Please install $tool and try again." >&2
         return 1
       fi
@@ -470,7 +470,7 @@ check_gh_token_perms() {
   [[ -z "$GITHUB_TOKEN" ]] && { echo "GITHUB_TOKEN is not set. Please set it and try again." >&2; return 1; }
 
   local endpoint=${ORG:-user}
-  repos=$(curl -sH "Authorization: token $GITHUB_TOKEN" https://api.github.com/${endpoint}/repos)
+  repos=$(curl -sH "Authorization: token $GITHUB_TOKEN" "https://api.github.com/${endpoint}/repos")
 
  case "$repos" in
   *'"message"'*"Bad credentials"*)
@@ -720,6 +720,35 @@ create_zip_with_extension() {
     fi
 
     echo "Created '$ZIPFILE' containing ${EXTENSION} files from '$DIRECTORY'."
+}
+
+# Split a git diff output into separate files, each with at most 500 lines.
+#
+# Usage:
+#   git_diff_split
+#
+# Output:
+#   Creates n files named git_diff_part_{0..n-1}.diff containing the split diff output.
+#
+# Example(s):
+#   git_diff_split
+#
+# Note:
+#   Ensure that you are in a git repository and have made changes to split.
+git_diff_split() {
+  # Run the git diff command and get the output as a string
+  local diff_output
+  diff_output=$(git diff 1.9.1)
+
+  # Split the diff output into chunks of 500 lines each and write them to files
+  echo "$diff_output" | split -l 500 - "git_diff_part_"
+
+  # Rename the output files to .diff
+  for file in git_diff_part_*; do
+    mv "$file" "${file}.diff"
+  done
+
+  echo "Files generated:" git_diff_part_*.diff
 }
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
