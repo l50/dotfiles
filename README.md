@@ -118,7 +118,7 @@ act -P macos-latest=-self-hosted
 bash .hooks/run-bats-tests.sh
 ```
 
---
+---
 
 ## Update submodules
 
