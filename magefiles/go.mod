@@ -2,7 +2,7 @@ module magefile
 
 go 1.22.0
 
-toolchain go1.23.1
+toolchain go1.23.2
 
 require github.com/l50/goutils/v2 v2.2.6
 
