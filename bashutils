@@ -519,12 +519,37 @@ print_file_content() {
     esac
 }
 
-# Define a function that processes files while excluding specified directories
-# Usage example:
-# process_files -p "./.git/*" -p "./.hooks/*" -a "-option1" -a "-option2" .
-# Define a function that finds and processes files while excluding specified directories
-# You can call this function like so:
-# process_files "." "./.git/*" "./.hooks/*" "./.github/*" "./magefiles/*" "./changelogs/*" "./.vscode/*" "./go.*" "./LICENSE" "./.mdlrc" "./.pre-commit-config.yaml" "./*.md"
+# Processes a list of files from stdin and prints their contents using print_file_content function
+#
+# Usage:
+#   some_command | process_and_print_files
+#
+# Example:
+#   git diff --name-only <commit> | grep '\.yaml$' | process_and_print_files
+process_and_print_files() {
+    while IFS= read -r file; do
+        if [[ -f "$file" ]]; then
+            print_file_content "$file"
+        else
+            echo "File not found: $file"
+        fi
+    done
+}
+
+# Process files based on patterns and print their contents
+#
+# Usage:
+#   process_files <base_path> <exclude_patterns>
+#
+# Arguments:
+#   base_path: The base path to search for files.
+#   exclude_patterns: Patterns to exclude from the search.
+#
+# Output:
+#   Processes files based on patterns and prints their contents.
+#
+# Example(s):
+#   process_files "." "*.txt" "*.md"
 process_files() {
   local base_path=$1; shift  # First argument is the base path, rest are patterns
   local -a exclude_patterns=("$@")  # Array of patterns to exclude
@@ -732,6 +757,45 @@ git_diff_split() {
   done
 
   echo "Files generated:" git_diff_part_*.diff
+}
+
+# Lists files with specified extensions changed in a specific commit.
+#
+# Usage:
+#   process_files_in_commit <commit> <extensions...>
+#
+# Arguments:
+#   commit: The commit hash or reference.
+#   extensions: One or more file extensions (e.g., '*.yaml' '*.yml').
+#
+# Output:
+#   Prints the names of files with specified extensions changed in the specified commit.
+#
+# Example(s):
+#   process_files_in_commit 47d0835bb58af3b5598df329b2d8039db7944888 '*.yaml' '*.yml'
+process_files_in_commit() {
+  local commit="$1"
+  shift
+  local extensions=("$@")
+
+  if [[ -z "$commit" || ${#extensions[@]} -eq 0 ]]; then
+      echo "Usage: process_files_in_commit <commit> <extensions...>" >&2
+      echo "Example: process_files_in_commit 47d0835bb58af3b5598df329b2d8039db7944888 '*.yaml' '*.yml'" >&2
+      return 1
+  fi
+
+  # Build the grep pattern from the wildcard patterns
+  local grep_pattern=""
+  for ext in "${extensions[@]}"; do
+      # Remove the leading asterisk if present
+      ext="${ext#\*}"
+      # Escape dots in the extension
+      ext="${ext//./\\.}"
+      grep_pattern="${grep_pattern:+$grep_pattern|}${ext}$"
+  done
+
+  # Use git show to list files changed in the specified commit and filter with grep
+  git show --name-only --pretty="" "$commit" | grep "\.$grep_pattern"
 }
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
