@@ -48,3 +48,6 @@ github.com/goreleaser/goreleaser@latest
 
 // Parse and filter YAML documents from CLI
 github.com/mikefarah/yq/v4@latest
+
+// Autogenerate docs for terraform modules
+github.com/terraform-docs/terraform-docs@latest
