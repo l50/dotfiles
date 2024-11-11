@@ -11,9 +11,9 @@ alias pc="pre-commit"
 alias keeper_update='python3 -m pip install --upgrade keepercommander'
 
 # AWSume alias to source the AWSume script
-alias awsume=". $(asdf which awsume)"
+alias awsume='. $(asdf which awsume)'
 # Auto-Complete function for AWSume
-fpath=(~/.awsume/zsh-autocomplete/ $fpath)
+fpath=("$HOME/.awsume/zsh-autocomplete/" "$fpath")
 
 # Extracts only the comments from the contents of the specified file or from stdin.
 # It supports extracting single-line comments that start with // or #, as

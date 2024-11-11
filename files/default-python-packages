@@ -10,3 +10,4 @@ keepercommander
 molecule
 pipx
 pre-commit
+youtube-dl
