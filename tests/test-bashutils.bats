@@ -157,19 +157,19 @@ teardown() {
 }
 
 @test "process_files_from_config_with_specific_patterns" {
-	# Setup - create a temporary working directory
-	local temp_working_dir
-	temp_working_dir=$(mktemp -d)
+    # Setup - create a temporary working directory
+    local temp_working_dir
+    temp_working_dir=$(mktemp -d)
 
-	# Change to the temporary directory
-	pushd "$temp_working_dir"
+    # Create a temporary config file with patterns
+    local temp_config
+    temp_config=$(mktemp)
 
-	# Create a temporary config file with patterns
-	local temp_config
-	temp_config=$(mktemp)
+    # Change to the temporary directory
+    cd "$temp_working_dir" || exit 1
 
-	# Add file patterns to the config file
-	cat <<EOF >"$temp_config"
+    # Add file patterns to the config file
+    cat <<EOF >"$temp_config"
 ./.git/*
 ./.hooks/*
 ./.github/*
@@ -183,20 +183,35 @@ teardown() {
 ./*.md
 EOF
 
-	# Create dummy files and directories to match the patterns
-	mkdir -p .git .hooks .github magefiles changelogs .vscode
-	touch .git/dummy .hooks/dummy .github/dummy magefiles/dummy changelogs/dummy .vscode/dummy
-	touch go.mod go.sum LICENSE .mdlrc .pre-commit-config.yaml README.md
+    # Create dummy files and directories to match the patterns
+    mkdir -p .git .hooks .github magefiles changelogs .vscode
+    touch .git/dummy .hooks/dummy .github/dummy magefiles/dummy changelogs/dummy .vscode/dummy
+    touch go.mod go.sum LICENSE .mdlrc .pre-commit-config.yaml README.md
 
-	# Call process_files_from_config with the config file
-	run process_files_from_config "$temp_config"
+    # Call process_files_from_config with the config file
+    run process_files_from_config "$temp_config"
 
-	# Assertions
-	[ "$status" -eq 0 ]
+    # Assert success without checking specific output
+    assert_success
 
-	# Cleanup - return to the original directory and remove the temporary directory
-	popd
-	rm -rf "$temp_working_dir"
+    # Verify that the files exist
+    assert [ -f "go.mod" ]
+    assert [ -f "go.sum" ]
+    assert [ -f "LICENSE" ]
+    assert [ -f ".mdlrc" ]
+    assert [ -f ".pre-commit-config.yaml" ]
+    assert [ -f "README.md" ]
+    assert [ -d ".git" ]
+    assert [ -d ".hooks" ]
+    assert [ -d ".github" ]
+    assert [ -d "magefiles" ]
+    assert [ -d "changelogs" ]
+    assert [ -d ".vscode" ]
+
+    # Cleanup
+    cd - || exit 1
+    rm -rf "$temp_working_dir"
+    rm -f "$temp_config"
 }
 
 @test "process_files_from_config_with_invalid_config_file" {
