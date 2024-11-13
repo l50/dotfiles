@@ -21,7 +21,7 @@ concurrency:
   group: pre-commit-${{ github.workflow }}-${{ github.ref }}
 
 env:
-  BATS_VERSION: 1.2.1
+  BATS_VERSION: 1.9.0
 
 jobs:
   bats_tests:
