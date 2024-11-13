@@ -157,6 +157,11 @@ teardown() {
 }
 
 @test "process_files_from_config_with_specific_patterns" {
+    # Skip if xclip is not available and we're in CI
+    if [[ -n "${CI}" ]] && ! command -v xclip >/dev/null 2>&1; then
+        skip "xclip is not installed and we're in CI"
+    fi
+
     # Setup - create a temporary working directory
     local temp_working_dir
     temp_working_dir=$(mktemp -d)
@@ -188,10 +193,19 @@ EOF
     touch .git/dummy .hooks/dummy .github/dummy magefiles/dummy changelogs/dummy .vscode/dummy
     touch go.mod go.sum LICENSE .mdlrc .pre-commit-config.yaml README.md
 
+    # Mock xclip if it's not available
+    if ! command -v xclip >/dev/null 2>&1; then
+        xclip() {
+            echo "mocked xclip"
+            return 0
+        }
+        export -f xclip
+    fi
+
     # Call process_files_from_config with the config file
     run process_files_from_config "$temp_config"
 
-    # Assert success without checking specific output
+    # Assert success
     assert_success
 
     # Verify that the files exist
