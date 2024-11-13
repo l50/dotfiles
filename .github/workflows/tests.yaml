@@ -1,9 +1,24 @@
 ---
-name: dotfile tests
+name: Dotfile tests
 on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
   push:
-    branches: [main]
+    branches:
+      - main
+  schedule:
+    # Run once a week (see https://crontab.guru)
+    - cron: "0 0 * * 0"
   workflow_dispatch:
+
+# Cancel any in-progress job when a new workflow is triggered
+concurrency:
+  cancel-in-progress: true
+  group: pre-commit-${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   bats_tests:
