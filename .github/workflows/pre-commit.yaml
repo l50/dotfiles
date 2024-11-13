@@ -35,6 +35,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           submodules: recursive
+          fetch-depth: 0 # Fetch full git history
 
       - name: Set up Python
         uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
@@ -69,16 +70,27 @@ jobs:
       - name: Install required packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y zsh
+          sudo apt-get install -y zsh jq curl
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
 
       - name: Install dotfiles
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI: true
         run: |
           # Skip git pull in CI environment
           sed -i 's/git pull origin main/echo "Skipping git pull in CI"/' install_dot_files.sh
           bash ./install_dot_files.sh
+
+      - name: Run pre-commit
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CI: true
-
-      - name: Run pre-commit
-        run: TASK_X_REMOTE_TASKFILES=1 task run-pre-commit -y
+        run: |
+          # Create test files directory if it doesn't exist
+          mkdir -p tests/tmp
+          TASK_X_REMOTE_TASKFILES=1 task run-pre-commit -y
