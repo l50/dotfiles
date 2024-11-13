@@ -76,7 +76,7 @@ setup_auto_update() {
     launchd_path="${HOME}/Library/LaunchAgents"
     plist_name="net.techvomit.$(whoami).${file_name}"
 
-    # Only run this if we haven't already created the job
+    # Only run this if we rehaven't already created the job
     if [[ ! -f "${launchd_path}/${plist_name}.plist" ]]; then
         working_dir=$(cat "${DOT_DIR}/.dotinstalldir")
         plist_command="install_dot_files.sh"
@@ -112,8 +112,10 @@ install_oh_my_zsh() {
 }
 
 ### MAIN ###
-# Start by getting the latest and greatest
-git pull origin main &> /dev/null
+# Start by getting the latest and greatest if we're in a git repo and not in CI
+if [[ -z "${CI}" ]] && git rev-parse --git-dir > /dev/null 2>&1; then
+    git pull origin main &> /dev/null || echo "Failed to pull latest changes"
+fi
 
 # Backup old zshrc (if one exists)
 if [[ -f "${HOME}/.zshrc" ]]; then
@@ -176,9 +178,18 @@ ANSIBLE_DIR="$HOME/cowdogmoo/ansible-collection-workstation"
 echo "Checking if the ansible workstation repository is already cloned..."
 if [[ ! -d "${ANSIBLE_DIR}" ]]; then
     echo -e "${YELLOW}Attempting to clone ansible workstation repo into ${ANSIBLE_DIR}...${RESET}"
+    mkdir -p "$(dirname "${ANSIBLE_DIR}")"
     git clone https://github.com/CowDogMoo/ansible-collection-workstation.git "${ANSIBLE_DIR}"
 else
-    echo -e "${GREEN}The ansible workstation repository is already cloned in ${ANSIBLE_DIR}.${RESET}"
+    echo -e "${YELLOW}The ansible workstation repository is already cloned in ${ANSIBLE_DIR}.${RESET}"
+fi
+
+# Install the Ansible collection if not already installed
+if command -v ansible-galaxy &> /dev/null; then
+    if ! ansible-galaxy collection list | grep -q "cowdogmoo.workstation"; then
+        echo "Installing CowDogMoo workstation collection..."
+        ansible-galaxy collection install git+https://github.com/CowDogMoo/ansible-collection-workstation.git,main
+    fi
 fi
 
 # shellcheck disable=SC1091
