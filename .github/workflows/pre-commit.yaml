@@ -84,7 +84,7 @@ jobs:
         run: |
           # Skip git pull in CI environment
           sed -i 's/git pull origin main/echo "Skipping git pull in CI"/' install_dot_files.sh
-          bash ./install_dot_files.sh
+          bash ./install_dot_files.sh --skip-ansible
 
       - name: Run pre-commit
         env:

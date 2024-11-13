@@ -4,12 +4,28 @@
 #
 # Install dot files
 #
-# Usage: bash install_dot_files.sh
+# Usage: bash install_dot_files.sh [--skip-ansible]
 #
 # Jayson Grace, jayson.e.grace@gmail.com
 # ----------------------------------------------------------------------------
 # Stop execution of script if an error occurs
 set -ex
+
+# Parse command line arguments
+RUN_ANSIBLE=true
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --skip-ansible)
+            RUN_ANSIBLE=false
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Usage: $0 [--skip-ansible]"
+            exit 1
+            ;;
+    esac
+done
 
 DOT_DIR="${HOME}/.dotfiles"
 OLD_DOT_DIR="${DOT_DIR}.old"
@@ -111,6 +127,33 @@ install_oh_my_zsh() {
     fi
 }
 
+setup_ansible() {
+    # Target directory for cloning
+    ANSIBLE_DIR="$HOME/cowdogmoo/ansible-collection-workstation"
+
+    echo "Checking if the ansible workstation repository is already cloned..."
+    if [[ ! -d "${ANSIBLE_DIR}" ]]; then
+        echo -e "${YELLOW}Attempting to clone ansible workstation repo into ${ANSIBLE_DIR}...${RESET}"
+        mkdir -p "$(dirname "${ANSIBLE_DIR}")"
+        git clone https://github.com/CowDogMoo/ansible-collection-workstation.git "${ANSIBLE_DIR}"
+    else
+        echo -e "${YELLOW}The ansible workstation repository is already cloned in ${ANSIBLE_DIR}.${RESET}"
+    fi
+
+    # Install the Ansible collection if not already installed
+    if command -v ansible-galaxy &> /dev/null; then
+        if ! ansible-galaxy collection list | grep -q "cowdogmoo.workstation"; then
+            echo "Installing CowDogMoo workstation collection..."
+            ansible-galaxy collection install git+https://github.com/CowDogMoo/ansible-collection-workstation.git,main
+        fi
+    fi
+
+    # shellcheck disable=SC1091
+    source "${DOT_DIR}/python"
+    run_playbook "${ANSIBLE_DIR}/playbooks/workstation/workstation.yml" \
+        "${ANSIBLE_DIR}/playbooks/workstation/molecule/default/inventory"
+}
+
 ### MAIN ###
 # Start by getting the latest and greatest if we're in a git repo and not in CI
 if [[ -z "${CI}" ]] && git rev-parse --git-dir > /dev/null 2>&1; then
@@ -172,27 +215,10 @@ fi
 
 install_oh_my_zsh
 
-# Target directory for cloning
-ANSIBLE_DIR="$HOME/cowdogmoo/ansible-collection-workstation"
-
-echo "Checking if the ansible workstation repository is already cloned..."
-if [[ ! -d "${ANSIBLE_DIR}" ]]; then
-    echo -e "${YELLOW}Attempting to clone ansible workstation repo into ${ANSIBLE_DIR}...${RESET}"
-    mkdir -p "$(dirname "${ANSIBLE_DIR}")"
-    git clone https://github.com/CowDogMoo/ansible-collection-workstation.git "${ANSIBLE_DIR}"
+# Only run Ansible setup if RUN_ANSIBLE is true
+if [[ "${RUN_ANSIBLE}" == true ]]; then
+    echo -e "${BLUE}Running Ansible setup...${RESET}"
+    setup_ansible
 else
-    echo -e "${YELLOW}The ansible workstation repository is already cloned in ${ANSIBLE_DIR}.${RESET}"
+    echo -e "${YELLOW}Skipping Ansible setup (--skip-ansible flag was used)${RESET}"
 fi
-
-# Install the Ansible collection if not already installed
-if command -v ansible-galaxy &> /dev/null; then
-    if ! ansible-galaxy collection list | grep -q "cowdogmoo.workstation"; then
-        echo "Installing CowDogMoo workstation collection..."
-        ansible-galaxy collection install git+https://github.com/CowDogMoo/ansible-collection-workstation.git,main
-    fi
-fi
-
-# shellcheck disable=SC1091
-source "${DOT_DIR}/python"
-run_playbook "${ANSIBLE_DIR}/playbooks/workstation/workstation.yml" \
-    "${ANSIBLE_DIR}/playbooks/workstation/molecule/default/inventory"

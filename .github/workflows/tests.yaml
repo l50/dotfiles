@@ -56,7 +56,7 @@ jobs:
       - name: Install the dotfiles
         run: |
           chmod +x install_dot_files.sh
-          if ./install_dot_files.sh; then
+          if ./install_dot_files.sh --skip-ansible; then
             echo "Dotfiles installed successfully"
           else
             echo "Dotfiles installation failed"
