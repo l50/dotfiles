@@ -4,6 +4,8 @@ load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
 load '../bashutils'
 
+bats_require_minimum_version 1.5.0
+
 export RUNNING_BATS_TEST=1
 
 setup() {
@@ -26,22 +28,47 @@ teardown() {
 	unset INSTALL
 }
 
-# @test "getJSONKeys function" {
-#     run getJSONKeys "$TEST_JSON_FILE"
-#     [ "$status" -eq 0 ]
-#     [[ $output == *"key1"* ]]
-#     [[ $output == *"key2"* ]]
-#     [[ $output == *"arrayKey"* ]]
-# }
+@test "getJSONKeys function returns expected keys" {
+	# Setup - create test JSON file
+	local test_json_file
+	test_json_file=$(mktemp)
+	echo '{"key1":"value1","key2":"value2","arrayKey":["value3","value4"]}' >"$test_json_file"
 
-# @test "getJSONValues function" {
-#     run getJSONValues "$TEST_JSON_FILE"
-#     [ "$status" -eq 0 ]
-#     [[ $output == *"value1"* ]]
-#     [[ $output == *"value2"* ]]
-#     [[ $output == *"value3"* ]]
-#     [[ $output == *"value4"* ]]
-# }
+	# Run the function
+	run getJSONKeys "$test_json_file"
+
+	# Check for success
+	assert_success
+
+	# Verify output format and content
+	# jq 'keys' returns an array of keys like: ["arrayKey","key1","key2"]
+	assert_output '["arrayKey","key1","key2"]'
+
+	# Cleanup
+	rm -f "$test_json_file"
+}
+
+@test "getJSONValues function returns expected values" {
+	# Setup - create test JSON with nested values
+	local test_json_file
+	test_json_file=$(mktemp)
+	echo '[{"key1":"value1"},{"key2":"value2"},{"arrayKey":["value3","value4"]}]' >"$test_json_file"
+
+	# Run the function
+	run getJSONValues "$test_json_file"
+
+	# Check for success
+	assert_success
+
+	# Verify each expected value appears in output
+	# jq '.[] | values' returns each value on a new line
+	assert_line '"value1"'
+	assert_line '"value2"'
+	assert_line '["value3","value4"]'
+
+	# Cleanup
+	rm -f "$test_json_file"
+}
 
 # @test "fetchFromGithub with binary name" {
 #     run fetchFromGithub "CowDogMoo" "Guacinator" "v1.0.0" "guacinator"
@@ -361,11 +388,10 @@ teardown() {
 
 @test "is_filepath with a valid file path" {
 	# Setup - create a temporary file
-	local temp_file
-	temp_file=$(mktemp)
+	TEMP_FILE=$(mktemp)
 
 	# Call is_filepath and pass the file path, capturing output and status
-	output=$(echo "$temp_file" | is_filepath)
+	output=$(echo "$TEMP_FILE" | is_filepath)
 	status=$?
 
 	# Assertions
@@ -373,45 +399,21 @@ teardown() {
 	[[ $output == "Input is a file path." ]]
 
 	# Cleanup
-	rm -f "$temp_file"
+	rm -f "$TEMP_FILE"
 }
 
 @test "is_filepath with an invalid file path" {
 	# Use a non-existing file path
-	local non_existing_path="/tmp/non-existing-file-$RANDOM"
+	INVALID_PATH="/tmp/non-existing-file-$RANDOM"
 
-	# Call is_filepath and pass the file path, capturing output and status
-	output=$(echo "$temp_file" | is_filepath)
+	# Call is_filepath and pass the invalid path, capturing output and status
+	output=$(echo "$INVALID_PATH" | is_filepath)
 	status=$?
 
 	# Assertions
 	[ "$status" -eq 0 ]
 	[[ $output == "Input is not a file path." ]]
 }
-
-# @test "process_files_from_config with valid config file" {
-#     # Ensure no previous temporary files with similar names exist
-#     rm -f ./file_to_find.*
-
-#     # Setup - create a temporary config file and a file to be found
-#     local temp_config temp_file
-#     temp_config=$(mktemp)
-#     temp_file=$(mktemp ./file_to_find.XXXXXX)
-
-#     echo "$temp_file" > "$temp_config"
-
-#     # Call process_files_from_config with the config file
-#     run process_files_from_config "$temp_config"
-
-#     # Assertions
-#     [ "$status" -eq 0 ]
-#     [[ $output == *"Debug: Config line: $temp_file"* ]]
-#     [[ $output == *"Debug: Processing files with patterns: $temp_file"* ]]
-
-#     # Cleanup
-#     rm -f "$temp_file"
-#     rm -f "$temp_config"
-# }
 
 @test "process_files_from_config with specific patterns" {
 	# Setup - create a temporary working directory
@@ -450,7 +452,6 @@ EOF
 
 	# Assertions
 	[ "$status" -eq 0 ]
-	# Add assertions to verify expected behavior/output
 
 	# Cleanup - return to the original directory and remove the temporary directory
 	popd
@@ -475,32 +476,38 @@ EOF
 	temp_working_dir=$(mktemp -d)
 
 	# Change to the temporary directory
-	pushd "$temp_working_dir"
+	pushd "$temp_working_dir" || exit 1
 
 	# Create a temporary directory with files
-	local temp_directory
-	temp_directory=$(mktemp -d)
+	local test_dir
+	test_dir=$(mktemp -d)
 
 	# Create files with different extensions
-	touch "$temp_directory/file1.go"
-	touch "$temp_directory/file2.go"
-	touch "$temp_directory/file1.txt"
-	touch "$temp_directory/file2.txt"
+	touch "$test_dir/file1.go"
+	touch "$test_dir/file2.go"
+	touch "$test_dir/file1.txt"
+	touch "$test_dir/file2.txt"
 
 	# Call create_zip_with_extension with the directory, zip file name, and extension
 	local zipfile="test.zip"
 	local extension="go"
-	run create_zip_with_extension "$temp_directory" "$zipfile" "$extension"
+	run create_zip_with_extension "$test_dir" "$zipfile" "$extension"
 
-	# Assertions
-	[ "$status" -eq 0 ]
-	[ -f "$zipfile" ]
-	unzip -l "$zipfile" | grep "file1.go"
-	unzip -l "$zipfile" | grep "file2.go"
-	! unzip -l "$zipfile" | grep "file1.txt"
-	! unzip -l "$zipfile" | grep "file2.txt"
+	# Assertions for successful creation
+	assert_success
+	assert [ -f "$zipfile" ]
+
+	# Check for presence of .go files
+	run unzip -l "$zipfile"
+	assert_success
+	assert_output --partial "file1.go"
+	assert_output --partial "file2.go"
+
+	# Check for absence of .txt files
+	refute_output --partial "file1.txt"
+	refute_output --partial "file2.txt"
 
 	# Cleanup - return to the original directory and remove the temporary directory
-	popd
+	popd || return 1
 	rm -rf "$temp_working_dir"
 }

@@ -1,3 +1,5 @@
+# shellcheck shell=bash
+
 # Cleans up IAM resources based on input criteria
 #
 # This function processes IAM resources that match specified criteria. It reads

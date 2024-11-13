@@ -1,3 +1,5 @@
+# shellcheck shell=bash
+
 # Create EC2 Instance
 #
 # Creates an EC2 instance with the specified AMI, instance type, and security group.
@@ -19,9 +21,7 @@ create_ec2_instance() {
     SECURITY_GROUP_DESC="${6:-Default Security Group}"
     VPC_ID="$7"
     DEFAULT_SUBNET_ID="$8"
-
     SECURITY_GROUP_ID=$(authorize_security_group_ingress "$SECURITY_GROUP_NAME" "$SECURITY_GROUP_DESC" "${VPC_ID}" "tcp" 22 "0.0.0.0/0" | tail -n 1)
-
     INSTANCE_ID=$(aws ec2 run-instances \
         --image-id "$AMI_ID" \
         --count 1 \
@@ -34,11 +34,11 @@ create_ec2_instance() {
         --output text)
 
     wait_for_initialization
-
     if [ -z "$INSTANCE_ID" ]; then
         echo "Failed to create EC2 instance"
-        exit 1
+        return 1
     fi
+
     echo "Created EC2 instance: $INSTANCE_ID" >&2
     echo "${INSTANCE_ID}"
 }

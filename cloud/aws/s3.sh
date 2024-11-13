@@ -1,3 +1,5 @@
+# shellcheck shell=bash
+
 # Clean Up and Delete S3 Buckets Based on Criteria
 #
 # This function lists and deletes S3 buckets that match a specified selection criteria.
@@ -18,33 +20,23 @@
 #   clear_and_delete_s3_buckets "my-example-bucket"
 clear_and_delete_s3_buckets() {
     local bucket_selection_criteria=$1
-
     if [[ -z "$bucket_selection_criteria" ]]; then
         echo "No bucket selection criteria provided. Usage: clean_up_s3_buckets <bucket-selection-criteria>"
         return 1
     fi
 
-    # List all buckets that match the selection criteria
     local buckets=()
     while IFS= read -r line; do
         buckets+=("$line")
     done < <(aws s3 ls | grep -i "$bucket_selection_criteria" | awk '{print $3}')
 
-    # Iterate through each bucket and delete its contents and the bucket itself
     for bucket in "${buckets[@]}"; do
         (   
             echo "Deleting objects from bucket: ${bucket}"
-
-            # Remove all versions of all objects from the bucket
             aws s3api list-object-versions --bucket "$bucket" --output json | jq -r '.Versions[] | .Key + " " + .VersionId' | xargs -P 10 -n 2 aws s3api delete-object --bucket "$bucket" --key {} --version-id {}
-
-            # Remove all delete markers (needed for versioned buckets)
             aws s3api list-object-versions --bucket "$bucket" --output json | jq -r '.DeleteMarkers[] | .Key + " " + .VersionId' | xargs -P 10 -n 2 aws s3api delete-object --bucket "$bucket" --key {} --version-id {}
-
             echo "Deleting bucket: ${bucket}"
-
-            # Delete the bucket
-            aws s3 rb s3://"$bucket" --force
+            aws s3 rb "s3://${bucket}" --force
         ) &
     done
     wait

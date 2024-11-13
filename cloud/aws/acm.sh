@@ -1,3 +1,5 @@
+# shellcheck shell=bash
+
 # Delete Failed ACM Certificates Based on Criteria
 #
 # This function lists and deletes AWS ACM certificates that are in the FAILED status and match a specified selection criteria.
@@ -17,7 +19,6 @@
 delete_failed_acm_certificates() {
     local selection_criteria=${1:-}
 
-    # List all failed certificates that match the selection criteria
     local certificates=()
     while IFS= read -r line; do
         certificates+=("$line")
@@ -31,13 +32,10 @@ delete_failed_acm_certificates() {
         return 0
     fi
 
-    # Iterate through each certificate and delete it
     for cert_arn in "${certificates[@]}"; do
         (   
             echo "Deleting certificate: ${cert_arn}"
-
-            aws acm delete-certificate --certificate-arn "$cert_arn"
-            if [[ $? -eq 0 ]]; then
+            if aws acm delete-certificate --certificate-arn "$cert_arn"; then
                 echo "Successfully deleted certificate: ${cert_arn}"
             else
                 echo "Failed to delete certificate: ${cert_arn}"

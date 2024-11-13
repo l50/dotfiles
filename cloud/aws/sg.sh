@@ -1,3 +1,5 @@
+# shellcheck shell=bash
+
 # Authorize Security Group Ingress
 #
 # Authorizes inbound traffic for the specified security group if the rule doesn't already exist.
@@ -19,11 +21,11 @@ authorize_security_group_ingress() {
     local protocol=$4
     local port=$5
     local cidr=$6
-    
+
     # Check if the security group already exists
     local security_group_id
     security_group_id=$(aws ec2 describe-security-groups --filters Name=group-name,Values="$group_name" --query 'SecurityGroups[0].GroupId' --output text)
-    
+
     # If the security group doesn't exist or the command fails, create it
     if [ -z "$security_group_id" ] || [ "$security_group_id" == "None" ]; then
         if ! security_group_id=$(aws ec2 create-security-group --group-name "$group_name" --description "$group_description" --vpc-id "$vpc_id" --query 'GroupId' --output text); then
@@ -35,7 +37,7 @@ authorize_security_group_ingress() {
         echo "Security group $group_name already exists with ID: $security_group_id"
     fi
 
-    # Check if the ingress rule already exists 
+    # Check if the ingress rule already exists
     local existing_rule
     existing_rule=$(aws ec2 describe-security-groups \
         --group-ids "$security_group_id" \
