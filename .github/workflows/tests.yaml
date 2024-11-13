@@ -21,19 +21,17 @@ concurrency:
   group: pre-commit-${{ github.workflow }}-${{ github.ref }}
 
 env:
-  BATS_VERSION: "1.2.1"
+  BATS_VERSION: 1.2.1
 
 jobs:
-  dotfile_tests:
-    name: Dotfile Tests (${{ matrix.os }})
+  bats_tests:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-
     steps:
-      - name: Checkout repository
+      - name: Checkout git repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           submodules: recursive
@@ -43,15 +41,7 @@ jobs:
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
 
-      - name: Setup BATS
-        uses: mig4/setup-bats@af9a00deb21b5d795cabfeaa8d9060410377686d # v1
-        with:
-          bats-version: ${{ env.BATS_VERSION }}
-
-      - name: Install asdf cli
-        uses: asdf-vm/actions/setup@6a442392015fbbdd8b48696d41e0051b2698b2e4 # v2
-
-      - name: Install OS dependencies
+      - name: Install dependencies
         run: |
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
               sudo apt-get update
@@ -63,7 +53,58 @@ jobs:
       - name: Install workstation collection
         run: ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,main
 
-      - name: Install dotfiles
+      - name: Install the dotfiles
+        run: |
+          chmod +x install_dot_files.sh
+          if ./install_dot_files.sh; then
+            echo "Dotfiles installed successfully"
+          else
+            echo "Dotfiles installation failed"
+            exit 1
+          fi
+
+      - name: Setup BATS
+        uses: mig4/setup-bats@af9a00deb21b5d795cabfeaa8d9060410377686d # v1
+        with:
+          bats-version: ${{ env.BATS_VERSION }}
+
+      - name: Run Bats tests
+        run: bats tests/test-go.bats
+
+  dotfile_test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Clone git repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          submodules: recursive
+
+      - name: Setup git config
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+
+      - name: Install asdf cli
+        uses: asdf-vm/actions/setup@6a442392015fbbdd8b48696d41e0051b2698b2e4 # v2
+
+      - name: Install dependencies
+        run: |
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+              sudo apt-get update
+              sudo apt-get install -y curl git zsh
+          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+              brew install curl git zsh python3 ansible
+          fi
+
+      - name: Install the workstation collection
+        run: |
+          ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,main
+
+      - name: Install the dotfiles
         run: |
           chmod +x install_dot_files.sh
           if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
@@ -76,10 +117,7 @@ jobs:
             exit 1
           fi
 
-      - name: Run BATS tests
-        run: bats tests/test-go.bats
-
-      - name: Verify dotfile installation
+      - name: Confirm dotfiles are installed and working
         run: |
           source ~/.zshrc
           cat ~/.zshrc

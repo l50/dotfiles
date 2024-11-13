@@ -21,8 +21,9 @@ concurrency:
   group: pre-commit-${{ github.workflow }}-${{ github.ref }}
 
 env:
-  GO_VERSION: "1.23.1"
-  PYTHON_VERSION: "3.12.6"
+  BATS_VERSION: 1.2.1
+  GO_VERSION: 1.23.1
+  PYTHON_VERSION: 3.12.6
 
 jobs:
   pre-commit:
@@ -57,7 +58,7 @@ jobs:
       - name: Setup BATS
         uses: mig4/setup-bats@af9a00deb21b5d795cabfeaa8d9060410377686d # v1
         with:
-          bats-version: 1.2.1
+          bats-version: ${{ env.BATS_VERSION }}
 
       - name: Setup go-task
         uses: pnorton5432/setup-task@eec4717ae80f02d1614a4fecfa4a55d507768696 # v1.0.0
