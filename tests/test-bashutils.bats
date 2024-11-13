@@ -28,35 +28,35 @@ teardown() {
 	unset INSTALL
 }
 
-@test "check_disk_space with no arguments" {
+@test "check_disk_space_with_no_arguments" {
     run check_disk_space
     assert_failure
     assert_output "Error: Required space in MB must be provided"
 }
 
-@test "check_disk_space with invalid argument" {
+@test "check_disk_space_with_invalid_argument" {
     run check_disk_space "abc"
     assert_failure
     assert_output "Error: Required space must be a positive integer"
 }
 
-@test "check_disk_space with negative number" {
+@test "check_disk_space_with_negative_number" {
     run check_disk_space "-100"
     assert_failure
     assert_output "Error: Required space must be a positive integer"
 }
 
-@test "check_disk_space with zero" {
+@test "check_disk_space_with_zero" {
     run check_disk_space "0"
     assert_success
 }
 
-@test "check_disk_space with small required space" {
+@test "check_disk_space_with_small_required_space" {
     run check_disk_space "1"
     assert_success
 }
 
-@test "check_disk_space with available space" {
+@test "check_disk_space_with_available_space" {
     # Mock df command to return a fixed amount of space (10GB)
     # shellcheck disable=SC2317
     df() {
@@ -71,7 +71,7 @@ teardown() {
     assert_success
 }
 
-@test "check_disk_space with insufficient space" {
+@test "check_disk_space_with_insufficient_space" {
     # Mock df command to return a small amount of space (100MB)
     # shellcheck disable=SC2317
     df() {
@@ -87,7 +87,7 @@ teardown() {
     assert_output "Error: Not enough disk space. Required: 1000MB, Available: 100MB"
 }
 
-@test "getJSONKeys function returns expected keys" {
+@test "getJSONKeys_function_returns_expected_keys" {
 	# Setup - create test JSON file
 	local test_json_file
 	test_json_file=$(mktemp)
@@ -107,7 +107,7 @@ teardown() {
 	rm -f "$test_json_file"
 }
 
-@test "getJSONValues function returns expected values" {
+@test "getJSONValues_function_returns_expected_values" {
 	# Setup - create test JSON with nested values
 	local test_json_file
 	test_json_file=$(mktemp)
@@ -127,7 +127,7 @@ teardown() {
 	rm -f "$test_json_file"
 }
 
-@test "is_filepath with a valid file path" {
+@test "is_filepath_with_a_valid_filepath" {
 	# Setup - create a temporary file
 	TEMP_FILE=$(mktemp)
 
@@ -143,7 +143,7 @@ teardown() {
 	rm -f "$TEMP_FILE"
 }
 
-@test "is_filepath with an invalid file path" {
+@test "is_filepath_with_an_invalid_filepath" {
 	# Use a non-existing file path
 	INVALID_PATH="/tmp/non-existing-file-$RANDOM"
 
@@ -156,7 +156,7 @@ teardown() {
 	[[ $output == "Input is not a file path." ]]
 }
 
-@test "process_files_from_config with specific patterns" {
+@test "process_files_from_config_with_specific_patterns" {
 	# Setup - create a temporary working directory
 	local temp_working_dir
 	temp_working_dir=$(mktemp -d)
@@ -199,7 +199,7 @@ EOF
 	rm -rf "$temp_working_dir"
 }
 
-@test "process_files_from_config with invalid config file" {
+@test "process_files_from_config_with_invalid_config_file" {
 	# Use a non-existing config file path
 	local non_existing_config="/tmp/non-existing-config-$RANDOM"
 
@@ -211,7 +211,7 @@ EOF
 	[[ $output == *"Config file not found: $non_existing_config"* ]]
 }
 
-@test "create_zip_with_extension with specific extension" {
+@test "create_zip_with_extension_with_specific_extension" {
 	# Setup - create a temporary working directory
 	local temp_working_dir
 	temp_working_dir=$(mktemp -d)
