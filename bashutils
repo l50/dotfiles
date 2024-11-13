@@ -420,6 +420,45 @@ fetchFromGithub() {
     fi
 }
 
+# Checks if there is enough available disk space on the root partition.
+# The function takes a required space value in megabytes as input and
+# compares it with the available space. If there isn't enough space,
+# it exits with an error.
+#
+# Usage:
+#   check_disk_space [required_space_in_mb]
+#
+# Output:
+#   If there isn't enough space, prints an error message and exits with status 1.
+#   Otherwise, continues silently.
+#
+# Example(s):
+#   check_disk_space 1000  # Check if 1GB space is available
+#   check_disk_space 500   # Check if 500MB space is available
+check_disk_space() {
+    local required_space_mb="$1"
+    local available_space_kb
+    local available_space_mb
+
+    if [[ -z "$required_space_mb" ]]; then
+        echo "Error: Required space in MB must be provided"
+        exit 1
+    fi
+
+    if ! [[ "$required_space_mb" =~ ^[0-9]+$ ]]; then
+        echo "Error: Required space must be a positive integer"
+        exit 1
+    fi
+
+    available_space_kb=$(df / | tail -1 | awk '{print $4}')
+    available_space_mb=$((available_space_kb / 1024))
+
+    if [[ "$available_space_mb" -lt "$required_space_mb" ]]; then
+        echo "Error: Not enough disk space. Required: ${required_space_mb}MB, Available: ${available_space_mb}MB"
+        exit 1
+    fi
+}
+
 # Checks the permissions of the provided GitHub token by attempting to list the repositories of a user or an organization.
 # A valid token will return a list of repositories in a JSON format, which are then printed to stdout.
 # An invalid token will print "Invalid GitHub token." to stderr.

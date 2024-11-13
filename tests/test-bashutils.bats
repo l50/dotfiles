@@ -28,6 +28,65 @@ teardown() {
 	unset INSTALL
 }
 
+@test "check_disk_space with no arguments" {
+    run check_disk_space
+    assert_failure
+    assert_output "Error: Required space in MB must be provided"
+}
+
+@test "check_disk_space with invalid argument" {
+    run check_disk_space "abc"
+    assert_failure
+    assert_output "Error: Required space must be a positive integer"
+}
+
+@test "check_disk_space with negative number" {
+    run check_disk_space "-100"
+    assert_failure
+    assert_output "Error: Required space must be a positive integer"
+}
+
+@test "check_disk_space with zero" {
+    run check_disk_space "0"
+    assert_success
+}
+
+@test "check_disk_space with small required space" {
+    run check_disk_space "1"
+    assert_success
+}
+
+@test "check_disk_space with available space" {
+    # Mock df command to return a fixed amount of space (10GB)
+    # shellcheck disable=SC2317
+    df() {
+        # shellcheck disable=SC2317
+        echo "Filesystem     1K-blocks      Used Available Use% Mounted on"
+        # shellcheck disable=SC2317
+        echo "/dev/sda1      41943040  31457280  10485760  75% /"
+    }
+    export -f df
+
+    run check_disk_space "1000"  # Request 1GB
+    assert_success
+}
+
+@test "check_disk_space with insufficient space" {
+    # Mock df command to return a small amount of space (100MB)
+    # shellcheck disable=SC2317
+    df() {
+        # shellcheck disable=SC2317
+        echo "Filesystem     1K-blocks      Used Available Use% Mounted on"
+        # shellcheck disable=SC2317
+        echo "/dev/sda1      41943040  41841664    102400  98% /"
+    }
+    export -f df
+
+    run check_disk_space "1000"  # Request 1GB
+    assert_failure
+    assert_output "Error: Not enough disk space. Required: 1000MB, Available: 100MB"
+}
+
 @test "getJSONKeys function returns expected keys" {
 	# Setup - create test JSON file
 	local test_json_file
