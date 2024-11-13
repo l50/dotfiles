@@ -66,11 +66,19 @@ jobs:
         with:
           task-version: ${{ env.TASK_VERSION }}
 
+      - name: Install required packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zsh
+
       - name: Install dotfiles
         run: |
+          # Skip git pull in CI environment
+          sed -i 's/git pull origin main/echo "Skipping git pull in CI"/' install_dot_files.sh
           bash ./install_dot_files.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI: true
 
       - name: Run pre-commit
         run: TASK_X_REMOTE_TASKFILES=1 task run-pre-commit --yes
