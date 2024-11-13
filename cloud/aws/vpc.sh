@@ -157,7 +157,7 @@ list_vpc_subnets() {
     done <<< "$subnets"
 
     for subnet_id in "${subnet_array[@]}"; do
-        if [[ -n "$subnet_id" ]]; then  # Check if subnet_id is not empty
+        if [[ -n "$subnet_id" ]]; then # Check if subnet_id is not empty
             is_public=$(is_subnet_public "$subnet_id")
             if [[ $is_public == "True" ]]; then
                 echo "$subnet_id is Public"

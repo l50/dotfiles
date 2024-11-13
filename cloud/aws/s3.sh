@@ -31,7 +31,7 @@ clear_and_delete_s3_buckets() {
     done < <(aws s3 ls | grep -i "$bucket_selection_criteria" | awk '{print $3}')
 
     for bucket in "${buckets[@]}"; do
-        (   
+        (
             echo "Deleting objects from bucket: ${bucket}"
             aws s3api list-object-versions --bucket "$bucket" --output json | jq -r '.Versions[] | .Key + " " + .VersionId' | xargs -P 10 -n 2 aws s3api delete-object --bucket "$bucket" --key {} --version-id {}
             aws s3api list-object-versions --bucket "$bucket" --output json | jq -r '.DeleteMarkers[] | .Key + " " + .VersionId' | xargs -P 10 -n 2 aws s3api delete-object --bucket "$bucket" --key {} --version-id {}

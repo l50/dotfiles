@@ -92,7 +92,7 @@ delete_security_groups() {
     # Iterate over each security group ID in parallel
     echo "$sg_ids" | tr '\t' '\n' | while IFS= read -r sg_id; do
         {
-            sg_id=$(echo "$sg_id" | xargs)  # Trim any whitespace
+            sg_id=$(echo "$sg_id" | xargs) # Trim any whitespace
             echo "Processing security group with ID $sg_id."
 
             # Remove all inbound rules
@@ -126,7 +126,7 @@ delete_security_groups() {
                 --output text)
             if [ -n "$network_interfaces" ]; then
                 for ni in $network_interfaces; do
-                    ni=$(echo "$ni" | xargs)  # Trim whitespace
+                    ni=$(echo "$ni" | xargs) # Trim whitespace
                     echo "Detaching network interface $ni from security group $sg_id."
                     attachment_id=$(aws ec2 describe-network-interfaces \
                         --network-interface-ids "$ni" \

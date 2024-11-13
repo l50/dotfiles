@@ -196,7 +196,7 @@ get_instance_role_credentials() {
 #
 # Example(s):
 #   get_latest_ami "ubuntu" "22.04" "amd64"
-get_latest_ami()  {
+get_latest_ami() {
     local distro=$1
     local version=$2
     local architecture=$3
@@ -443,7 +443,7 @@ list_running_instances() {
 #
 # Example(s):
 #   terminate_instance "i-0abcd1234efgh5678"
-terminate_instance()  {
+terminate_instance() {
     local instance_id=$1
     while true; do
         instance_status=$(aws ec2 describe-instances --instance-ids "$instance_id" --output json | jq -r '.Reservations[0].Instances[0].State.Name')

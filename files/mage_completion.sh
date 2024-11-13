@@ -12,17 +12,17 @@ _mage_completions() {
 
     case "${prev}" in
         -compile)
-            COMPREPLY+=("$( compgen -f -- "${cur}")")
+            COMPREPLY+=("$(compgen -f -- "${cur}")")
             ;;
         -d)
-            COMPREPLY+=("$( compgen -d -- "${cur}")")
+            COMPREPLY+=("$(compgen -d -- "${cur}")")
             ;;
         -gocmd)
-            COMPREPLY+=("$( compgen -W "${opts}" -- "${cur}")")
+            COMPREPLY+=("$(compgen -W "${opts}" -- "${cur}")")
             ;;
         -t)
             opts="30s 1m 1m30s 2m 2m30s 3m 3m30s 4m 4m30s 5m 10m 20m 30m 1h"
-            COMPREPLY+=("$( compgen -W "${opts}" -- "${cur}")")
+            COMPREPLY+=("$(compgen -W "${opts}" -- "${cur}")")
             ;;
         *)
             if [[ ${cur} == -* ]]; then
@@ -30,7 +30,7 @@ _mage_completions() {
             else
                 opts="$(mage -l | tail -n +2 | awk '{print tolower($1)}')"
             fi
-            COMPREPLY+=("$( compgen -W "${opts}" -- "${cur}")")
+            COMPREPLY+=("$(compgen -W "${opts}" -- "${cur}")")
             ;;
     esac
 
