@@ -33,7 +33,6 @@ repos:
     rev: 3.0.0
     hooks:
       - id: shellcheck
-      - id: shfmt
       # Configuration in .mdlrc and .hooks/linters/mdstyle.rb
       - id: markdownlint
 

@@ -40,9 +40,9 @@ teardown() {
 	# Check for success
 	assert_success
 
-	# Verify output format and content
-	# jq 'keys' returns an array of keys like: ["arrayKey","key1","key2"]
-	assert_output '["arrayKey","key1","key2"]'
+	# Expected formatted output from jq
+	local expected_output=$'[\n  "arrayKey",\n  "key1",\n  "key2"\n]'
+	assert_output "$expected_output"
 
 	# Cleanup
 	rm -f "$test_json_file"
@@ -60,11 +60,9 @@ teardown() {
 	# Check for success
 	assert_success
 
-	# Verify each expected value appears in output
-	# jq '.[] | values' returns each value on a new line
-	assert_line '"value1"'
-	assert_line '"value2"'
-	assert_line '["value3","value4"]'
+	# Expected formatted output from jq
+	local expected_output=$'{\n  "key1": "value1"\n}\n{\n  "key2": "value2"\n}\n{\n  "arrayKey": [\n    "value3",\n    "value4"\n  ]\n}'
+	assert_output "$expected_output"
 
 	# Cleanup
 	rm -f "$test_json_file"
