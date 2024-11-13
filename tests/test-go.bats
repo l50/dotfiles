@@ -11,7 +11,7 @@ setup() {
 	git config --global user.name "GitHub Action"
 }
 
-@test "pull_repos function" {
+@test "pull_repos_function" {
 	# Cleanup any existing repository
 	rm -rf /tmp/testrepo*
 
@@ -66,18 +66,18 @@ EOF
 	rm -rf /tmp/testrepo_origin /tmp/testrepo_clone1 /tmp/testrepo_clone2
 }
 
-@test "get_exported_go_funcs function" {
+@test "get_exported_go_funcs_function" {
 	run get_exported_go_funcs "$PWD"
 	[ "$status" -eq 0 ]
 }
 
-@test "add_cobra_init function" {
+@test "add_cobra_init_function" {
 	source "${BATS_TEST_DIRNAME}/../go"
 	run add_cobra_init "$PWD"
 	[ "$status" -eq 0 ]
 }
 
-@test "import_path function" {
+@test "import_path_function" {
 	source "${BATS_TEST_DIRNAME}/../go"
 	skip
 	run import_path "$PWD"
