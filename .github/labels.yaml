@@ -1,63 +1,195 @@
----
 # Area
-- name: area/android
-  color: "7BD7E0"
-  description: "Changes made to the android dotfile"
+- name: area/github
+  color: "72CCF3" # Light Blue
+  description: >-
+    Changes made to .github directory and its contents
 
-- name: area/aws
-  color: "7BD7E0"
-  description: "Changes made to the aws dotfile"
+- name: area/pre-commit
+  color: "BC9BE3" # Lavender
+  description: >-
+    Changes made to .pre-commit-config.yaml
 
-- name: area/bashutils
-  color: "7BD7E0"
-  description: "Changes made to the bash dotfile"
+- name: area/license
+  color: "F4D1B7" # Peach
+  description: >-
+    Changes made to LICENSE file
 
-- name: area/containers
-  color: "7BD7E0"
-  description: "Changes made to the containers dotfile"
+- name: area/readme
+  color: "84B6EB" # Steel Blue
+  description: >-
+    Changes made to README.md file
 
-- name: area/docker
-  color: "7BD7E0"
-  description: "Changes made to the docker dotfile"
-
-- name: area/files
-  color: "7BD7E0"
-  description: "Changes made to file resources"
-
-- name: area/go
-  color: "7BD7E0"
-  description: "Changes made to the Go dotfile"
-
-- name: area/k8s
-  color: "7BD7E0"
-  description: "Changes made to the Kubernetes dotfile"
-
-- name: area/keeper
-  color: "7BD7E0"
-  description: "Changes made to the Keeper dotfile"
-
-- name: area/macos
-  color: "7BD7E0"
-  description: "Changes made to the MacOS dotfile"
-
-- name: area/python
-  color: "7BD7E0"
-  description: "Changes made to the Python dotfile"
+- name: area/taskfiles
+  color: "66CCFF" # Sky Blue
+  description: >-
+    Changes made to Taskfile.yaml
 
 - name: area/tests
-  color: "7BD7E0"
-  description: "Changes made to test resources"
+  color: "72CCF3" # Light Blue
+  description: >-
+    Changes made to tests directory
 
-# Uncategorized
+- name: area/files
+  color: "BC9BE3" # Lavender
+  description: >-
+    Changes made to files directory
+
+- name: area/templates
+  color: "F4D1B7" # Peach
+  description: >-
+    Changes made to templates directory
+
+# Cloud
+- name: area/aws
+  color: "84B6EB" # Steel Blue
+  description: >-
+    Changes made to AWS-related files and cloud/aws directory
+
+- name: area/gcloud
+  color: "66CCFF" # Sky Blue
+  description: >-
+    Changes made to Google Cloud files
+
+# Development
+- name: area/go
+  color: "72CCF3" # Light Blue
+  description: >-
+    Changes made to Go-related files
+
+- name: area/python
+  color: "BC9BE3" # Lavender
+  description: >-
+    Changes made to Python-related files
+
+- name: area/terraform
+  color: "F4D1B7" # Peach
+  description: >-
+    Changes made to Terraform files
+
+- name: area/autocomplete
+  color: "84B6EB" # Steel Blue
+  description: >-
+    Changes made to autocomplete functionality
+
+# Tools and Utils
+- name: area/bashutils
+  color: "66CCFF" # Sky Blue
+  description: >-
+    Changes made to bash utilities
+
+- name: area/common
+  color: "72CCF3" # Light Blue
+  description: >-
+    Changes made to common utilities
+
+- name: area/containers
+  color: "BC9BE3" # Lavender
+  description: >-
+    Changes made to container and docker-related files
+
+- name: area/k8s
+  color: "F4D1B7" # Peach
+  description: >-
+    Changes made to Kubernetes files
+
+- name: area/keeper
+  color: "84B6EB" # Steel Blue
+  description: >-
+    Changes made to keeper-related files
+
+- name: area/1password
+  color: "66CCFF" # Sky Blue
+  description: >-
+    Changes made to 1Password-related files
+
+# Platform Specific
+- name: area/android
+  color: "72CCF3" # Light Blue
+  description: >-
+    Changes made to Android-specific files
+
+- name: area/macos
+  color: "BC9BE3" # Lavender
+  description: >-
+    Changes made to macOS-specific files
+
+# Configuration
+- name: area/dotfiles
+  color: "F4D1B7" # Peach
+  description: >-
+    Changes made to dotfiles (install_dot_files.sh, tmux.conf, zshrc)
+
+# Style
+- name: area/style
+  color: "84B6EB" # Steel Blue
+  description: >-
+    Changes made to mdstyle.rb
+
+# Renovate (preserved from template)
+- name: renovate/container
+  color: "FFC300" # Golden Yellow
+  description: >-
+    Renovate updates for containers
+
+- name: renovate/github-action
+  color: "FFD700" # Gold
+  description: >-
+    Renovate updates for GitHub Actions
+
+- name: renovate/github-release
+  color: "FFE4B5" # Moccasin
+  description: >-
+    Renovate updates for GitHub Releases
+
+# Semantic Type (preserved from template)
+- name: type/digest
+  color: "FFEC19" # Yellow
+  description: >-
+    Digest update type
+
+- name: type/patch
+  color: "FF9800" # Dark Orange
+  description: >-
+    Patch update type
+
+- name: type/minor
+  color: "FF6B6B" # Salmon
+  description: >-
+    Minor update type
+
+- name: type/major
+  color: "F6412D" # Red Orange
+  description: >-
+    Major update type
+
+- name: type/break
+  color: "FF0000" # Bright Red
+  description: >-
+    Breaking change
+
+# Release Issue (preserved from template)
+- name: image-not-found
+  color: "EE0701" # Error Red
+  description: >-
+    Docker image not found
+
+# Uncategorized (preserved from template)
 - name: bug
-  color: "ee0701"
+  color: "D93F0B" # Dark Red
+  description: >-
+    Something isn't working
+
+- name: do-not-merge
+  color: "B60205" # Blood Red
+  description: >-
+    Pull request should not be merged
 
 - name: docs
-  color: "F4D1B7"
+  color: "0075CA" # Documentation Blue
+  description: >-
+    Documentation changes
 
 - name: enhancement
-  color: "84b6eb"
-
-- name: question
-  description: "Clarification and/or additional information required to move forward"
-  color: "cc317c"
+  color: "A2EEEF" # Light Blue
+  description: >-
+    New feature or request
