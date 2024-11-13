@@ -5,18 +5,18 @@ load '../../../cloud/aws/ec2.sh'
 
 export RUNNING_BATS_TEST=1
 
-@test "list_running_instances function" {
-    run list_running_instances
-    if [[ "${status}" -ne 0 ]]; then
-        echo "Error: $output"
-    fi
-}
-
-@test "list_instance_profiles function" {
-    run list_instance_profiles
-    if [[ "${status}" -ne 0 ]]; then
-        echo "Error: $output"
-    fi
+@test "get_aws_account_id function returns valid account ID" {
+    echo "Running test for get_aws_account_id..." >&2
+    run get_aws_account_id
+    echo "Output: $output" >&2 # Debug output
+    assert_success
+    # AWS account IDs are 12-digit numbers
+    assert [ ${#output} -eq 12 ]
+    # Ensure output only contains digits
+    [[ $output =~ ^[0-9]+$ ]] || {
+        echo "Account ID contains non-numeric characters: $output" >&2
+        return 1
+    }
 }
 
 @test "get_latest_ami function with valid input for Ubuntu 22.04 amd64" {
@@ -58,4 +58,18 @@ export RUNNING_BATS_TEST=1
 	assert_output --partial "Usage: get_latest_ami <distro> <version> <architecture>"
 	assert_output --partial "Example: get_latest_ami debian 12 amd64"
 	assert_failure
+}
+
+@test "list_running_instances function" {
+    run list_running_instances
+    if [[ "${status}" -ne 0 ]]; then
+        echo "Error: $output"
+    fi
+}
+
+@test "list_instance_profiles function" {
+    run list_instance_profiles
+    if [[ "${status}" -ne 0 ]]; then
+        echo "Error: $output"
+    fi
 }

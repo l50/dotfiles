@@ -157,6 +157,27 @@ find_instance() {
     esac
 }
 
+# Get AWS Account ID
+#
+# Retrieves the AWS Account ID for the currently configured credentials.
+#
+# Usage:
+#   get_aws_account_id
+#
+# Output:
+#   Outputs the AWS Account ID as a string.
+#
+# Example(s):
+#   ACCOUNT_ID=$(get_aws_account_id)
+get_aws_account_id() {
+    ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
+    if [ -z "$ACCOUNT_ID" ]; then
+        echo "Failed to retrieve AWS Account ID" >&2
+        return 1
+    fi
+    echo "$ACCOUNT_ID"
+}
+
 # Get Instance Role Credentials
 #
 # Retrieves the IAM role credentials from the specified EC2 instance.
