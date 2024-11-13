@@ -1,9 +1,27 @@
 ---
-name: dotfile tests
+name: Dotfile tests
 on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
   push:
-    branches: [main]
+    branches:
+      - main
+  schedule:
+    # Run once a week (see https://crontab.guru)
+    - cron: "0 0 * * 0"
   workflow_dispatch:
+
+# Cancel any in-progress job when a new workflow is triggered
+concurrency:
+  cancel-in-progress: true
+  group: pre-commit-${{ github.workflow }}-${{ github.ref }}
+
+env:
+  BATS_VERSION: 1.9.0
 
 jobs:
   bats_tests:
@@ -13,7 +31,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
     steps:
-      - name: Clone git repository
+      - name: Checkout git repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           submodules: recursive
@@ -38,7 +56,7 @@ jobs:
       - name: Install the dotfiles
         run: |
           chmod +x install_dot_files.sh
-          if ./install_dot_files.sh; then
+          if ./install_dot_files.sh --skip-ansible; then
             echo "Dotfiles installed successfully"
           else
             echo "Dotfiles installation failed"
@@ -48,7 +66,7 @@ jobs:
       - name: Setup BATS
         uses: mig4/setup-bats@af9a00deb21b5d795cabfeaa8d9060410377686d # v1
         with:
-          bats-version: 1.2.1
+          bats-version: ${{ env.BATS_VERSION }}
 
       - name: Run Bats tests
         run: bats tests/test-go.bats

@@ -1,2 +1,8 @@
 # VSCode artifacts
 node_modules
+
+# Work In Progress
+WIP
+
+# Remote Taskfiles
+.task

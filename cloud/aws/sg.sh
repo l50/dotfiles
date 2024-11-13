@@ -1,3 +1,5 @@
+# shellcheck shell=bash
+
 # Authorize Security Group Ingress
 #
 # Authorizes inbound traffic for the specified security group if the rule doesn't already exist.
@@ -24,7 +26,7 @@ authorize_security_group_ingress() {
     local security_group_id
     security_group_id=$(aws ec2 describe-security-groups --filters Name=group-name,Values="$group_name" --query 'SecurityGroups[0].GroupId' --output text)
 
-    # If the security group doesn't exist or command fails, create it
+    # If the security group doesn't exist or the command fails, create it
     if [ -z "$security_group_id" ] || [ "$security_group_id" == "None" ]; then
         if ! security_group_id=$(aws ec2 create-security-group --group-name "$group_name" --description "$group_description" --vpc-id "$vpc_id" --query 'GroupId' --output text); then
             echo "Failed to create security group: $group_name"
@@ -40,7 +42,6 @@ authorize_security_group_ingress() {
     existing_rule=$(aws ec2 describe-security-groups \
         --group-ids "$security_group_id" \
         --query "SecurityGroups[0].IpPermissions[?IpProtocol=='$protocol' && FromPort=='$port' && contains(IpRanges[].CidrIp, '$cidr')]")
-
     if [ -n "$existing_rule" ]; then
         echo "Ingress rule already exists for: $protocol port $port from $cidr"
         echo "$security_group_id"
@@ -91,7 +92,7 @@ delete_security_groups() {
     # Iterate over each security group ID in parallel
     echo "$sg_ids" | tr '\t' '\n' | while IFS= read -r sg_id; do
         {
-            sg_id=$(echo "$sg_id" | xargs)  # Trim any whitespace
+            sg_id=$(echo "$sg_id" | xargs) # Trim any whitespace
             echo "Processing security group with ID $sg_id."
 
             # Remove all inbound rules
@@ -125,7 +126,7 @@ delete_security_groups() {
                 --output text)
             if [ -n "$network_interfaces" ]; then
                 for ni in $network_interfaces; do
-                    ni=$(echo "$ni" | xargs)  # Trim whitespace
+                    ni=$(echo "$ni" | xargs) # Trim whitespace
                     echo "Detaching network interface $ni from security group $sg_id."
                     attachment_id=$(aws ec2 describe-network-interfaces \
                         --network-interface-ids "$ni" \
@@ -183,8 +184,7 @@ list_security_groups() {
 
     # Attempt to list security groups with the given filter
     local group_names
-    group_names=$(aws ec2 describe-security-groups "${query_args[@]}" --query 'SecurityGroups[*].GroupName' --output text)
-    if [[ $? -eq 0 ]]; then
+    if group_names=$(aws ec2 describe-security-groups "${query_args[@]}" --query 'SecurityGroups[*].GroupName' --output text); then
         echo "$group_names" | tr '\t' '\n'
     fi
 }

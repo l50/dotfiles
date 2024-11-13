@@ -1,3 +1,5 @@
+# shellcheck shell=bash
+
 # Find Default Subnet
 #
 # Finds the default subnet ID.
@@ -52,19 +54,15 @@ find_default_vpc() {
 get_subnet_route_table() {
     local subnet_id=$1
     local route_table_id
-
     if [[ -z "$subnet_id" ]]; then
         echo "No subnet ID provided. Usage: get_subnet_route_table <subnet-id>"
         return 1
     fi
 
-    route_table_id=$(aws ec2 describe-route-tables \
+    if route_table_id=$(aws ec2 describe-route-tables \
         --filters "Name=association.subnet-id,Values=$subnet_id" \
         --query "RouteTables[].RouteTableId" \
-        --output text)
-
-    # Check if the AWS command was successful
-    if [ $? -eq 0 ]; then
+        --output text); then
         echo "$route_table_id"
     else
         echo "Error fetching route table for subnet $subnet_id"
@@ -92,24 +90,19 @@ is_subnet_public() {
     local route_table_id
     local igw_route
     local result="False"
-
     if [[ -z "$subnet_id" ]]; then
         echo "No subnet ID provided. Usage: is_subnet_public <subnet-id>"
         return 1
     fi
-
     route_table_id=$(get_subnet_route_table "$subnet_id")
     if [[ -z "$route_table_id" || "$route_table_id" == "None" ]]; then
         echo "False"
-        return
+        return 0
     fi
-
     igw_route=$(aws ec2 describe-route-tables --route-table-ids "$route_table_id" --query "RouteTables[*].Routes[?GatewayId && GatewayId!='local' && starts_with(GatewayId, 'igw-')]" --output text)
-
-    if [[ ! -z "$igw_route" ]]; then
+    if [[ -n "$igw_route" ]]; then
         result="True"
     fi
-
     echo "$result"
 }
 
@@ -127,7 +120,7 @@ is_subnet_public() {
 #   list_vpcs
 list_vpcs() {
     echo "Listing VPCs..."
-    aws ec2 describe-vpcs --query 'Vpcs[].{ID:VpcId, Name:Tags[?Key==`Name`]|[0].Value, State:State}' --output table
+    aws ec2 describe-vpcs --query "Vpcs[].{ID:VpcId, Name:Tags[?Key==\"Name\"]|[0].Value, State:State}" --output table
 }
 
 # List VPC Subnets
@@ -164,7 +157,7 @@ list_vpc_subnets() {
     done <<< "$subnets"
 
     for subnet_id in "${subnet_array[@]}"; do
-        if [[ -n "$subnet_id" ]]; then  # Check if subnet_id is not empty
+        if [[ -n "$subnet_id" ]]; then # Check if subnet_id is not empty
             is_public=$(is_subnet_public "$subnet_id")
             if [[ $is_public == "True" ]]; then
                 echo "$subnet_id is Public"

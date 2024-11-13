@@ -20,12 +20,12 @@
 #       return
 #   fi
 ru_sure() {
-    local message=$1
-    echo "$message (y/N):"
-    read -r confirm
-    if [[ $confirm != [yY] ]]; then
-        echo "Operation cancelled."
-        return 1
-    fi
-    return 0
+	local message=$1
+	echo "$message (y/N):"
+	read -r confirm
+	if [[ $confirm != [yY] ]]; then
+		echo "Operation cancelled."
+		return 1
+	fi
+	return 0
 }

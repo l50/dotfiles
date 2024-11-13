@@ -1,3 +1,5 @@
+# shellcheck shell=bash
+
 # Cleans up IAM resources based on input criteria
 #
 # This function processes IAM resources that match specified criteria. It reads
@@ -137,7 +139,7 @@ find_iam_resources_with_keyword() {
         return 1
     fi
 
-    input_string=$(echo "$1" | tr '[:upper:]' '[:lower:]')  # Convert input string to lowercase using tr
+    input_string=$(echo "$1" | tr '[:upper:]' '[:lower:]') # Convert input string to lowercase using tr
 
     local resource_types=("user" "role" "policy" "group")
 

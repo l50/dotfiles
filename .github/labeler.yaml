@@ -1,49 +1,96 @@
 ---
-area/android:
-  - "android/**/*"
-
-area/aws:
-  - "aws/**/*"
-
-area/bashutils:
-  - "bashutils/**/*"
-
-area/containers:
-  - "containers/**/*"
-
-area/docker:
-  - "docker/**/*"
-
-area/files:
-  - "files/**/*"
-
-area/go:
-  - "go/**/*"
-
-area/k8s:
-  - "k8s/**/*"
-
-area/keeper:
-  - "keeper/**/*"
-
-area/macos:
-  - "macos/**/*"
-
-area/python:
-  - "python/**/*"
-
+# Area
+area/github:
+  - changed-files:
+      - any-glob-to-any-file: ".github/**/*"
+area/pre-commit:
+  - changed-files:
+      - any-glob-to-any-file: ".pre-commit-config.yaml"
+area/license:
+  - changed-files:
+      - any-glob-to-any-file: "LICENSE"
+area/readme:
+  - changed-files:
+      - any-glob-to-any-file: "README.md"
+area/taskfiles:
+  - changed-files:
+      - any-glob-to-any-file: "Taskfile.yaml"
 area/tests:
-  - "tests/**/*"
+  - changed-files:
+      - any-glob-to-any-file: "tests/**/*"
+area/files:
+  - changed-files:
+      - any-glob-to-any-file: "files/**/*"
+area/templates:
+  - changed-files:
+      - any-glob-to-any-file: "templates/**/*"
 
-# Uncategorized
-bug:
-  - "tests/**/*"
+# Cloud
+area/aws:
+  - changed-files:
+      - any-glob-to-any-file: [
+          "aws",
+          "cloud/aws/**/*"
+        ]
+area/gcloud:
+  - changed-files:
+      - any-glob-to-any-file: "gcloud"
 
-docs:
-  - "*.md"
+# Development
+area/go:
+  - changed-files:
+      - any-glob-to-any-file: "go"
+area/python:
+  - changed-files:
+      - any-glob-to-any-file: "python"
+area/terraform:
+  - changed-files:
+      - any-glob-to-any-file: "terraform"
+area/autocomplete:
+  - changed-files:
+      - any-glob-to-any-file: "autocomplete"
 
-enhancement:
-  - "*/**/*"
+# Tools and Utils
+area/bashutils:
+  - changed-files:
+      - any-glob-to-any-file: "bashutils"
+area/common:
+  - changed-files:
+      - any-glob-to-any-file: "common"
+area/containers:
+  - changed-files:
+      - any-glob-to-any-file: [
+          "containers",
+          "docker"
+        ]
+area/k8s:
+  - changed-files:
+      - any-glob-to-any-file: "k8s"
+area/keeper:
+  - changed-files:
+      - any-glob-to-any-file: "keeper"
+area/1password:
+  - changed-files:
+      - any-glob-to-any-file: "op"
 
-question:
-  - "*.md"
+# Platform Specific
+area/android:
+  - changed-files:
+      - any-glob-to-any-file: "android"
+area/macos:
+  - changed-files:
+      - any-glob-to-any-file: "macos"
+
+# Configuration
+area/dotfiles:
+  - changed-files:
+      - any-glob-to-any-file: [
+          "install_dot_files.sh",
+          "tmux.conf",
+          "zshrc"
+        ]
+
+# Style
+area/style:
+  - changed-files:
+      - any-glob-to-any-file: "mdstyle.rb"
