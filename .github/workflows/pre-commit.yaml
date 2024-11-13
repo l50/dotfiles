@@ -81,4 +81,4 @@ jobs:
           CI: true
 
       - name: Run pre-commit
-        run: TASK_X_REMOTE_TASKFILES=1 task run-pre-commit --yes
+        run: TASK_X_REMOTE_TASKFILES=1 task run-pre-commit -y
