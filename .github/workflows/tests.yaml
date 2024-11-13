@@ -89,7 +89,7 @@ jobs:
           git config --global user.name "GitHub Action"
 
       - name: Install asdf cli
-        uses: asdf-vm/actions/setup@6a442392015fbbdd8b48696d41e0051b2698b2e4 # v2
+        uses: asdf-vm/actions/setup@05e0d2ed97b598bfce82fd30daf324ae0c4570e6 # v3
 
       - name: Install dependencies
         run: |
