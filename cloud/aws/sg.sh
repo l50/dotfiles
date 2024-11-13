@@ -19,12 +19,12 @@ authorize_security_group_ingress() {
     local protocol=$4
     local port=$5
     local cidr=$6
-
+    
     # Check if the security group already exists
     local security_group_id
     security_group_id=$(aws ec2 describe-security-groups --filters Name=group-name,Values="$group_name" --query 'SecurityGroups[0].GroupId' --output text)
-
-    # If the security group doesn't exist or command fails, create it
+    
+    # If the security group doesn't exist or the command fails, create it
     if [ -z "$security_group_id" ] || [ "$security_group_id" == "None" ]; then
         if ! security_group_id=$(aws ec2 create-security-group --group-name "$group_name" --description "$group_description" --vpc-id "$vpc_id" --query 'GroupId' --output text); then
             echo "Failed to create security group: $group_name"
@@ -35,12 +35,11 @@ authorize_security_group_ingress() {
         echo "Security group $group_name already exists with ID: $security_group_id"
     fi
 
-    # Check if the ingress rule already exists
+    # Check if the ingress rule already exists 
     local existing_rule
     existing_rule=$(aws ec2 describe-security-groups \
         --group-ids "$security_group_id" \
         --query "SecurityGroups[0].IpPermissions[?IpProtocol=='$protocol' && FromPort=='$port' && contains(IpRanges[].CidrIp, '$cidr')]")
-
     if [ -n "$existing_rule" ]; then
         echo "Ingress rule already exists for: $protocol port $port from $cidr"
         echo "$security_group_id"
@@ -183,8 +182,7 @@ list_security_groups() {
 
     # Attempt to list security groups with the given filter
     local group_names
-    group_names=$(aws ec2 describe-security-groups "${query_args[@]}" --query 'SecurityGroups[*].GroupName' --output text)
-    if [[ $? -eq 0 ]]; then
+    if group_names=$(aws ec2 describe-security-groups "${query_args[@]}" --query 'SecurityGroups[*].GroupName' --output text); then
         echo "$group_names" | tr '\t' '\n'
     fi
 }
