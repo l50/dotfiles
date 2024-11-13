@@ -16,22 +16,22 @@
 # Example(s):
 #   taint_terraform_resources
 taint_terraform_resources() {
-    # Get the list of resources from terraform state
-    local resources
-    resources=$(terraform state list)
+	# Get the list of resources from terraform state
+	local resources
+	resources=$(terraform state list)
 
-    # Loop through each resource
-    for resource in $resources; do
-        # Check if the resource is not a data source
-        if [[ ! $resource == data.* ]]; then
-            # Taint the resource and check for errors
-            if ! terraform taint "$resource"; then
-                echo "Error: Unable to taint resource $resource"
-            else
-                echo "Tainted resource $resource"
-            fi
-        fi
-    done
+	# Loop through each resource
+	for resource in $resources; do
+		# Check if the resource is not a data source
+		if [[ ! $resource == data.* ]]; then
+			# Taint the resource and check for errors
+			if ! terraform taint "$resource"; then
+				echo "Error: Unable to taint resource $resource"
+			else
+				echo "Tainted resource $resource"
+			fi
+		fi
+	done
 }
 
 # Removes all resources from Terragrunt state after confirmation
@@ -50,20 +50,20 @@ taint_terraform_resources() {
 # Example(s):
 #   nuke_terragrunt_state
 nuke_terragrunt_state() {
-    if [[ ! -f $HOME/.dotfiles/common ]]; then
-        echo "Error: Unable to find common functions file"
-        return 1
-    fi
+	if [[ ! -f $HOME/.dotfiles/common ]]; then
+		echo "Error: Unable to find common functions file"
+		return 1
+	fi
 
-    # shellcheck disable=SC1091
-    source "$HOME/.dotfiles/common"
-    if ! ru_sure "Are you sure you want to remove all resources from Terragrunt state?"; then
-        return
-    fi
+	# shellcheck disable=SC1091
+	source "$HOME/.dotfiles/common"
+	if ! ru_sure "Are you sure you want to remove all resources from Terragrunt state?"; then
+		return
+	fi
 
-    # List all Terragrunt state resources and remove them
-    terragrunt state list | while read -r resource; do
-        echo "Removing $resource..."
-        terragrunt state rm "$resource"
-    done
+	# List all Terragrunt state resources and remove them
+	terragrunt state list | while read -r resource; do
+		echo "Removing $resource..."
+		terragrunt state rm "$resource"
+	done
 }

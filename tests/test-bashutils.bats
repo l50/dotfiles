@@ -7,23 +7,23 @@ load '../bashutils'
 export RUNNING_BATS_TEST=1
 
 setup() {
-    # Create a temp file with some JSON for testing
-    TEST_JSON_FILE=$(mktemp)
-    echo '{"key1":"value1","key2":"value2","arrayKey":["value3","value4"]}' > "$TEST_JSON_FILE"
+	# Create a temp file with some JSON for testing
+	TEST_JSON_FILE=$(mktemp)
+	echo '{"key1":"value1","key2":"value2","arrayKey":["value3","value4"]}' >"$TEST_JSON_FILE"
 
-    # Mock the environment variables
-    export AUTHOR="cli"
-    export REPO_NAME="cli"
-    export INSTALL="false"
+	# Mock the environment variables
+	export AUTHOR="cli"
+	export REPO_NAME="cli"
+	export INSTALL="false"
 }
 
 teardown() {
-    # Delete the temp file
-    rm "$TEST_JSON_FILE"
-    # Clean up the environment variables
-    unset AUTHOR
-    unset REPO_NAME
-    unset INSTALL
+	# Delete the temp file
+	rm "$TEST_JSON_FILE"
+	# Clean up the environment variables
+	unset AUTHOR
+	unset REPO_NAME
+	unset INSTALL
 }
 
 # @test "getJSONKeys function" {
@@ -294,7 +294,6 @@ teardown() {
 #     rm "$output_file"
 # }
 
-
 # @test "process_files with invalid path" {
 #     # Setup - create a non-existing path
 #     local non_existing_path="/tmp/non-existing-path-$RANDOM"
@@ -361,33 +360,33 @@ teardown() {
 # }
 
 @test "is_filepath with a valid file path" {
-    # Setup - create a temporary file
-    local temp_file
-    temp_file=$(mktemp)
+	# Setup - create a temporary file
+	local temp_file
+	temp_file=$(mktemp)
 
-    # Call is_filepath and pass the file path, capturing output and status
-    output=$(echo "$temp_file" | is_filepath)
-    status=$?
+	# Call is_filepath and pass the file path, capturing output and status
+	output=$(echo "$temp_file" | is_filepath)
+	status=$?
 
-    # Assertions
-    [ "$status" -eq 0 ]
-    [[ $output == "Input is a file path." ]]
+	# Assertions
+	[ "$status" -eq 0 ]
+	[[ $output == "Input is a file path." ]]
 
-    # Cleanup
-    rm -f "$temp_file"
+	# Cleanup
+	rm -f "$temp_file"
 }
 
 @test "is_filepath with an invalid file path" {
-    # Use a non-existing file path
-    local non_existing_path="/tmp/non-existing-file-$RANDOM"
+	# Use a non-existing file path
+	local non_existing_path="/tmp/non-existing-file-$RANDOM"
 
-    # Call is_filepath and pass the file path, capturing output and status
-    output=$(echo "$temp_file" | is_filepath)
-    status=$?
+	# Call is_filepath and pass the file path, capturing output and status
+	output=$(echo "$temp_file" | is_filepath)
+	status=$?
 
-    # Assertions
-    [ "$status" -eq 0 ]
-    [[ $output == "Input is not a file path." ]]
+	# Assertions
+	[ "$status" -eq 0 ]
+	[[ $output == "Input is not a file path." ]]
 }
 
 # @test "process_files_from_config with valid config file" {
@@ -415,19 +414,19 @@ teardown() {
 # }
 
 @test "process_files_from_config with specific patterns" {
-    # Setup - create a temporary working directory
-    local temp_working_dir
-    temp_working_dir=$(mktemp -d)
+	# Setup - create a temporary working directory
+	local temp_working_dir
+	temp_working_dir=$(mktemp -d)
 
-    # Change to the temporary directory
-    pushd "$temp_working_dir"
+	# Change to the temporary directory
+	pushd "$temp_working_dir"
 
-    # Create a temporary config file with patterns
-    local temp_config
-    temp_config=$(mktemp)
+	# Create a temporary config file with patterns
+	local temp_config
+	temp_config=$(mktemp)
 
-    # Add file patterns to the config file
-    cat << EOF > "$temp_config"
+	# Add file patterns to the config file
+	cat <<EOF >"$temp_config"
 ./.git/*
 ./.hooks/*
 ./.github/*
@@ -441,69 +440,67 @@ teardown() {
 ./*.md
 EOF
 
-    # Create dummy files and directories to match the patterns
-    mkdir -p .git .hooks .github magefiles changelogs .vscode
-    touch .git/dummy .hooks/dummy .github/dummy magefiles/dummy changelogs/dummy .vscode/dummy
-    touch go.mod go.sum LICENSE .mdlrc .pre-commit-config.yaml README.md
+	# Create dummy files and directories to match the patterns
+	mkdir -p .git .hooks .github magefiles changelogs .vscode
+	touch .git/dummy .hooks/dummy .github/dummy magefiles/dummy changelogs/dummy .vscode/dummy
+	touch go.mod go.sum LICENSE .mdlrc .pre-commit-config.yaml README.md
 
-    # Call process_files_from_config with the config file
-    run process_files_from_config "$temp_config"
+	# Call process_files_from_config with the config file
+	run process_files_from_config "$temp_config"
 
-    # Assertions
-    [ "$status" -eq 0 ]
-    # Add assertions to verify expected behavior/output
+	# Assertions
+	[ "$status" -eq 0 ]
+	# Add assertions to verify expected behavior/output
 
-    # Cleanup - return to the original directory and remove the temporary directory
-    popd
-    rm -rf "$temp_working_dir"
+	# Cleanup - return to the original directory and remove the temporary directory
+	popd
+	rm -rf "$temp_working_dir"
 }
 
-
-
 @test "process_files_from_config with invalid config file" {
-    # Use a non-existing config file path
-    local non_existing_config="/tmp/non-existing-config-$RANDOM"
+	# Use a non-existing config file path
+	local non_existing_config="/tmp/non-existing-config-$RANDOM"
 
-    # Call process_files_from_config with the non-existing config file
-    run process_files_from_config "$non_existing_config"
+	# Call process_files_from_config with the non-existing config file
+	run process_files_from_config "$non_existing_config"
 
-    # Assertions
-    [ "$status" -eq 1 ]
-    [[ $output == *"Config file not found: $non_existing_config"* ]]
+	# Assertions
+	[ "$status" -eq 1 ]
+	[[ $output == *"Config file not found: $non_existing_config"* ]]
 }
 
 @test "create_zip_with_extension with specific extension" {
-    # Setup - create a temporary working directory
-    local temp_working_dir
-    temp_working_dir=$(mktemp -d)
+	# Setup - create a temporary working directory
+	local temp_working_dir
+	temp_working_dir=$(mktemp -d)
 
-    # Change to the temporary directory
-    pushd "$temp_working_dir"
+	# Change to the temporary directory
+	pushd "$temp_working_dir"
 
-    # Create a temporary directory with files
-    local temp_directory
-    temp_directory=$(mktemp -d)
+	# Create a temporary directory with files
+	local temp_directory
+	temp_directory=$(mktemp -d)
 
-    # Create files with different extensions
-    touch "$temp_directory/file1.go"
-    touch "$temp_directory/file2.go"
-    touch "$temp_directory/file1.txt"
-    touch "$temp_directory/file2.txt"
+	# Create files with different extensions
+	touch "$temp_directory/file1.go"
+	touch "$temp_directory/file2.go"
+	touch "$temp_directory/file1.txt"
+	touch "$temp_directory/file2.txt"
 
-    # Call create_zip_with_extension with the directory, zip file name, and extension
-    local zipfile="test.zip"
-    local extension="go"
-    run create_zip_with_extension "$temp_directory" "$zipfile" "$extension"
+	# Call create_zip_with_extension with the directory, zip file name, and extension
+	local zipfile="test.zip"
+	local extension="go"
+	run create_zip_with_extension "$temp_directory" "$zipfile" "$extension"
 
-    # Assertions
-    [ "$status" -eq 0 ]
-    [ -f "$zipfile" ]
-    unzip -l "$zipfile" | grep "file1.go"
-    unzip -l "$zipfile" | grep "file2.go"
-    ! unzip -l "$zipfile" | grep "file1.txt"
-    ! unzip -l "$zipfile" | grep "file2.txt"
+	# Assertions
+	[ "$status" -eq 0 ]
+	[ -f "$zipfile" ]
+	unzip -l "$zipfile" | grep "file1.go"
+	unzip -l "$zipfile" | grep "file2.go"
+	! unzip -l "$zipfile" | grep "file1.txt"
+	! unzip -l "$zipfile" | grep "file2.txt"
 
-    # Cleanup - return to the original directory and remove the temporary directory
-    popd
-    rm -rf "$temp_working_dir"
+	# Cleanup - return to the original directory and remove the temporary directory
+	popd
+	rm -rf "$temp_working_dir"
 }
