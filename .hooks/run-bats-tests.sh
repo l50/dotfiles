@@ -1,14 +1,26 @@
 #!/bin/bash
-set -ex
+set -eo pipefail
 
-# Check if GITHUB_TOKEN is not set
-if [[ -z $GITHUB_TOKEN ]]; then
-    echo "Warning: GITHUB_TOKEN is not set. Some tests may fail."
-fi
+# Set TERM variable to avoid errors
+export TERM=xterm
 
-# Run all bats tests in the tests directory
-output=$(bats --tap "tests/"*.bats)
-exit_code=$?
+# Color definitions
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
 
-echo "${output}"
-exit ${exit_code}
+# Run bats with pretty formatter and real-time output
+bats --formatter pretty "tests/"*.bats | while IFS= read -r line; do
+    if [[ $line =~ ^not\ ok ]]; then
+        echo -e "${RED}${line}${NC}"
+    elif [[ $line =~ ^ok ]]; then
+        echo -e "${GREEN}${line}${NC}"
+    elif [[ $line =~ ^#.*failed ]]; then
+        echo -e "${RED}${line}${NC}"
+    else
+        echo "$line"
+    fi
+done
+
+# Get the test exit code
+exit "${PIPESTATUS[0]}"
