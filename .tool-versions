@@ -2,5 +2,5 @@ golang 1.23.3
 python 3.12.5
 ruby 3.3.6
 helm 3.16.3
-kubectl 1.31.2
+kubectl 1.31.3
 packer 1.11.2
