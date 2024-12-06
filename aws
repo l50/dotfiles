@@ -14,30 +14,61 @@
 # Example(s):
 #   delete_eks_cluster_and_node_groups "test-tt-test-wndq2t"
 delete_eks_cluster_and_node_groups() {
-    local CLUSTER_NAME=$1
-
+    CLUSTER_NAME=$1
     if [[ -z "$CLUSTER_NAME" ]]; then
         echo "No cluster name provided. Usage: delete_eks_cluster_and_node_groups <cluster-name>"
         return 1
     fi
 
-    # Get the list of node groups associated with the cluster
-    local NODE_GROUPS
+    # Check if cluster exists first
+    if ! aws eks describe-cluster --name "$CLUSTER_NAME" >/dev/null 2>&1; then
+        echo "Cluster $CLUSTER_NAME does not exist"
+        return 0
+    fi
+
+    # Get node groups and handle potential empty result
     NODE_GROUPS=$(aws eks list-nodegroups --cluster-name "$CLUSTER_NAME" --query 'nodegroups[*]' --output text)
 
-    # Delete each node group
-    for NODE_GROUP in $NODE_GROUPS; do
-        echo "Deleting node group $NODE_GROUP from cluster $CLUSTER_NAME..."
-        aws eks delete-nodegroup --cluster-name "$CLUSTER_NAME" --nodegroup-name "$NODE_GROUP"
-        echo "Waiting for node group $NODE_GROUP to be deleted..."
-        aws eks wait nodegroup-deleted --cluster-name "$CLUSTER_NAME" --nodegroup-name "$NODE_GROUP"
-    done
+    if [[ "$NODE_GROUPS" != "None" && ! -z "$NODE_GROUPS" ]]; then
+        echo "Found nodegroups: $NODE_GROUPS"
+        for NODE_GROUP in $NODE_GROUPS; do
+            echo "Deleting node group $NODE_GROUP from cluster $CLUSTER_NAME..."
 
-    # Delete the EKS cluster
+            # Delete without waiting first
+            if ! aws eks delete-nodegroup --cluster-name "$CLUSTER_NAME" --nodegroup-name "$NODE_GROUP" 2>/dev/null; then
+                echo "Failed to delete nodegroup $NODE_GROUP. Attempting manual cleanup..."
+
+                # Get all nodegroups with more detailed information
+                ALL_NODEGROUPS=$(aws eks list-nodegroups --cluster-name "$CLUSTER_NAME" --output json)
+
+                # If the delete failed, try to get the actual nodegroup name from the ARN
+                ACTUAL_NODEGROUP_NAME=$(echo "$ALL_NODEGROUPS" | jq -r ".nodegroups[] | select(contains(\"$NODE_GROUP\"))")
+
+                if [[ ! -z "$ACTUAL_NODEGROUP_NAME" ]]; then
+                    echo "Attempting to delete nodegroup with extracted name: $ACTUAL_NODEGROUP_NAME"
+                    aws eks delete-nodegroup --cluster-name "$CLUSTER_NAME" --nodegroup-name "$ACTUAL_NODEGROUP_NAME"
+                    aws eks wait nodegroup-deleted --cluster-name "$CLUSTER_NAME" --nodegroup-name "$ACTUAL_NODEGROUP_NAME"
+                fi
+            else
+                echo "Waiting for node group $NODE_GROUP to be deleted..."
+                aws eks wait nodegroup-deleted --cluster-name "$CLUSTER_NAME" --nodegroup-name "$NODE_GROUP"
+            fi
+        done
+    else
+        echo "No nodegroups found for cluster $CLUSTER_NAME"
+    fi
+
     echo "Deleting EKS cluster $CLUSTER_NAME..."
-    aws eks delete-cluster --name "$CLUSTER_NAME"
+    if ! aws eks delete-cluster --name "$CLUSTER_NAME"; then
+        echo "Failed to delete cluster. Please check if all nodegroups are properly deleted."
+        return 1
+    fi
+
     echo "Waiting for EKS cluster $CLUSTER_NAME to be deleted..."
-    aws eks wait cluster-deleted --name "$CLUSTER_NAME"
+    if ! aws eks wait cluster-deleted --name "$CLUSTER_NAME"; then
+        echo "Failed to wait for cluster deletion. Please check the cluster status manually."
+        return 1
+    fi
 
     echo "EKS cluster $CLUSTER_NAME and its node groups have been successfully deleted."
 }
@@ -63,56 +94,63 @@ delete_eks_cluster_and_node_groups() {
 #
 #   Delete all KMS keys with an empty string in their alias:
 #   delete_kms_keys_with_string ' '
-delete_kms_keys_with_string() {
-    local search_string=$1
-
-    if [[ -z "$search_string" ]]; then
-        echo "No search string provided. Usage: delete_kms_keys_with_string <string>"
+delete_eks_cluster_and_node_groups() {
+    CLUSTER_NAME=$1
+    if [[ -z "$CLUSTER_NAME" ]]; then
+        echo "No cluster name provided. Usage: delete_eks_cluster_and_node_groups <cluster-name>"
         return 1
     fi
 
-    # Get a list of KMS aliases with the search string in the name
-    local ALIAS_LIST
-    if [[ "$search_string" == " " ]]; then
-        # Only select aliases that are exactly a single space
-        ALIAS_LIST=$(aws kms list-aliases --region "$AWS_DEFAULT_REGION" \
-            --query "Aliases[?AliasName==' '].AliasName" --output text)
-    else
-        ALIAS_LIST=$(aws kms list-aliases --region "$AWS_DEFAULT_REGION" \
-            --query "Aliases[?contains(AliasName, \`$search_string\`)].AliasName" --output text)
+    # Check if cluster exists first
+    if ! aws eks describe-cluster --name "$CLUSTER_NAME" >/dev/null 2>&1; then
+        echo "Cluster $CLUSTER_NAME does not exist"
+        return 0
     fi
 
-    # Process each alias in parallel
-    echo "$ALIAS_LIST" | tr '\t' '\n' | while IFS= read -r ALIAS; do
-        {
-            if [[ -n "$ALIAS" ]]; then
-                echo "Processing alias: $ALIAS"
+    # Get node groups using JSON format and process with jq
+    NODE_GROUPS=$(aws eks list-nodegroups --cluster-name "$CLUSTER_NAME" --output json | jq -r '.nodegroups[]')
 
-                # Get the key ID associated with the alias
-                KEY_ID=$(aws kms list-aliases --region "$AWS_DEFAULT_REGION" \
-                    --query "Aliases[?AliasName=='$ALIAS'].TargetKeyId" --output text)
+    if [[ ! -z "$NODE_GROUPS" ]]; then
+        echo "Found nodegroups:"
+        echo "$NODE_GROUPS"
 
-                if [[ -n "$KEY_ID" ]]; then
-                    echo "Deleting key with alias: $ALIAS and key ID: $KEY_ID"
+        # Read each line of NODE_GROUPS
+        echo "$NODE_GROUPS" | while IFS= read -r NODE_GROUP; do
+            echo "Deleting node group '$NODE_GROUP' from cluster $CLUSTER_NAME..."
 
-                    # Schedule key deletion (keys are not deleted immediately but scheduled for deletion)
-                    aws kms schedule-key-deletion --key-id "$KEY_ID" --pending-window-in-days 7 --region "$AWS_DEFAULT_REGION"
-
-                    echo "Scheduled deletion for key ID: $KEY_ID"
-
-                    # Delete the alias
-                    aws kms delete-alias --alias-name "$ALIAS" --region "$AWS_DEFAULT_REGION"
-
-                    echo "Deleted alias: $ALIAS"
-                else
-                    echo "No key associated with alias: $ALIAS"
-                fi
+            # Delete nodegroup
+            if aws eks delete-nodegroup --cluster-name "$CLUSTER_NAME" --nodegroup-name "$NODE_GROUP"; then
+                echo "Waiting for node group '$NODE_GROUP' to be deleted..."
+                aws eks wait nodegroup-deleted --cluster-name "$CLUSTER_NAME" --nodegroup-name "$NODE_GROUP"
+            else
+                echo "Failed to delete nodegroup '$NODE_GROUP'. Cluster deletion may fail."
             fi
-        } &
-    done
+        done
+    else
+        echo "No nodegroups found for cluster $CLUSTER_NAME"
+    fi
 
-    # Wait for all background processes to complete
-    wait
+    # Sleep to allow AWS to properly register the nodegroup deletions
+    echo "Waiting 30 seconds for AWS to process nodegroup deletions..."
+    sleep 30
+
+    echo "Deleting EKS cluster $CLUSTER_NAME..."
+    if ! aws eks delete-cluster --name "$CLUSTER_NAME"; then
+        echo "Failed to delete cluster. Waiting additional time and trying again..."
+        sleep 30
+        if ! aws eks delete-cluster --name "$CLUSTER_NAME"; then
+            echo "Failed to delete cluster after second attempt. Please check if all nodegroups are properly deleted."
+            return 1
+        fi
+    fi
+
+    echo "Waiting for EKS cluster $CLUSTER_NAME to be deleted..."
+    if ! aws eks wait cluster-deleted --name "$CLUSTER_NAME"; then
+        echo "Failed to wait for cluster deletion. Please check the cluster status manually."
+        return 1
+    fi
+
+    echo "EKS cluster $CLUSTER_NAME and its node groups have been successfully deleted."
 }
 
 # Wait for Command
