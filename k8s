@@ -318,16 +318,21 @@ remove_finalizers() {
     local name="$2"
     local namespace="$3"
 
-    if [[ -z "$resource" || -z "$name" || -z "$namespace" ]]; then
-        echo "Usage: remove_finalizers <resource> <name> <namespace>"
+    if [[ -z "$resource" || -z "$name" ]]; then
+        echo "Usage: remove_finalizers <resource> <name> [namespace]"
         return 1
     fi
 
-    kubectl patch "$resource" "$name" -n "$namespace" --type json -p '[{"op": "remove", "path": "/metadata/finalizers"}]'
-    if [ $? -eq 0 ]; then
-        echo "Successfully removed finalizers from $resource $name in namespace $namespace."
+    if [[ "$resource" == "namespace" ]]; then
+        kubectl patch "$resource" "$name" --type json -p '[{"op": "remove", "path": "/metadata/finalizers"}]'
     else
-        echo "Failed to remove finalizers from $resource $name in namespace $namespace."
+        kubectl patch "$resource" "$name" -n "$namespace" --type json -p '[{"op": "remove", "path": "/metadata/finalizers"}]'
+    fi
+
+    if [ $? -eq 0 ]; then
+        echo "Successfully removed finalizers from $resource $name"
+    else
+        echo "Failed to remove finalizers from $resource $name"
     fi
 }
 
