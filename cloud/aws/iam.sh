@@ -17,7 +17,17 @@
 # Usage:
 #   Pipe the output of a command that lists IAM roles and policies into this function
 #   to clean them up. Ensure each line of the input contains the ARN of one IAM resource.
-#   Example: find_iam_resources_with_keyword 'terratest-' | clean_up_iam_resources
+#
+#   Examples:
+#
+#   Find all IAM resources with terratest- in their name and clean them up:
+#
+#   find_iam_resources_with_keyword 'terratest-' | clean_up_iam_resources
+#
+#   Find all IAM resources with tt-eks in their name and clean them up:
+#
+#   find_iam_resources_with_keyword "tt-eks" | \
+#   awk '/arn:aws:iam::.*:policy/ {print $2}' | clean_up_iam_resources
 #
 # Input:
 #   Resource ARNs are expected to be read from stdin, one per line. Each
