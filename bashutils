@@ -156,9 +156,11 @@ onlycomments()  {
 #   nocomment < "script.sh"
 #   echo 'code with // comments' | nocomment
 nocomment() {
-    sed -e 's://.*$::g' \
-        -e 's:#.*$::g' \
-        -e '/^\s*$/d'
+    sed -e '/^[[:space:]]*#[^c]/d' \
+        -e '/^[[:space:]]*#$/d' \
+        -e '/^[[:space:]]*$/d' \
+        -e '/^[[:space:]]*\/\/[^/]/d' \
+        -e '/^[[:space:]]*\/\/$/d'
 }
 
 # Installs oh-my-zsh if it's not already installed.
