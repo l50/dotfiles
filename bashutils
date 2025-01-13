@@ -160,7 +160,8 @@ nocomment() {
         -e '/^[[:space:]]*#$/d' \
         -e '/^[[:space:]]*$/d' \
         -e '/^[[:space:]]*\/\/[^/]/d' \
-        -e '/^[[:space:]]*\/\/$/d'
+        -e '/^[[:space:]]*\/\/$/d' \
+        -e '/\/\*/,/\*\//d'
 }
 
 # Installs oh-my-zsh if it's not already installed.
