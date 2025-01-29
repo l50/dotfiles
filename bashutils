@@ -156,12 +156,15 @@ onlycomments()  {
 #   nocomment < "script.sh"
 #   echo 'code with // comments' | nocomment
 nocomment() {
-    sed -e '/^[[:space:]]*#[^c]/d' \
-        -e '/^[[:space:]]*#$/d' \
-        -e '/^[[:space:]]*$/d' \
-        -e '/^[[:space:]]*\/\/[^/]/d' \
-        -e '/^[[:space:]]*\/\/$/d' \
-        -e '/\/\*/,/\*\//d'
+    sed -E '
+        # Preserve variable blocks and their entire contents (including validation blocks)
+        /^[[:space:]]*variable[[:space:]]+/,/^}/b
+
+        # Remove comments and empty lines
+        /^[[:space:]]*#/d
+        /^[[:space:]]*$/d
+        /^[[:space:]]*\/\//d
+    '
 }
 
 # Installs oh-my-zsh if it's not already installed.
@@ -533,6 +536,12 @@ check_gh_token_perms() {
 print_file_content() {
     local file
     file=$1
+
+    # Check if file exists
+    if [[ ! -f "$file" ]]; then
+        echo "File not found: $file"
+        return 1
+    fi
 
     # Checking the file extension
     case "$file" in
