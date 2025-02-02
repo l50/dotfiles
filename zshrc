@@ -4,12 +4,10 @@ export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/u
 # oh-my-zsh components
 export ZSH="${HOME}/.oh-my-zsh"
 export ZSH_THEME="af-magic"
-source "${ZSH}/oh-my-zsh.sh"
 export plugins=(asdf aws git docker helm kubectl zsh-completions)
 
-export ASDF_PATH="$HOME/.asdf"
-export PATH="$ASDF_PATH/bin:$ASDF_PATH/shims:$PATH"
-. "$ASDF_PATH/asdf.sh"
+# shellcheck source=/dev/null
+source "${ZSH}/oh-my-zsh.sh"
 
 # Source other dotfiles
 for file in "${HOME}/.dotfiles"/*; do
@@ -45,6 +43,7 @@ fi
 if [[ ! -d "${HOME}/.oh-my-zsh/custom/plugins/zsh-completions" ]]; then
   git clone https://github.com/zsh-users/zsh-completions "${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}"/plugins/zsh-completions
 fi
+
 # Add zsh-completions to the fpath
 fpath+=${ZSH_CUSTOM:-${ZSH:-$HOME/.oh-my-zsh}/custom}/plugins/zsh-completions/src
 
