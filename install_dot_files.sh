@@ -2,14 +2,14 @@
 # -----------------------------------------------------------------------------
 # install_dot_files.sh
 #
-# Install dot files
+# Install dot files and configure workstation using Ansible
 #
 # Usage: bash install_dot_files.sh [--skip-ansible]
 #
-# Jayson Grace, jayson.e.grace@gmail.com
-# ----------------------------------------------------------------------------
+# Jayson Grace <jayson.e.grace at gmail.com>
+# -----------------------------------------------------------------------------
 # Stop execution of script if an error occurs
-set -ex
+set -eou pipefail
 
 # Parse command line arguments
 RUN_ANSIBLE=true
@@ -30,6 +30,8 @@ done
 DOT_DIR="${HOME}/.dotfiles"
 OLD_DOT_DIR="${DOT_DIR}.old"
 INSTALL_DIR="$(pwd)"
+ANSIBLE_DIR="$HOME/cowdogmoo/ansible-collection-workstation"
+
 declare -a files=(
     'android'
     'aws'
@@ -46,44 +48,35 @@ declare -a files=(
     'cloud'
 )
 
-##### (Cosmetic) Color output
-YELLOW="\033[01;33m" # Warnings/Information
-BLUE="\033[01;34m"   # Heading
-BOLD="\033[01;01m"   # Highlight
-RESET="\033[00m"     # Normal
+##### Color output
+YELLOW="\033[01;33m"
+BLUE="\033[01;34m"
+RESET="\033[00m"
 
 # Identify OS type
 OS_TYPE="$(uname)"
 
-# Creates sqlmap folder if it doesn't already exist
-sqlmap_folder() {
-    if [ ! -d "${HOME}/.sqlmap" ]; then
-        echo -e "${BLUE}Creating sqlmap folder at ${HOME}/.sqlmap, please wait...${RESET}"
-        mkdir "${HOME}/.sqlmap"
-    fi
+# Create necessary directories
+create_directories() {
+    local dirs=(
+        "${HOME}/.sqlmap"
+        "${HOME}/.kali"
+        "${HOME}/.android_sec_tools"
+    )
+
+    for dir in "${dirs[@]}"; do
+        if [ ! -d "$dir" ]; then
+            echo -e "${BLUE}Creating directory at ${dir}, please wait...${RESET}"
+            mkdir -p "$dir"
+        fi
+    done
 }
 
-# Adds a cron job to update my dotfiles every day at 6PM
+# Adds a cron job to update dotfiles every day at 6PM
 add_cron_job() {
     # Add the cron job if it doesn't already exist
     # This will prevent duplicate entries if the script is run multiple times
     crontab -l 2> /dev/null | grep -q "$(basename "$0")" || echo "0 18 * * * ${INSTALL_DIR}/$(basename "$0")" | crontab -
-}
-
-# Creates kali folder if it doesn't already exist
-kali_folder() {
-    if [ ! -d "${HOME}/.kali" ]; then
-        echo -e "${BLUE}Creating kali folder at ${HOME}/.kali, please wait...${RESET}"
-        mkdir "${HOME}/.kali"
-    fi
-}
-
-# Creates android security tools folder if it doesn't already exist
-android_sec_tools_folder() {
-    if [ ! -d "${HOME}/.android_sec_tools" ]; then
-        echo -e "${BLUE}Creating android_sec_tools folder at ${HOME}/.android_sec_tools, please wait...${RESET}"
-        mkdir "${HOME}/.android_sec_tools"
-    fi
 }
 
 # Creates a launchd job to update the dotfiles every day at 10AM
@@ -92,7 +85,7 @@ setup_auto_update() {
     launchd_path="${HOME}/Library/LaunchAgents"
     plist_name="net.techvomit.$(whoami).${file_name}"
 
-    # Only run this if we rehaven't already created the job
+    # Only run this if we haven't already created the job
     if [[ ! -f "${launchd_path}/${plist_name}.plist" ]]; then
         working_dir=$(cat "${DOT_DIR}/.dotinstalldir")
         plist_command="install_dot_files.sh"
@@ -106,41 +99,44 @@ setup_auto_update() {
     fi
 }
 
-# Downloads and installs my Brewfile to $HOME/.brewfile/Brewfile
+# Downloads and installs Brewfile to $HOME/.brewfile/Brewfile (macOS only)
 setup_brewfile() {
+    if [[ "$OS_TYPE" != 'Darwin' ]]; then
+        return
+    fi
+
     brewfile_path="${HOME}/.config/brewfile"
     brewfile_dl='https://raw.githubusercontent.com/l50/homebrew-brewfile/main/Brewfile'
-    if [[ ! -d "${brewfile_path}" ]]; then
-        mkdir "${brewfile_path}"
-    fi
-    echo -e "${YELLOW}Attempting to get latest Brewfile, please wait...${RESET}"
+
+    mkdir -p "${brewfile_path}"
+    echo -e "${YELLOW}Downloading latest Brewfile...${RESET}"
     wget -q "${brewfile_dl}" -O "${brewfile_path}/Brewfile"
 }
 
 install_oh_my_zsh() {
-    # Check if oh-my-zsh is installed
     if [ ! -d "${HOME}/.oh-my-zsh" ]; then
-        echo -e "${BLUE}Installing oh-my-zsh, please wait...${RESET}"
+        echo -e "${BLUE}Installing oh-my-zsh...${RESET}"
         CHSH=no RUNZSH=no sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-    else
-        echo -e "${YELLOW}oh-my-zsh is already installed.${RESET}"
     fi
 }
 
 setup_ansible() {
-    # Target directory for cloning
-    ANSIBLE_DIR="$HOME/cowdogmoo/ansible-collection-workstation"
+    echo "Setting up Ansible environment..."
 
-    echo "Checking if the ansible workstation repository is already cloned..."
-    if [[ ! -d "${ANSIBLE_DIR}" ]]; then
-        echo -e "${YELLOW}Attempting to clone ansible workstation repo into ${ANSIBLE_DIR}...${RESET}"
-        mkdir -p "$(dirname "${ANSIBLE_DIR}")"
-        git clone https://github.com/CowDogMoo/ansible-collection-workstation.git "${ANSIBLE_DIR}"
-    else
-        echo -e "${YELLOW}The ansible workstation repository is already cloned in ${ANSIBLE_DIR}.${RESET}"
+    # Ensure Ansible is installed
+    if ! command -v ansible-galaxy &> /dev/null; then
+        echo "Ansible is not installed. Please install it first."
+        exit 1
     fi
 
-    # Install the Ansible collection if not already installed
+    # Clone ansible-collection-workstation if not present
+    if [[ ! -d "${ANSIBLE_DIR}" ]]; then
+        echo -e "${YELLOW}Cloning ansible workstation repo...${RESET}"
+        mkdir -p "$(dirname "${ANSIBLE_DIR}")"
+        git clone https://github.com/CowDogMoo/ansible-collection-workstation.git "${ANSIBLE_DIR}"
+    fi
+
+    # Install required Ansible collections
     if command -v ansible-galaxy &> /dev/null; then
         if ! ansible-galaxy collection list | grep -q "cowdogmoo.workstation"; then
             echo "Installing CowDogMoo workstation collection..."
@@ -148,71 +144,67 @@ setup_ansible() {
         fi
     fi
 
-    # shellcheck disable=SC1091
-    source "${DOT_DIR}/python"
-    run_playbook "${ANSIBLE_DIR}/playbooks/workstation/workstation.yml" \
-        "${ANSIBLE_DIR}/playbooks/workstation/molecule/default/inventory"
+    # Run the workstation playbook
+    ansible-playbook "${ANSIBLE_DIR}/playbooks/workstation/workstation.yml" \
+        -i "${ANSIBLE_DIR}/playbooks/workstation/molecule/default/inventory"
 }
 
 ### MAIN ###
-# Start by getting the latest and greatest if we're in a git repo and not in CI
-if [[ -z "${CI}" ]] && git rev-parse --git-dir > /dev/null 2>&1; then
+# Update from git if we're in a repo and not in CI
+if [[ -z "${CI:-}" ]] && git rev-parse --git-dir > /dev/null 2>&1; then
     git pull origin main &> /dev/null || echo "Failed to pull latest changes"
 fi
 
-# Backup old zshrc (if one exists)
+# Backup existing configurations
 if [[ -f "${HOME}/.zshrc" ]]; then
-    echo -e "${YELLOW}Backing up old zshrc, please wait...${RESET}"
+    echo -e "${YELLOW}Backing up existing zshrc...${RESET}"
     mv "${HOME}/.zshrc" "${HOME}/.zshrc.old"
 fi
 
-# If old dotfiles exist, back them up
 if [[ -d "${DOT_DIR}" ]]; then
-    # If really old dotfiles exist, nuke them
-    if [[ -d "${OLD_DOT_DIR}" ]]; then
-        echo -e "${BOLD}Nuking old dotfile backups. Nothing is sacred.${RESET}"
-        rm -rf "${OLD_DOT_DIR}"
-    fi
+    [[ -d "${OLD_DOT_DIR}" ]] && rm -rf "${OLD_DOT_DIR}"
     mv "${DOT_DIR}" "${OLD_DOT_DIR}"
 fi
 
-# create dotfiles directory in homedir
+# Create and populate dotfiles directory
 mkdir -p "${DOT_DIR}"
 
+# Copy base configuration files
 cp ./zshrc "${HOME}/.zshrc"
 cp ./tmux.conf "${HOME}/.tmux.conf"
 
-# Copy dotfiles and handle nested cloud directory
+# Copy dotfiles
 for file in "${files[@]}"; do
     if [[ "$file" == "cloud" ]]; then
+        mkdir -p "${DOT_DIR}/cloud"
         cp -r "${file}"/* "${DOT_DIR}/cloud"
     else
         cp "${file}" "${DOT_DIR}"
     fi
 done
 
-echo "${INSTALL_DIR}" >> "${DOT_DIR}/.dotinstalldir"
+echo "${INSTALL_DIR}" > "${DOT_DIR}/.dotinstalldir"
 
-sqlmap_folder
-kali_folder
-android_sec_tools_folder
+# Create required directories
+create_directories
 
-# Move files from install directory into $DOT_DIR
+# Copy additional files
 cp -r "${INSTALL_DIR}/files" "${DOT_DIR}/files"
-# Move asdf default package files into place
+cp "${DOT_DIR}/files/.gitconfig" "${HOME}/.gitconfig"
+echo -e "${YELLOW}Remember to configure ${HOME}/.gitconfig.userparams${RESET}"
+
+# Copy asdf default package files
 cp "${DOT_DIR}/files/default-golang-pkgs" "${HOME}/.default-golang-pkgs"
 cp "${DOT_DIR}/files/default-python-packages" "${HOME}/.default-python-packages"
 cp "${DOT_DIR}/files/default-ruby-gems" "${HOME}/.default-gems"
 
-# Move .gitconfig into place
-cp "${DOT_DIR}/files/.gitconfig" "${HOME}/.gitconfig"
-echo -e "${YELLOW}Be sure to populate ${HOME}/.gitconfig.userparams!${RESET}"
-
+# macOS specific setup
 if [[ "$OS_TYPE" == 'Darwin' ]]; then
     setup_auto_update
     setup_brewfile
 fi
 
+# Install oh-my-zsh
 install_oh_my_zsh
 
 # Only run Ansible setup if RUN_ANSIBLE is true
@@ -222,3 +214,5 @@ if [[ "${RUN_ANSIBLE}" == true ]]; then
 else
     echo -e "${YELLOW}Skipping Ansible setup (--skip-ansible flag was used)${RESET}"
 fi
+
+echo -e "${BLUE}Dotfiles installation complete!${RESET}"
