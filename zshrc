@@ -1,3 +1,6 @@
+# Prevent duplicate entries in the PATH
+typeset -U PATH path
+
 # PATH setup
 export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:$HOME/.local/bin
 
