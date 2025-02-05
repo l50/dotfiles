@@ -91,11 +91,14 @@ jobs:
       - name: Install asdf cli
         uses: asdf-vm/actions/setup@05e0d2ed97b598bfce82fd30daf324ae0c4570e6 # v3
 
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Install dependencies
         run: |
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
               sudo apt-get update
-              sudo apt-get install -y curl git zsh
+              sudo apt-get install -y curl git zsh build-essential
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
               brew install curl git zsh python3 ansible
           fi
