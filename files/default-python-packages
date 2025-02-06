@@ -6,8 +6,9 @@ awscliv2
 awsume
 checkov
 docker
-keepercommander
+mkdocs
 molecule
+molecule-docker
 pipx
 pre-commit
 yt-dlp
