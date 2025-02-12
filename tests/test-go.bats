@@ -7,79 +7,102 @@ load '../go'
 export RUNNING_BATS_TEST=1
 
 setup() {
-	git config --global user.email "action@github.com"
-	git config --global user.name "GitHub Action"
+    git config --global user.email "action@github.com"
+    git config --global user.name "GitHub Action"
+
+    # Create temp test directory
+    TEST_TEMP_DIR=$(mktemp -d)
+	export TEST_TEMP_DIR
 }
 
-@test "pull_repos_function" {
-	# Cleanup any existing repository
-	rm -rf /tmp/testrepo*
+teardown() {
+    # Cleanup
+    rm -rf "${TEST_TEMP_DIR}"
+}
 
-	# Setup test repository
-	mkdir -p /tmp/testrepo_origin
+@test "pull_repos updates repositories successfully" {
+    # Setup test repository
+    mkdir -p "${TEST_TEMP_DIR}/testrepo_origin/.git/info"
 
-	# Create empty exclude file for test
-	mkdir -p /tmp/testrepo_origin/.git/info && touch /tmp/testrepo_origin/.git/info/exclude
+    # Initialize test repository
+    pushd "${TEST_TEMP_DIR}/testrepo_origin"
+    git init
+    touch .git/info/exclude
+    echo "initial content" > testfile
+    git add testfile
+    git commit -m "Initial commit"
+    popd
 
-	# Populate exclude file
-	cat >/tmp/testrepo_origin/.git/info/exclude <<EOF
-# git ls-files --others --exclude-from=.git/info/exclude
-# Lines that start with '#' are comments.
-# For a project mostly in C, the following would be a good set of
-# exclude patterns (uncomment them if you want to use them):
-# *.[oa]
-# *~
+    # Clone test repository twice
+    git clone "${TEST_TEMP_DIR}/testrepo_origin" "${TEST_TEMP_DIR}/testrepo_clone1"
+    git clone "${TEST_TEMP_DIR}/testrepo_origin" "${TEST_TEMP_DIR}/testrepo_clone2"
+
+    # Make changes in first clone
+    pushd "${TEST_TEMP_DIR}/testrepo_clone1"
+    git checkout -b testbranch
+    echo "new content" >> testfile
+    git add testfile
+    git commit -m "New commit"
+    git push origin testbranch
+    popd
+
+    # Test pull_repos on second clone
+    pushd "${TEST_TEMP_DIR}/testrepo_clone2"
+    git fetch
+    git checkout testbranch
+
+    run pull_repos "$PWD"
+
+    assert_success
+    assert_output --partial "All repositories successfully updated."
+    assert [ "$(git log -1 --pretty=%B)" = "New commit" ]
+    popd
+}
+
+@test "get_exported_go_funcs lists exported functions" {
+    # Create a test Go file
+    mkdir -p "${TEST_TEMP_DIR}/testgo"
+    cat > "${TEST_TEMP_DIR}/testgo/main.go" << 'EOF'
+package main
+
+func ExportedFunc() {}
 EOF
 
-	# Initialize test repository
-	pushd /tmp/testrepo_origin || return 1
-	git init
-	echo "initial content" >testfile
-	git add testfile
-	git commit -m "Initial commit"
-	popd || return 1
-
-	# Clone test repository twice
-	git clone /tmp/testrepo_origin /tmp/testrepo_clone1
-	git clone /tmp/testrepo_origin /tmp/testrepo_clone2
-
-	# Make a change in the first clone
-	pushd /tmp/testrepo_clone1 || return 1
-	git checkout -b testbranch
-	echo "new content" >>testfile
-	git add testfile
-	git commit -m "New commit"
-	git push origin testbranch
-	popd || return 1
-
-	# Run function on the second clone
-	pushd /tmp/testrepo_clone2 || return 1
-	git fetch # Fetch branches from remote
-	git checkout testbranch
-	run pull_repos "$PWD"
-	[[ "${status}" -eq 0 ]] || echo "Error: $output"
-	[[ "$output" == *"All repositories successfully updated."* ]]
-	[[ "$(git log -1 --pretty=%B)" == "New commit" ]]
-	popd || return 1
-
-	# Cleanup
-	rm -rf /tmp/testrepo_origin /tmp/testrepo_clone1 /tmp/testrepo_clone2
+    run get_exported_go_funcs "${TEST_TEMP_DIR}/testgo"
+    assert_success
+    assert_output --partial "ExportedFunc"
 }
 
-@test "get_exported_go_funcs_function" {
-	run get_exported_go_funcs "$PWD"
-	[ "$status" -eq 0 ]
+@test "add_cobra_init creates cobra files" {
+    # Create test FILES directory and cobra.yaml template
+    mkdir -p "${TEST_TEMP_DIR}/files"
+    cat > "${TEST_TEMP_DIR}/files/cobra.yaml" << 'EOF'
+author: Your Name <you@example.com>
+license: MIT
+useViper: true
+EOF
+
+    # Set up test environment
+    export HOME="${TEST_TEMP_DIR}"
+    export FILES="${TEST_TEMP_DIR}/files"
+
+    # Run add_cobra_init
+    run add_cobra_init
+
+    # Assert success
+    assert_success
+
+    # Check if .cobra.yaml exists in the correct location
+    test -f "${TEST_TEMP_DIR}/.cobra.yaml"
+
+    # Verify content was copied correctly
+    run cat "${TEST_TEMP_DIR}/.cobra.yaml"
+    assert_output --partial "author: Your Name"
 }
 
-@test "add_cobra_init_function" {
-	source "${BATS_TEST_DIRNAME}/../go"
-	run add_cobra_init "$PWD"
-	[ "$status" -eq 0 ]
-}
-
-@test "import_path_function" {
-	source "${BATS_TEST_DIRNAME}/../go"
-	skip
-	run import_path "$PWD"
-	[ "$status" -eq 0 ]
+@test "import_path returns go import path" {
+    skip "Test needs to be implemented"
+    mkdir -p "${TEST_TEMP_DIR}/gotest"
+    run import_path "${TEST_TEMP_DIR}/gotest"
+    assert_success
 }
