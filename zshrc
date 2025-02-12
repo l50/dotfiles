@@ -13,21 +13,26 @@ export plugins=(asdf aws git docker helm kubectl zsh-completions)
 source "${ZSH}/oh-my-zsh.sh"
 
 # Source other dotfiles
-for file in "${HOME}/.dotfiles"/*; do
-  if [[ -d "${file}" ]]; then
-    # If it's a directory, source all files inside it
-    for subfile in "${file}"/*; do
-      if [[ -f "${subfile}" && -r "${subfile}" ]]; then
-        # shellcheck source=/dev/null
-        source "${subfile}"
-      fi
-    done
-  elif [[ -f "${file}" && -r "${file}" ]]; then
-    # If it's a file, source it directly
-    # shellcheck source=/dev/null
-    source "${file}"
-  fi
-done
+source_dotfiles() {
+    local dir="$1"
+    if [[ -d "$dir" ]]; then
+        # Only source files in the root dotfiles directory, excluding the files/ directory
+        while IFS= read -r -d '' script; do
+            if [[ -f "$script" && -r "$script" && ! "$script" =~ /files/ ]]; then
+                # shellcheck source=/dev/null
+                source "$script"
+            fi
+        done < <(find "$dir" -type f \( -name "*.sh" -o -name "*.zsh" \) -print0)
+    fi
+}
+
+# Add Android SDK to PATH if it exists
+if [[ -d "$HOME/Library/Android/sdk/platform-tools" ]]; then
+    export PATH="$PATH:$HOME/Library/Android/sdk/platform-tools"
+fi
+
+# Source all dotfiles
+source_dotfiles "${HOME}/.dotfiles"
 
 # Mac OS specific dotfile
 if [[ "$(uname)" == 'Darwin' ]]; then

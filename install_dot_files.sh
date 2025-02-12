@@ -34,9 +34,9 @@ ANSIBLE_DIR="$HOME/cowdogmoo/ansible-collection-workstation"
 
 declare -a files=(
     'android'
-    'aws'
     'bashutils'
     'common'
+    'config'
     'containers'
     'docker'
     'go'
@@ -175,12 +175,19 @@ cp ./tmux.conf "${HOME}/.tmux.conf"
 
 # Copy dotfiles
 for file in "${files[@]}"; do
-    if [[ "$file" == "cloud" ]]; then
-        mkdir -p "${DOT_DIR}/cloud"
-        cp -r "${file}"/* "${DOT_DIR}/cloud"
-    else
-        cp "${file}" "${DOT_DIR}"
-    fi
+    case "$file" in
+        "cloud")
+            mkdir -p "${DOT_DIR}/cloud"
+            cp -r "${file}"/* "${DOT_DIR}/cloud"
+            ;;
+        "config")
+            mkdir -p "${DOT_DIR}/config"
+            cp -r "${file}"/* "${DOT_DIR}/config"
+            ;;
+        *)
+            cp "${file}" "${DOT_DIR}"
+            ;;
+    esac
 done
 
 echo "${INSTALL_DIR}" > "${DOT_DIR}/.dotinstalldir"
@@ -194,9 +201,9 @@ cp "${DOT_DIR}/files/.gitconfig" "${HOME}/.gitconfig"
 echo -e "${YELLOW}Remember to configure ${HOME}/.gitconfig.userparams${RESET}"
 
 # Copy asdf default package files
-cp "${DOT_DIR}/files/default-golang-pkgs" "${HOME}/.default-golang-pkgs"
-cp "${DOT_DIR}/files/default-python-packages" "${HOME}/.default-python-packages"
-cp "${DOT_DIR}/files/default-ruby-gems" "${HOME}/.default-gems"
+cp "${DOT_DIR}/config/default-golang-pkgs" "${HOME}/.default-golang-pkgs"
+cp "${DOT_DIR}/config/default-python-packages" "${HOME}/.default-python-packages"
+cp "${DOT_DIR}/config/default-ruby-gems" "${HOME}/.default-gems"
 
 # macOS specific setup
 if [[ "$OS_TYPE" == 'Darwin' ]]; then
