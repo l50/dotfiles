@@ -14,7 +14,16 @@ source "${ZSH}/oh-my-zsh.sh"
 
 # Source other dotfiles
 for file in "${HOME}/.dotfiles"/*; do
-  if [[ -f "${file}" && -r "${file}" ]]; then
+  if [[ -d "${file}" ]]; then
+    # If it's a directory, source all files inside it
+    for subfile in "${file}"/*; do
+      if [[ -f "${subfile}" && -r "${subfile}" ]]; then
+        # shellcheck source=/dev/null
+        source "${subfile}"
+      fi
+    done
+  elif [[ -f "${file}" && -r "${file}" ]]; then
+    # If it's a file, source it directly
     # shellcheck source=/dev/null
     source "${file}"
   fi
