@@ -1,9 +1,11 @@
 #!/usr/bin/env bats
 load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
+load '../go'
+
+export RUNNING_BATS_TEST=1
 
 setup_file() {
-    export RUNNING_BATS_TEST=1
     TEST_TEMP_DIR=$(mktemp -d)
     export TEST_TEMP_DIR
     export HOME="${TEST_TEMP_DIR}"
@@ -22,10 +24,9 @@ teardown_file() {
     rm -rf "${TEST_TEMP_DIR}"
 }
 
-# Now load the script after setting up the environment
-load '../go'
-
 setup() {
+    git config --global user.email "action@github.com"
+    git config --global user.name "GitHub Action"
     # Create temp test directory for each test
     TEST_DIR=$(mktemp -d)
     cd "$TEST_DIR" || exit 1
