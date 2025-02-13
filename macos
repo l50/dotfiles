@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # sanitize() replaces all provided strings found in the clipboard
 # contents with random strings that have the same length.
 #
@@ -25,7 +27,7 @@ sanitize() {
     for func_name in "$@"
     do
         # Generate random string
-        random=$(cat /dev/urandom | LC_ALL=C tr -dc 'A-Za-z' | head -c ${#func_name})
+        random=$(< /dev/urandom tr -dc 'A-Za-z' | head -c ${#func_name})
 
         # Replace all occurrences of the function name with the random string
         input=$(echo "$input" | gsed "s/\<$func_name\>/$random/gI")
@@ -77,8 +79,8 @@ EOF
 join_wifi() {
 	SSID=$1
 	PW=$2
-	if [[ ! -z $SSID && ! -z $PW ]]; then
-		networksetup -setairportnetwork en0 $SSID $PW
+	if [[ -n $SSID && -n $PW ]]; then
+		networksetup -setairportnetwork en0 "$SSID" "$PW"
 	else
 		echo "error: you must provide an SSID and PW"
 		echo "example: join_wifi somessid somepassword"
@@ -102,9 +104,9 @@ join_wifi() {
 #   https://www.fonepaw.com/eraser/find-large-files-mac.html
 largest_files() {
     if [ -z "$1" ]; then
-        find . -type f -size +100000k -exec ls -lh {} \; | awk '{ print $9 ": " $5 }'
+        find . -type f -size +100000k -exec sh -c 'ls -lh "$1" | awk "{ print \$9 \": \" \$5 }"' sh {} \;
     else
-        find "$1" -type f -size +100000k -exec ls -lh {} \; | awk '{ print $9 ": " $5 }'
+        find "$1" -type f -size +100000k -exec sh -c 'ls -lh "$1" | awk "{ print \$9 \": \" \$5 }"' sh {} \;
     fi
 }
 
@@ -151,7 +153,7 @@ alias dsCleanup.="find . -type f -name '*.DS_Store' -ls -delete"
 
 # Empty the Trash on all mounted volumes and the main HDD
 # Also, clear Apple’s System Logs to improve shell startup speed
-alias emptytrash="sudo rm -rfv /Volumes/*/.Trashes; sudo rm -rfv $HOME/.Trash; sudo rm -rfv /private/var/log/asl/*.asl"
+alias emptytrash='sudo rm -rfv /Volumes/*/.Trashes; sudo rm -rfv "$HOME"/.Trash; sudo rm -rfv /private/var/log/asl/*.asl'
 
 # Show/hide hidden files in Finder
 alias showHiddenFinder="defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder"

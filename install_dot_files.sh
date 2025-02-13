@@ -152,7 +152,9 @@ setup_ansible() {
 ### MAIN ###
 # Update from git if we're in a repo and not in CI
 if [[ -z "${CI:-}" ]] && git rev-parse --git-dir > /dev/null 2>&1; then
-    git pull origin main &> /dev/null || echo "Failed to pull latest changes"
+    if ! git pull origin main &> /dev/null; then
+        echo "Failed to pull latest changes"
+    fi
 fi
 
 # Backup existing configurations

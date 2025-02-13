@@ -2,16 +2,12 @@
 name: Dotfile tests
 on:
   pull_request:
-    branches:
-      - main
-    types:
-      - opened
-      - synchronize
+    branches: [main]
+    types: [opened, synchronize]
   push:
-    branches:
-      - main
+    branches: [main]
+  # Run once a week (see https://crontab.guru)
   schedule:
-    # Run once a week (see https://crontab.guru)
     - cron: "0 0 * * 0"
   workflow_dispatch:
 
@@ -63,6 +59,18 @@ jobs:
             exit 1
           fi
 
+      - name: Setup test environment
+        run: |
+          # Create necessary directories
+          mkdir -p ~/.dotfiles/files
+
+          # Create test cobra.yaml
+          cat > ~/.dotfiles/files/cobra.yaml << 'EOF'
+          author: test <test@example.com>
+          license: MIT
+          useViper: true
+          EOF
+
       - name: Setup BATS
         uses: mig4/setup-bats@af9a00deb21b5d795cabfeaa8d9060410377686d # v1
         with:
@@ -97,6 +105,7 @@ jobs:
         run: |
           go install mvdan.cc/sh/v3/cmd/shfmt@latest
           go install github.com/magefile/mage@latest
+          go install github.com/dolmen-go/goeval@latest
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
