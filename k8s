@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 ####################################################################################################
 # Basic Kubernetes Command Aliases
 ####################################################################################################
@@ -324,15 +326,17 @@ remove_finalizers() {
     fi
 
     if [[ "$resource" == "namespace" ]]; then
-        kubectl patch "$resource" "$name" --type json -p '[{"op": "remove", "path": "/metadata/finalizers"}]'
+        if kubectl patch "$resource" "$name" --type json -p '[{"op": "remove", "path": "/metadata/finalizers"}]'; then
+            echo "Successfully removed finalizers from $resource $name"
+        else
+            echo "Failed to remove finalizers from $resource $name"
+        fi
     else
-        kubectl patch "$resource" "$name" -n "$namespace" --type json -p '[{"op": "remove", "path": "/metadata/finalizers"}]'
-    fi
-
-    if [ $? -eq 0 ]; then
-        echo "Successfully removed finalizers from $resource $name"
-    else
-        echo "Failed to remove finalizers from $resource $name"
+        if kubectl patch "$resource" "$name" -n "$namespace" --type json -p '[{"op": "remove", "path": "/metadata/finalizers"}]'; then
+            echo "Successfully removed finalizers from $resource $name"
+        else
+            echo "Failed to remove finalizers from $resource $name"
+        fi
     fi
 }
 
@@ -367,17 +371,18 @@ unstick_term_pods() {
     fi
 
     if [[ "$1" == "all" ]]; then
-        kubectl get pods --all-namespaces \
-            | grep Terminating | while read line; do
-                local pod_name=$(echo $line | awk '{print $2}')
-                local ns=$(echo $line | awk '{print $1}')
-                kubectl delete pods $pod_name -n $ns --grace-period=0 --force
-            done
+        kubectl get pods --all-namespaces | grep Terminating | while read -r line; do
+            local pod_name
+            local ns
+            pod_name=$(echo "$line" | awk '{print $2}')
+            ns=$(echo "$line" | awk '{print $1}')
+            kubectl delete pods "$pod_name" -n "$ns" --grace-period=0 --force
+        done
     else
-        kubectl get pods -n "${namespace}" | grep Terminating \
-            | while read line; do
-                local pod_name=$(echo $line | awk '{print $1}')
-                kubectl delete pods $pod_name -n "${namespace}" --grace-period=0 --force
-            done
+        kubectl get pods -n "${namespace}" | grep Terminating | while read -r line; do
+            local pod_name
+            pod_name=$(echo "$line" | awk '{print $1}')
+            kubectl delete pods "$pod_name" -n "${namespace}" --grace-period=0 --force
+        done
     fi
 }

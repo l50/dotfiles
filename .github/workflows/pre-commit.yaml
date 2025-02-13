@@ -86,6 +86,15 @@ jobs:
           sed -i 's/git pull origin main/echo "Skipping git pull in CI"/' install_dot_files.sh
           bash ./install_dot_files.sh --skip-ansible
 
+      - name: Setup test environment
+        run: |
+          mkdir -p ~/.dotfiles/files tests/tmp
+          cat > ~/.dotfiles/files/cobra.yaml << 'EOF'
+          author: test <test@example.com>
+          license: MIT
+          useViper: true
+          EOF
+
       - name: Run pre-commit
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

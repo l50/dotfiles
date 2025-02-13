@@ -1,0 +1,195 @@
+set -eo pipefail
+
+# Generates a formatted commit message based on a predefined template and the
+# current staged git diff.
+#
+# Usage:
+#   commitify
+#
+# Output:
+#   Constructs and displays a commit message prompt with a formatted template,
+#   including the current staged git diff. If dependencies are not met, prints
+#   an error message.
+#
+# Example(s):
+#   # To generate and display a commit message template:
+#   commitify
+#
+#   # Using commitify in a script with validation checks:
+#   if ! commitify; then
+#     echo "Error generating commit message"
+#   fi
+function commitify() {
+    _validate_dependencies || return 1
+    if ! git diff --staged > /dev/null 2>&1; then
+        echo "You have not run git add. Please run \`git add\` and try again."
+        return 1
+    fi
+    # Capture the output of git diff --staged and escape special characters
+    GIT_DIFF=$(git diff --staged)
+    GIT_DIFF_ESCAPED=$(_escape_for_printf "$GIT_DIFF")
+
+    # Construct the prompt with the actual git diff
+    PROMPT=$(cat <<-EOM
+\`\`\`bash
+$GIT_DIFF_ESCAPED
+\`\`\`
+
+Please adhere to this format for your commit:
+
+Created new \`asdf\` role with tests and linting.
+
+**Added:**
+
+- Added automated documentation generation for magefile utilities
+- Automated Release Playbook - Introduced \`galaxy-deploy.yml\`, an automated
+  release playbook for publishing the collection to Ansible Galaxy.
+- Molecule Workflow - Added a new GitHub Actions workflow \`molecule.yaml\` for
+  running Molecule tests on pull requests and pushes.
+- Renovate Bot Configuration - Updated Renovate Bot configurations to reflect
+  the new repository structure and naming.
+- \`molecule\` configuration - Added new \`molecule\` configuration for the \`asdf\`
+  role to support local testing and verification.
+- asdf role - Added a new \`asdf\` role with enhanced functionality including
+  OS-specific setup. Updated metadata and created new documentation under
+  \`roles/asdf/README.md\` detailing role usage and variables.
+
+**Changed:**
+
+- GitHub Actions Workflows - Refactored the \`release.yaml\` workflow to align
+  with Ansible collection standards, including updating working directory
+  paths, setting up Python, installing dependencies, and automating the release
+  to Ansible Galaxy.
+- Pre-commit hooks - Added new pre-commit hooks for shell script validation and
+  formatting.
+- Refactored Ansible linting configuration - Moved the \`.ansible-lint\`
+  configuration to \`.ansible-lint.yaml\` and adjusted linting rules.
+  Also, added \`mdstyle.rb\` and \`.mdlrc\` for markdown linting configurations.
+- Repository Metadata - Updated repository links in \`README.md\` and
+  \`galaxy.yml\` to reflect the new repository naming and structure.
+- Upgrade dependencies - Upgraded versions of pre-commit hooks and dependencies
+  in \`.pre-commit-config.yaml\`, updated mage's \`go.sum\` to reflect the new
+  dependency tree, and removed unused dependencies from mage's \`go.sum\`.
+
+**Removed:**
+
+- Removed old files in preparation for later refactoring.
+- Windows Support for asdf role - Removed Windows support
+  from \`roles/asdf/README.md\` as it is not supported in the tasks.
+
+Keep your answer to 80 characters max per line!
+EOM
+    )
+
+    # Store the output of printf in a variable
+    FORMATTED_PROMPT=$(printf '%s\n' "$PROMPT")
+
+    # Send the formatted prompt to mods
+    output="$(mods -f "Write a commit message for me using this diff:" "$FORMATTED_PROMPT")"
+    _finalize
+}
+
+
+# Reads a file and constructs a prompt to generate comments for Bash functions.
+#
+# Usage:
+#   commentify [file_path]
+#
+# Output:
+#   Reads the contents of the specified file, constructs a prompt, and sends it
+#   for processing to generate comments for Bash functions in the file.
+#
+# Example(s):
+#   # Example of using commentify to generate comments for a script
+#   commentify my_script.sh
+function commentify(){
+    _validate_dependencies || return 1
+    local bash_code
+    bash_code=$(<"$1")  # Read the contents of the file
+
+    # Construct the prompt with the actual bash code
+    prompt=$(cat <<-EOM
+\`\`\`bash
+$bash_code
+\`\`\`
+
+Please adhere to this format for your comment:
+
+# Description for the function.
+#
+# Usage:
+#   [function name] [arguments]
+#
+# Output:
+#   Describe what the function does and what output it produces.
+#
+# Example(s):
+#   [actual example that can be copy pasted]
+#   [another actual example that can be copy pasted]
+
+Here is a phenomenal example of a function comment:
+
+# The \`nocomment\` function processes input from a file or stdin and removes
+# comments. It supports stripping shell-style (#) and C++ style (//) single-line
+# comments, as well as C-style (/* ... */) multi-line comments. Blank lines
+# resulting from comment removal are also omitted. The output is sent to stdout.
+#
+# Usage:
+#   nocomment [file_path]
+#   echo 'code with comments' | nocomment
+#
+# Output:
+#   The input contents with all comments removed.
+#
+# Example(s):
+#   nocomment "script.sh"
+#   echo 'code with // comments' | nocoment
+EOM
+    )
+
+    # Send the prompt with mods and then to ChatGPT-4 (by default)
+    printf '%s\n' "$prompt" | mods -f "Write a function comment for this bash function:" | glow
+    _finalize
+}
+
+function _escape_for_printf() {
+    printf '%s\n' "$1" | sed 's/%/%%/g'
+}
+
+function _finalize(){
+    # Output the result from mods
+    mods -S -r
+    return 0
+}
+
+function _validate_dependencies() {
+    # Check if the user is in a git repository
+    if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+        echo "You are not in a git repository."
+        return 1
+    fi
+
+    # Check if the user has git installed
+    if ! command -v git > /dev/null 2>&1; then
+        echo "You do not have git installed."
+        return 1
+    fi
+
+    # Check if the user has mods installed
+    if ! command -v mods > /dev/null 2>&1; then
+        echo "You do not have mods installed."
+        return 1
+    fi
+
+    # Check if the user has glow installed
+    if ! command -v glow > /dev/null 2>&1; then
+        echo "You do not have glow installed."
+        return 1
+    fi
+
+    # Check if the user has git configured
+    if ! git config --get user.name > /dev/null 2>&1; then
+        echo "You do not have git configured."
+        return 1
+    fi
+}

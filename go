@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 FILES="${HOME}/.dotfiles/files"
 
 export GOSUMDB=sum.golang.org
@@ -23,7 +24,7 @@ pull_repos() {
             'fmt.Println(git.PullRepos("'"${PWD}"'"))'
     else
         filepath="$1"
-        pushd $filepath || return 1
+        pushd "$filepath" || return 1
         goeval -i git=github.com/l50/goutils/v2/git@latest \
             'fmt.Println(git.PullRepos("'"${PWD}"'"))'
         popd || return 1
@@ -151,7 +152,7 @@ import_path() {
 		echo "usage: import_path EXECUTABLE" >&2
 		return 1
 	}
-	go tool objdump -s main.main "$(which $1)" |
+	go tool objdump -s main.main "$(which "$1")" |
 		grep -E '^TEXT main.main' | cut -d' ' -f3 |
 		sed -E -e 's/.\/src\/(.).*\/\1//'
 }
@@ -171,4 +172,6 @@ if [[ $RUNNING_BATS_TEST != 1 ]]; then
     source "${FILES}/mage_completion.sh"
 fi
 
-add_cobra_init
+if [[ $RUNNING_BATS_TEST != 1 ]]; then
+    add_cobra_init
+fi
