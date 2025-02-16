@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # venv
 alias venv_activate="source .venv/bin/activate"
 alias venv_deactivate="deactivate"
@@ -25,9 +27,8 @@ alias keeper_update='python3 -m pip install --upgrade keepercommander'
 # Example(s):
 #   onlycomments "file.go"
 #   echo 'code with // comments' | onlycomments
-onlycomments () {
-    if [ $# -eq 0 ]
-    then
+onlycomments() {
+    if [ $# -eq 0 ]; then
         grep -E '(//.*|/\*.*\*/|#.*)$'
     else
         file_path="$1"

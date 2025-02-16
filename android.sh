@@ -2,7 +2,7 @@
 
 # Functions for working with Android devices
 autoapk() {
-    if ! command -v adb >/dev/null 2>&1; then
+    if ! command -v adb > /dev/null 2>&1; then
         echo "Error: adb not found in PATH"
         return 1
     fi
@@ -10,7 +10,7 @@ autoapk() {
 }
 
 start_app() {
-    if ! command -v adb >/dev/null 2>&1; then
+    if ! command -v adb > /dev/null 2>&1; then
         echo "Error: adb not found in PATH"
         return 1
     fi
@@ -18,7 +18,7 @@ start_app() {
 }
 
 adbpkgs() {
-    if ! command -v adb >/dev/null 2>&1; then
+    if ! command -v adb > /dev/null 2>&1; then
         echo "Error: adb not found in PATH"
         return 1
     fi

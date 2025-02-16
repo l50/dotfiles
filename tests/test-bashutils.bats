@@ -2,7 +2,7 @@
 
 load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
-load '../bashutils'
+load '../bashutils.sh'
 
 bats_require_minimum_version 1.5.0
 
