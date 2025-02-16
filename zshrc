@@ -34,11 +34,11 @@ fi
 # Source all dotfiles
 source_dotfiles "${HOME}/.dotfiles"
 
-# Mac OS specific dotfile
-if [[ "$(uname)" == 'Darwin' ]]; then
-  # shellcheck source=/dev/null
-  source "${HOME}/.dotfiles/macos"
-fi
+# # Mac OS specific dotfile
+# if [[ "$(uname)" == 'Darwin' ]]; then
+#   # shellcheck source=/dev/null
+#   source "${HOME}/.dotfiles/macos.sh"
+# fi
 
 # Work specific configurations
 if [ -f "${HOME}/.work" ]; then
