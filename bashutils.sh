@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 set -o pipefail
 
 # The `process_terminator` function takes a process name as an argument
@@ -15,7 +16,7 @@ set -o pipefail
 # Example(s):
 #   process_terminator "chrome"
 #   process_terminator "python"
-process_terminator()  {
+process_terminator() {
     if pgrep -i "$1" > /dev/null; then
         pkill -i "$1"
         echo "Process $1 has been terminated."
@@ -103,7 +104,7 @@ fs() {
 repo_root() {
     local root
     root=$(git rev-parse --show-toplevel 2> /dev/null)
-    if [[ ! -z "${root}" ]]; then
+    if [[ -n "${root}" ]]; then
         cd "${root}" || exit 1
     else
         echo "Current directory is not part of a git repository."
@@ -131,7 +132,7 @@ rr() {
 # Example(s):
 #   onlycomments "file.go"
 #   echo 'code with // comments' | onlycomments
-onlycomments()  {
+onlycomments() {
     if [ $# -eq 0 ]; then
         grep -E '(//.*|/\*.*\*/|#.*)$'
     else
@@ -369,13 +370,10 @@ fetchFromGithub() {
 
     if [[ -n "$GITHUB_TOKEN" ]] && command -v gh > /dev/null 2>&1; then
         echo "$GITHUB_TOKEN" | gh auth login --with-token
-        assets_json=$(gh release view "$VERSION" --repo "$REPO" --json assets)
-
-        if [ $? -ne 0 ]; then
+        if ! assets_json=$(gh release view "$VERSION" --repo "$REPO" --json assets); then
             echo "No relevant release found for OS: $os, architecture: $arch"
             return 1
         fi
-
         assets=$(echo "$assets_json" | jq -r '.assets[].name')
     else
         assets=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" \
@@ -494,8 +492,8 @@ check_gh_token_perms() {
     done
 
     [[ -z "$GITHUB_TOKEN" ]] && {
-                                echo "GITHUB_TOKEN is not set. Please set it and try again." >&2
-                                                                                                  return 1
+        echo "GITHUB_TOKEN is not set. Please set it and try again." >&2
+        return 1
     }
 
     local endpoint=${ORG:-user}
@@ -604,7 +602,7 @@ process_and_print_files() {
 #   process_files "." "*.txt" "*.md"
 process_files() {
     local base_path=$1
-                      shift  # First argument is the base path, rest are patterns
+    shift                            # First argument is the base path, rest are patterns
     local -a exclude_patterns=("$@") # Array of patterns to exclude
 
     # Construct the find command using an array to properly handle spaces and special characters

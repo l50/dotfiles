@@ -2,7 +2,7 @@
 
 load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
-load '../macos'
+load '../macos.sh'
 
 export RUNNING_BATS_TEST=1
 

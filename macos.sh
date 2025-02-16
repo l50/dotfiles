@@ -24,8 +24,7 @@ sanitize() {
     fi
 
     # Loop through arguments and replace wildcard entries with a random string
-    for func_name in "$@"
-    do
+    for func_name in "$@"; do
         # Generate random string
         random=$(< /dev/urandom tr -dc 'A-Za-z' | head -c ${#func_name})
 
@@ -77,14 +76,14 @@ EOF
 # using the specified $PW.
 # Resource: https://www.mattcrampton.com/blog/managing_wifi_connections_using_the_mac_osx_terminal_command_line/
 join_wifi() {
-	SSID=$1
-	PW=$2
-	if [[ -n $SSID && -n $PW ]]; then
-		networksetup -setairportnetwork en0 "$SSID" "$PW"
-	else
-		echo "error: you must provide an SSID and PW"
-		echo "example: join_wifi somessid somepassword"
-	fi
+    SSID=$1
+    PW=$2
+    if [[ -n $SSID && -n $PW ]]; then
+        networksetup -setairportnetwork en0 "$SSID" "$PW"
+    else
+        echo "error: you must provide an SSID and PW"
+        echo "example: join_wifi somessid somepassword"
+    fi
 }
 
 # largest_files() finds the largest files in the current directory
@@ -172,7 +171,7 @@ alias firefox="open -a /Applications/Firefox.app"
 
 # Use GNU grep
 if [[ -f '/usr/local/bin/ggrep' ]]; then
-	alias grep='/usr/local/bin/ggrep'
+    alias grep='/usr/local/bin/ggrep'
 fi
 
 # Restart the SSH service

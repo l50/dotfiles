@@ -33,18 +33,17 @@ INSTALL_DIR="$(pwd)"
 ANSIBLE_DIR="$HOME/cowdogmoo/ansible-collection-workstation"
 
 declare -a files=(
-    'android'
-    'bashutils'
-    'common'
+    'android.sh'
+    'bashutils.sh'
+    'common.sh'
     'config'
-    'containers'
-    'docker'
-    'go'
-    'keeper'
-    'k8s'
-    'python'
-    'macos'
-    'terraform'
+    'containers.sh'
+    'docker.sh'
+    'go.sh'
+    'k8s.sh'
+    'python.sh'
+    'macos.sh'
+    'terraform.sh'
     'cloud'
 )
 
