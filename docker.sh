@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Fix zshrc autocomplete with exec
 # https://github.com/moby/moby/issues/31216#issuecomment-281397184
 zstyle ':completion:*:*:docker:*' option-stacking yes
@@ -24,11 +26,11 @@ alias centos="docker run -it --rm --name=centos centos"
 
 # Security tools
 # This can be used if we don't want to persist:
-alias kali="docker run --rm -it -v ${HOME}/.kali/root:/root \
-    -v ${HOME}/.kali/postgres:/var/lib/postgresql \
-    -p 4444:4444 --name=kali kalilinux/kali-last-release"
-alias sqlmap="docker run --rm -it -v ${HOME}/.sqlmap:/home/user/.sqlmap \
-    k0st/alpine-sqlmap"
+alias kali='docker run --rm -it -v $HOME/.kali/root:/root \
+    -v $HOME/.kali/postgres:/var/lib/postgresql \
+    -p 4444:4444 --name=kali kalilinux/kali-last-release'
+alias sqlmap='docker run --rm -it -v $HOME/.sqlmap:/home/user/.sqlmap \
+    k0st/alpine-sqlmap'
 alias beef="docker run -d -p 3000:3000 --name=beef fcolista/alpine-beef"
 alias oxml_xxe="docker run -p 4567:4567 -it --name=oxml_xxe devalias/oxml_xxe"
 # Use dictionaries from Seclists if installed
@@ -62,5 +64,3 @@ alias coldfusion2016="docker run --rm -d --name mycf2016 \
 alias laverna="docker run --rm -d -p 5000:80 --name laverna elliotjreed/laverna"
 alias postgres="docker run --rm -d --name postgres postgres"
 alias ghost="docker run --rm -d -p 2368:2368 --name ghost ghost"
-# Markdown renderer
-alias hackmd="cd $HOME/.dotfiles/files/docker/docker-hackmd && docker-compose up -d"

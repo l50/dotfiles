@@ -30,15 +30,15 @@ alias kgi='kg ingress'
 # Advanced Resource Watching and Listing Aliases
 # These aliases add specific options to the get command for more detailed or dynamic listings.
 alias kgsvcslwn='kgs --show-labels --watch --namespace' # Get services with labels and watch them in a specified namespace.
-alias kgsvcwn='kgs --watch --namespace' # Watch services in a specified namespace.
-alias kgwf='kg --watch -f' # Watch the changes in resources specified in a configuration file.
+alias kgsvcwn='kgs --watch --namespace'                 # Watch services in a specified namespace.
+alias kgwf='kg --watch -f'                              # Watch the changes in resources specified in a configuration file.
 
 # Resource Management and Cleanup Aliases
 # These aliases facilitate the management and cleanup of Kubernetes resources.
-alias krmfinal='remove_finalizers' # Alias for removing finalizers from resources to unblock deletion.
-alias krming='krm ingress' # Delete ingresses, straightforward use.
+alias krmfinal='remove_finalizers'             # Alias for removing finalizers from resources to unblock deletion.
+alias krming='krm ingress'                     # Delete ingresses, straightforward use.
 alias krmingall='krm ingress --all-namespaces' # Delete all ingresses across namespaces.
-alias krmingl='krm ingress -l' # Delete ingresses with specific labels.
+alias krmingl='krm ingress -l'                 # Delete ingresses with specific labels.
 
 ####################################################################################################
 # Functions
@@ -68,19 +68,19 @@ alias krmingl='krm ingress -l' # Delete ingresses with specific labels.
 #   kapply config-map.json
 #   This example applies the configuration for a ConfigMap provided in config-map.json.
 kapply() {
-  if [[ "$#" -ne 1 ]]; then
-    echo "Usage: kapply <file>"
-    return 1
-  fi
+    if [[ "$#" -ne 1 ]]; then
+        echo "Usage: kapply <file>"
+        return 1
+    fi
 
-  local file="$1"
+    local file="$1"
 
-  if [[ ! -f "$file" ]]; then
-    echo "Error: File '$file' not found"
-    return 1
-  fi
+    if [[ ! -f "$file" ]]; then
+        echo "Error: File '$file' not found"
+        return 1
+    fi
 
-  kubectl apply -f "$file"
+    kubectl apply -f "$file"
 }
 
 # Retrieve Descriptions of Kubernetes Resources
@@ -112,41 +112,41 @@ kapply() {
 #   This final example describes all services in the monitoring namespace:
 #   kdesc -n monitoring services
 kdesc() {
-  local namespace
-  namespace="$(kubectl config view --minify --output 'jsonpath={..namespace}')"
-  local resource
-  local name
+    local namespace
+    namespace="$(kubectl config view --minify --output 'jsonpath={..namespace}')"
+    local resource
+    local name
 
-  while [[ "$#" -gt 0 ]]; do
-    case "$1" in
-      -n)
-        namespace="$2"
-        shift 2
-        ;;
-      *)
-        if [[ -z "$resource" ]]; then
-          resource="$1"
-        elif [[ -z "$name" ]]; then
-          name="$1"
-        else
-          echo "Invalid arguments. Usage: kdesc [-n <namespace>] <resource> [<name>]"
-          return 1
-        fi
-        shift
-        ;;
-    esac
-  done
+    while [[ "$#" -gt 0 ]]; do
+        case "$1" in
+            -n)
+                namespace="$2"
+                shift 2
+                ;;
+            *)
+                if [[ -z "$resource" ]]; then
+                    resource="$1"
+                elif [[ -z "$name" ]]; then
+                    name="$1"
+                else
+                    echo "Invalid arguments. Usage: kdesc [-n <namespace>] <resource> [<name>]"
+                    return 1
+                fi
+                shift
+                ;;
+        esac
+    done
 
-  if [[ -z "$resource" ]]; then
-    echo "Usage: kdesc [-n <namespace>] <resource> [<name>]"
-    return 1
-  fi
+    if [[ -z "$resource" ]]; then
+        echo "Usage: kdesc [-n <namespace>] <resource> [<name>]"
+        return 1
+    fi
 
-  if [[ -n "$name" ]]; then
-    kubectl describe -n "${namespace}" "${resource}" "${name}"
-  else
-    kubectl describe -n "${namespace}" "${resource}"
-  fi
+    if [[ -n "$name" ]]; then
+        kubectl describe -n "${namespace}" "${resource}" "${name}"
+    else
+        kubectl describe -n "${namespace}" "${resource}"
+    fi
 }
 
 # Retrieve Events from Kubernetes Clusters
@@ -219,42 +219,42 @@ kge() {
 #   This final example retrieves logs from a service named grafana in the monitoring namespace:
 #   klogs -n monitoring service grafana
 klogs() {
-  local namespace
-  namespace="$(kubectl config view --minify --output 'jsonpath={..namespace}')"
-  local resource
-  local name
+    local namespace
+    namespace="$(kubectl config view --minify --output 'jsonpath={..namespace}')"
+    local resource
+    local name
 
-  while [[ "$#" -gt 0 ]]; do
-    case "$1" in
-      -n)
-        namespace="$2"
-        shift 2
-        ;;
-      *)
-        if [[ -z "$resource" ]]; then
-          resource="$1"
-        elif [[ -z "$name" ]]; then
-          name="$1"
-        else
-          echo "Invalid arguments. Usage: klogs [-n <namespace>] <resource> <name>"
-          return 1
-        fi
-        shift
-        ;;
-    esac
-  done
+    while [[ "$#" -gt 0 ]]; do
+        case "$1" in
+            -n)
+                namespace="$2"
+                shift 2
+                ;;
+            *)
+                if [[ -z "$resource" ]]; then
+                    resource="$1"
+                elif [[ -z "$name" ]]; then
+                    name="$1"
+                else
+                    echo "Invalid arguments. Usage: klogs [-n <namespace>] <resource> <name>"
+                    return 1
+                fi
+                shift
+                ;;
+        esac
+    done
 
-  if [[ -z "$resource" || -z "$name" ]]; then
-    echo "Usage: klogs [-n <namespace>] <resource> <name>"
-    return 1
-  fi
+    if [[ -z "$resource" || -z "$name" ]]; then
+        echo "Usage: klogs [-n <namespace>] <resource> <name>"
+        return 1
+    fi
 
-  # Handle resources in the 'apps' group
-  if [[ "$resource" == "deployments" ]]; then
-    resource="deployments.apps"
-  fi
+    # Handle resources in the 'apps' group
+    if [[ "$resource" == "deployments" ]]; then
+        resource="deployments.apps"
+    fi
 
-  kubectl logs -n "${namespace}" "${resource}/${name}"
+    kubectl logs -n "${namespace}" "${resource}/${name}"
 }
 
 # Retrieve Load Balancer IP Addresses in a Kubernetes Namespace
