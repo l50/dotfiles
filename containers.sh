@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Docker dotfile
 source "${HOME}/.dotfiles/docker"
 # K8s dotfile

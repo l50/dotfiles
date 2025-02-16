@@ -16,8 +16,7 @@ export GOPROXY=https://proxy.golang.org,direct
 #   pull_repos .
 #   pull_repos $PWD
 pull_repos() {
-    if [[ $# -eq 0 ]]
-    then
+    if [[ $# -eq 0 ]]; then
         filepath="."
 
         goeval -i git=github.com/l50/goutils/v2/git@latest \
@@ -134,11 +133,11 @@ get_missing_tests() {
 # Add Cobra init adds a cobra init file
 # for the system to $COB_CONF_PATH
 add_cobra_init() {
-	COB_CONF_PATH="${HOME}/.cobra.yaml"
-	if [[ ! -f "${COB_CONF_PATH}" ]]; then
-		cp "${FILES}/cobra.yaml" \
-			"${COB_CONF_PATH}"
-	fi
+    COB_CONF_PATH="${HOME}/.cobra.yaml"
+    if [[ ! -f "${COB_CONF_PATH}" ]]; then
+        cp "${FILES}/cobra.yaml" \
+            "${COB_CONF_PATH}"
+    fi
 }
 
 # Get build path from executable
@@ -148,13 +147,13 @@ add_cobra_init() {
 #
 # https://forum.golangbridge.org/t/your-best-shell-aliases/1335/11
 import_path() {
-	[[ -z "$1" ]] && {
-		echo "usage: import_path EXECUTABLE" >&2
-		return 1
-	}
-	go tool objdump -s main.main "$(which "$1")" |
-		grep -E '^TEXT main.main' | cut -d' ' -f3 |
-		sed -E -e 's/.\/src\/(.).*\/\1//'
+    [[ -z "$1" ]] && {
+        echo "usage: import_path EXECUTABLE" >&2
+        return 1
+    }
+    go tool objdump -s main.main "$(which "$1")" \
+        | grep -E '^TEXT main.main' | cut -d' ' -f3 \
+        | sed -E -e 's/.\/src\/(.).*\/\1//'
 }
 
 ### Mage Autocomplete ###
