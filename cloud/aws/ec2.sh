@@ -370,23 +370,12 @@ get_latest_ami() {
             owner="136693071363"
             ;;
         "kali")
-            case "$version" in
-                "2023.1")
-                    case "$architecture" in
-                        "amd64")
-                            amiNamePattern="kali-linux-2023.1-amd64*"
-                            ;;
-                        "arm64")
-                            amiNamePattern="kali-linux-2023.1-arm64*"
-                            ;;
-                        *)
-                            echo "Unsupported architecture: $architecture for Kali"
-                            return 1
-                            ;;
-                    esac
+            case "$architecture" in
+                "amd64" | "arm64")
+                    amiNamePattern="kali-last-snapshot-$architecture-*"
                     ;;
                 *)
-                    echo "Unsupported version: $version for Kali"
+                    echo "Unsupported architecture: $architecture for Kali"
                     return 1
                     ;;
             esac
