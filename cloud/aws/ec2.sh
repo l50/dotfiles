@@ -217,6 +217,7 @@ get_instance_role_credentials() {
 #
 # Example(s):
 #   get_latest_ami "ubuntu" "22.04" "amd64"
+#   get_latest_ami "debian" "12" "arm64"
 get_latest_ami() {
     local distro=$1
     local version=$2
@@ -225,13 +226,36 @@ get_latest_ami() {
     # Validate inputs
     if [[ -z "$distro" || -z "$version" || -z "$architecture" ]]; then
         echo "Usage: get_latest_ami <distro> <version> <architecture>"
-        echo "Example: get_latest_ami debian 12 amd64"
+        echo "Example: get_latest_ami ubuntu 24.04 amd64"
         return 1
     fi
 
     case "$distro" in
         "ubuntu")
             case "$version" in
+                "24.04")
+                    # Use SSM Parameter Store for Ubuntu 24.04
+                    case "$architecture" in
+                        "amd64")
+                            ssm_parameter="/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id"
+                            ;;
+                        "arm64")
+                            ssm_parameter="/aws/service/canonical/ubuntu/server/24.04/stable/current/arm64/hvm/ebs-gp3/ami-id"
+                            ;;
+                        *)
+                            echo "Unsupported architecture: $architecture for Ubuntu"
+                            return 1
+                            ;;
+                    esac
+                    echo "Fetching latest AMI ID for $distro $version $architecture from SSM Parameter Store..."
+                    AMI_ID=$(aws ssm get-parameters --names "$ssm_parameter" --query 'Parameters[0].Value' --output text)
+                    if [ -z "$AMI_ID" ]; then
+                        echo "No AMI ID found for $distro $version $architecture"
+                        return 1
+                    fi
+                    echo "$AMI_ID"
+                    return 0
+                    ;;
                 "22.04")
                     case "$architecture" in
                         "amd64")
@@ -283,27 +307,10 @@ get_latest_ami() {
             ;;
         "centos")
             case "$version" in
-                "7")
+                "7" | "8")
                     case "$architecture" in
-                        "x86_64")
-                            amiNamePattern="CentOS Linux 7 x86_64 HVM EBS*"
-                            ;;
-                        "arm64")
-                            amiNamePattern="CentOS Linux 7 arm64 HVM EBS*"
-                            ;;
-                        *)
-                            echo "Unsupported architecture: $architecture for CentOS"
-                            return 1
-                            ;;
-                    esac
-                    ;;
-                "8")
-                    case "$architecture" in
-                        "x86_64")
-                            amiNamePattern="CentOS 8 x86_64 AMI*"
-                            ;;
-                        "arm64")
-                            amiNamePattern="CentOS 8 arm64 AMI*"
+                        "x86_64" | "arm64")
+                            amiNamePattern="CentOS Linux $version $architecture HVM EBS*"
                             ;;
                         *)
                             echo "Unsupported architecture: $architecture for CentOS"
@@ -320,41 +327,10 @@ get_latest_ami() {
             ;;
         "debian")
             case "$version" in
-                "10")
+                "10" | "11" | "12")
                     case "$architecture" in
-                        "amd64")
-                            amiNamePattern="debian-10-amd64-*"
-                            ;;
-                        "arm64")
-                            amiNamePattern="debian-10-arm64-*"
-                            ;;
-                        *)
-                            echo "Unsupported architecture: $architecture for Debian"
-                            return 1
-                            ;;
-                    esac
-                    ;;
-                "11")
-                    case "$architecture" in
-                        "amd64")
-                            amiNamePattern="debian-11-amd64-*"
-                            ;;
-                        "arm64")
-                            amiNamePattern="debian-11-arm64-*"
-                            ;;
-                        *)
-                            echo "Unsupported architecture: $architecture for Debian"
-                            return 1
-                            ;;
-                    esac
-                    ;;
-                "12")
-                    case "$architecture" in
-                        "amd64")
-                            amiNamePattern="debian-12-amd64-*"
-                            ;;
-                        "arm64")
-                            amiNamePattern="debian-12-arm64-*"
+                        "amd64" | "arm64")
+                            amiNamePattern="debian-$version-$architecture-*"
                             ;;
                         *)
                             echo "Unsupported architecture: $architecture for Debian"
@@ -387,6 +363,7 @@ get_latest_ami() {
             ;;
     esac
 
+    # General EC2 Describe Images Call
     echo "Searching for AMIs with pattern: $amiNamePattern and owner: $owner"
     AMI_ID=$(aws ec2 describe-images \
         --filters "Name=name,Values=$amiNamePattern" \
