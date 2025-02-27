@@ -218,6 +218,7 @@ get_instance_role_credentials() {
 # Example(s):
 #   get_latest_ami "ubuntu" "22.04" "amd64"
 #   get_latest_ami "debian" "12" "arm64"
+#   get_latest_ami "windows" "2019-Datacenter" "amd64"
 get_latest_ami() {
     local distro=$1
     local version=$2
@@ -227,10 +228,62 @@ get_latest_ami() {
     if [[ -z "$distro" || -z "$version" || -z "$architecture" ]]; then
         echo "Usage: get_latest_ami <distro> <version> <architecture>"
         echo "Example: get_latest_ami ubuntu 24.04 amd64"
+        echo "Example: get_latest_ami windows 2019-Datacenter amd64"
         return 1
     fi
 
     case "$distro" in
+        "windows")
+            # Windows AMIs are owned by Amazon
+            owner="801119661308" # Amazon's AWS Marketplace Account
+
+            case "$version" in
+                "2019-Datacenter")
+                    case "$architecture" in
+                        "amd64" | "x86_64")
+                            # Use SSM Parameter Store for Windows Server 2019 Datacenter
+                            ssm_parameter="/aws/service/ami-windows-latest/Windows_Server-2019-English-Full-Base"
+                            echo "Fetching latest AMI ID for $distro $version $architecture from SSM Parameter Store..."
+                            AMI_ID=$(aws ssm get-parameters --names "$ssm_parameter" --query 'Parameters[0].Value' --output text)
+                            if [ -z "$AMI_ID" ]; then
+                                echo "No AMI ID found for $distro $version $architecture"
+                                return 1
+                            fi
+                            echo "$AMI_ID"
+                            return 0
+                            ;;
+                        *)
+                            echo "Unsupported architecture: $architecture for Windows $version"
+                            return 1
+                            ;;
+                    esac
+                    ;;
+                "2022-Datacenter")
+                    case "$architecture" in
+                        "amd64" | "x86_64")
+                            # Use SSM Parameter Store for Windows Server 2022 Datacenter
+                            ssm_parameter="/aws/service/ami-windows-latest/Windows_Server-2022-English-Full-Base"
+                            echo "Fetching latest AMI ID for $distro $version $architecture from SSM Parameter Store..."
+                            AMI_ID=$(aws ssm get-parameters --names "$ssm_parameter" --query 'Parameters[0].Value' --output text)
+                            if [ -z "$AMI_ID" ]; then
+                                echo "No AMI ID found for $distro $version $architecture"
+                                return 1
+                            fi
+                            echo "$AMI_ID"
+                            return 0
+                            ;;
+                        *)
+                            echo "Unsupported architecture: $architecture for Windows $version"
+                            return 1
+                            ;;
+                    esac
+                    ;;
+                *)
+                    echo "Unsupported version: $version for Windows"
+                    return 1
+                    ;;
+            esac
+            ;;
         "ubuntu")
             case "$version" in
                 "24.04")
