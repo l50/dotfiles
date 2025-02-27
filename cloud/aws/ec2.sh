@@ -227,8 +227,9 @@ get_latest_ami() {
     # Validate inputs
     if [[ -z "$distro" || -z "$version" || -z "$architecture" ]]; then
         echo "Usage: get_latest_ami <distro> <version> <architecture>"
-        echo "Example: get_latest_ami ubuntu 24.04 amd64"
-        echo "Example: get_latest_ami windows 2019-Datacenter amd64"
+        echo "Example: get_latest_ami 'ubuntu' '24.04' 'amd64'"
+        echo "Example: get_latest_ami 'debian' '12' 'arm64'"
+        echo "Example: get_latest_ami 'windows 2019-Datacenter' 'amd64'"
         return 1
     fi
 
