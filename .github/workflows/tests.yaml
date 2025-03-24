@@ -140,7 +140,7 @@ jobs:
         run: |
           source ~/.zshrc
           cat ~/.zshrc
-          source ~/.dotfiles/python
+          source ~/.dotfiles/python.sh
           ls -lart ~/.dotfiles
           which ipaddr
           which go
