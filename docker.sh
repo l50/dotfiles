@@ -64,3 +64,44 @@ alias coldfusion2016="docker run --rm -d --name mycf2016 \
 alias laverna="docker run --rm -d -p 5000:80 --name laverna elliotjreed/laverna"
 alias postgres="docker run --rm -d --name postgres postgres"
 alias ghost="docker run --rm -d -p 2368:2368 --name ghost ghost"
+
+# List all Docker containers with their mount points.
+list_docker_mounts() {
+    # Get all container IDs
+    local container_ids
+    container_ids=$(docker ps -a --format '{{ .ID }}')
+
+    if [ -z "$container_ids" ]; then
+        echo "No containers found"
+        return 0
+    fi
+
+    echo "Listing all containers with their mount points:"
+    echo "----------------------------------------------"
+
+    # Iterate through each container and display its mounts
+    for container_id in $container_ids; do
+        docker inspect -f '{{ .Name }}{{ printf "\n" }}{{ range .Mounts }}{{ printf "\n\t" }}{{ .Type }} {{ if eq .Type "bind" }}{{ .Source }}{{ end }}{{ .Name }} => {{ .Destination }}{{ end }}{{ printf "\n" }}' "$container_id"
+    done
+}
+
+# List mount points for a specific container.
+# Usage: list_container_mounts container_name_or_id
+list_container_mounts() {
+    local container="$1"
+
+    if [ -z "$container" ]; then
+        echo "Error: Container name or ID not provided"
+        echo "Usage: list_container_mounts container_name_or_id"
+        return 1
+    fi
+
+    if ! docker inspect "$container" > /dev/null 2>&1; then
+        echo "Error: Container '$container' not found"
+        return 1
+    fi
+
+    echo "Listing mount points for container '$container':"
+    echo "------------------------------------------------------"
+    docker inspect -f '{{ .Name }}{{ printf "\n" }}{{ range .Mounts }}{{ printf "\n\t" }}{{ .Type }} {{ if eq .Type "bind" }}{{ .Source }}{{ end }}{{ .Name }} => {{ .Destination }}{{ end }}{{ printf "\n" }}' "$container"
+}
