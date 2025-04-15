@@ -9,6 +9,7 @@ docker
 mkdocs
 molecule
 molecule-docker
+netaddr
 pipx
 pre-commit
 yt-dlp
