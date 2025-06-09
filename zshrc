@@ -7,7 +7,7 @@ export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/u
 # oh-my-zsh components
 export ZSH="${HOME}/.oh-my-zsh"
 export ZSH_THEME="af-magic"
-export plugins=(asdf aws git docker helm kubectl zsh-completions)
+export plugins=(asdf aws git docker kubectl zsh-completions)
 
 # shellcheck source=/dev/null
 source "${ZSH}/oh-my-zsh.sh"

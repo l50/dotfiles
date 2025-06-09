@@ -18,6 +18,10 @@ alias klp="klogs pod"
 alias krm='k delete'
 alias krmf='krm -f'
 
+# Remove the oh-my-zsh kubectl plugin's kge alias
+unalias kge 2> /dev/null || true
+unalias kgew 2> /dev/null || true
+
 # Resource Retrieval Aliases
 # These aliases are for quickly retrieving lists of various Kubernetes resources.
 alias kgp='kg pods'
