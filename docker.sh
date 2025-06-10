@@ -6,7 +6,6 @@ zstyle ':completion:*:*:docker:*' option-stacking yes
 zstyle ':completion:*:*:docker-*:*' option-stacking yes
 
 # Docker utilities
-alias cleanseDocker='docker system prune -f -a'
 alias createDataContainer="docker create -v /tmp --name datacontainer ubuntu"
 alias updateDockerImages="docker images | \
     cut -d ' ' -f 1 | xargs -I {} docker pull {} 2>&1"
@@ -64,6 +63,27 @@ alias coldfusion2016="docker run --rm -d --name mycf2016 \
 alias laverna="docker run --rm -d -p 5000:80 --name laverna elliotjreed/laverna"
 alias postgres="docker run --rm -d --name postgres postgres"
 alias ghost="docker run --rm -d -p 2368:2368 --name ghost ghost"
+
+cleanseDocker() {
+    echo "🧹 Starting Docker cleanup..."
+
+    echo "📦 Removing stopped containers..."
+    docker container prune -f
+
+    echo "🖼️  Removing all unused images..."
+    docker image prune -af
+
+    echo "🌐 Removing unused networks..."
+    docker network prune -f
+
+    echo "💾 Removing unused volumes..."
+    docker volume prune -af
+
+    echo "🔨 Removing build cache..."
+    docker buildx prune -af
+
+    echo "✅ Docker cleanup complete!"
+}
 
 # List all Docker containers with their mount points.
 list_docker_mounts() {
