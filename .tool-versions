@@ -1,6 +1,6 @@
 golang 1.24.4
 python 3.13.5
 ruby 3.4.4
-helm 3.18.3
+helm 3.18.4
 kubectl 1.33.2
 packer 1.12.0
