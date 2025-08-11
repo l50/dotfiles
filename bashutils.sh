@@ -849,6 +849,35 @@ process_files_in_commit() {
     git show --name-only --pretty="" "$commit" | grep "\.$grep_pattern"
 }
 
+# Generates a pull request description based on the commits since a specified base branch.
+# It uses the `git log` command to retrieve commit information and the `git diff` command to get the full diff.
+# The output is formatted and piped through `fabric` for further processing.
+# Usage:
+#   generate_pr [base_branch]
+#
+# Parameters:
+#   base_branch: The base branch to compare against (default: origin/main).
+#
+# Output:
+#   Prints a formatted pull request description containing commit information and the full diff.
+generate_pr() {
+    local base_branch="${1:-origin/main}"
+    local commit_count
+    commit_count=$(git rev-list --count "$base_branch"..HEAD)
+    if [ "$commit_count" -eq 0 ]; then
+        echo "No commits found since $base_branch"
+        return 1
+    fi
+    echo "Generating PR description for $commit_count commits since $base_branch..."
+    {
+        echo "=== COMMITS SINCE $base_branch ==="
+        git log "$base_branch"..HEAD --pretty=format:"commit %H%nAuthor: %an <%ae>%nDate: %ad%n%n%s%n%n%b%n"
+        echo ""
+        echo "=== FULL DIFF ==="
+        git diff "$base_branch"...HEAD
+    } | fabric -p pr | fold -s -w 80
+}
+
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
 
 # If gshuf and cowsay are installed, then evolve our vocab with cowsay

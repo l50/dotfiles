@@ -1,53 +1,34 @@
-// Alternative to make
-github.com/magefile/mage
+// Build & Development Tools
+github.com/magefile/mage                          // Alternative to make
+github.com/goreleaser/goreleaser@latest           // Deliver Go binaries as fast and easily as possible
+github.com/spf13/cobra-cli                        // Create CLI applications
+github.com/dolmen-go/goeval                       // Use go functions in bash
 
-// ChatGPT cli utility
-github.com/charmbracelet/mods
+// VSCode Go Extension Tools
+golang.org/x/tools/gopls@latest                   // Go language server
+golang.org/x/tools/cmd/goimports@latest           // Format and manage imports
+golang.org/x/lint/golint@latest                   // Go linter
+github.com/cweill/gotests/gotests@latest          // Generate tests
+github.com/fatih/gomodifytags@latest              // Modify struct tags
+github.com/josharian/impl@latest                  // Generate interface implementations
+github.com/haya14busa/goplay/cmd/goplay@latest    // Go playground client
+github.com/go-delve/delve/cmd/dlv@latest          // Go debugger
 
-// Utility to create cli applications
-github.com/spf13/cobra-cli
+// Code Quality & Linting
+honnef.co/go/tools/cmd/staticcheck@latest         // Static analysis
+github.com/fzipp/gocyclo/cmd/gocyclo@latest       // Cyclomatic complexity checker
+github.com/golangci/golangci-lint/cmd/golangci-lint@latest  // Meta linter
+github.com/go-critic/go-critic/cmd/gocritic@latest          // Go source code linter
 
-// Use go functions in bash
-github.com/dolmen-go/goeval
+// Security & Encryption
+filippo.io/age/cmd/...@latest                     // Simple, modern file encryption tool
+github.com/getsops/sops/v3/cmd/sops@latest        // Editor for encrypted files (YAML, JSON, ENV, INI, BINARY)
 
-// Render markdown on the CLI, with pizzazz!
-github.com/charmbracelet/glow
+// CLI Utilities
+github.com/danielmiessler/fabric                  // ChatGPT CLI utility
+github.com/gokcehan/lf@latest                     // Terminal file manager
+mvdan.cc/sh/v3/cmd/shfmt@latest                   // Shell formatter
+github.com/mikefarah/yq/v4@latest                 // Parse and filter YAML documents
 
-// Deliver Go binaries as fast and easily as possible
-github.com/goreleaser/goreleaser@latest
-
-// lf (as in "list files") is a terminal file manager written in Go
-github.com/gokcehan/lf@latest
-
-// Shell formatter
-mvdan.cc/sh/v3/cmd/shfmt@latest
-
-// VSCode Go extension tools
-golang.org/x/tools/gopls@latest
-github.com/cweill/gotests/gotests@latest
-github.com/fatih/gomodifytags@latest
-github.com/josharian/impl@latest
-github.com/haya14busa/goplay/cmd/goplay@latest
-github.com/go-delve/delve/cmd/dlv@latest
-honnef.co/go/tools/cmd/staticcheck@latest
-
-// age is a simple, modern and secure file encryption tool, format, and Go library
-filippo.io/age/cmd/...@latest
-
-// sops is an editor of encrypted files that supports YAML, JSON, ENV, INI and
-// BINARY formats and encrypts with AWS KMS, GCP KMS, Azure Key Vault and PGP.
-github.com/getsops/sops/v3/cmd/sops@latest
-
-// VSCode Go extension tools
-golang.org/x/lint/golint@latest
-golang.org/x/tools/cmd/goimports@latest
-github.com/fzipp/gocyclo/cmd/gocyclo@latest
-github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-github.com/go-critic/go-critic/cmd/gocritic@latest
-github.com/goreleaser/goreleaser@latest
-
-// Parse and filter YAML documents from CLI
-github.com/mikefarah/yq/v4@latest
-
-// Autogenerate docs for terraform modules
-github.com/terraform-docs/terraform-docs@latest
+// Documentation
+github.com/terraform-docs/terraform-docs@latest   // Autogenerate docs for terraform modules
