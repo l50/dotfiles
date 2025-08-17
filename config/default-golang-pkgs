@@ -1,34 +1,35 @@
 // Build & Development Tools
-github.com/magefile/mage                          // Alternative to make
-github.com/goreleaser/goreleaser@latest           // Deliver Go binaries as fast and easily as possible
-github.com/spf13/cobra-cli                        // Create CLI applications
-github.com/dolmen-go/goeval                       // Use go functions in bash
+github.com/magefile/mage                            // Alternative to make
+github.com/goreleaser/goreleaser/v2               	// Deliver Go binaries as fast and easily as possible
+github.com/spf13/cobra-cli                        	// Create CLI applications
+github.com/dolmen-go/goeval                       	// Use go functions in bash
 
 // VSCode Go Extension Tools
-golang.org/x/tools/gopls@latest                   // Go language server
-golang.org/x/tools/cmd/goimports@latest           // Format and manage imports
-golang.org/x/lint/golint@latest                   // Go linter
-github.com/cweill/gotests/gotests@latest          // Generate tests
-github.com/fatih/gomodifytags@latest              // Modify struct tags
-github.com/josharian/impl@latest                  // Generate interface implementations
-github.com/haya14busa/goplay/cmd/goplay@latest    // Go playground client
-github.com/go-delve/delve/cmd/dlv@latest          // Go debugger
+golang.org/x/tools/gopls                   			// Go language server
+golang.org/x/tools/cmd/goimports           			// Format and manage imports
+golang.org/x/lint/golint                   			// Go linter
+github.com/cweill/gotests/gotests          			// Generate tests
+github.com/fatih/gomodifytags              			// Modify struct tags
+github.com/josharian/impl                  			// Generate interface implementations
+github.com/haya14busa/goplay/cmd/goplay    			// Go playground client
+github.com/go-delve/delve/cmd/dlv          			// Go debugger
 
 // Code Quality & Linting
-honnef.co/go/tools/cmd/staticcheck@latest         // Static analysis
-github.com/fzipp/gocyclo/cmd/gocyclo@latest       // Cyclomatic complexity checker
-github.com/golangci/golangci-lint/cmd/golangci-lint@latest  // Meta linter
-github.com/go-critic/go-critic/cmd/gocritic@latest          // Go source code linter
+honnef.co/go/tools/cmd/staticcheck                  // Static analysis
+github.com/fzipp/gocyclo/cmd/gocyclo                // Cyclomatic complexity checker
+github.com/golangci/golangci-lint/cmd/golangci-lint // Meta linter
+github.com/go-critic/go-critic/cmd/gocritic         // Go source code linter
 
 // Security & Encryption
-filippo.io/age/cmd/...@latest                     // Simple, modern file encryption tool
-github.com/getsops/sops/v3/cmd/sops@latest        // Editor for encrypted files (YAML, JSON, ENV, INI, BINARY)
+filippo.io/age/cmd/...                              // Simple, modern file encryption tool
+github.com/getsops/sops/v3/cmd/sops                 // Editor for encrypted files (YAML, JSON, ENV, INI, BINARY)
 
 // CLI Utilities
-github.com/danielmiessler/fabric                  // ChatGPT CLI utility
-github.com/gokcehan/lf@latest                     // Terminal file manager
-mvdan.cc/sh/v3/cmd/shfmt@latest                   // Shell formatter
-github.com/mikefarah/yq/v4@latest                 // Parse and filter YAML documents
+github.com/danielmiessler/fabric/cmd/fabric         // ChatGPT CLI utility
+
+github.com/gokcehan/lf                              // Terminal file manager
+mvdan.cc/sh/v3/cmd/shfmt                            // Shell formatter
+github.com/mikefarah/yq/v4                          // Parse and filter YAML documents
 
 // Documentation
-github.com/terraform-docs/terraform-docs@latest   // Autogenerate docs for terraform modules
+github.com/terraform-docs/terraform-docs            // Autogenerate docs for terraform modules

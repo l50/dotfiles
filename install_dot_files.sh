@@ -115,7 +115,7 @@ setup_brewfile() {
 install_oh_my_zsh() {
     if [ ! -d "${HOME}/.oh-my-zsh" ]; then
         echo -e "${BLUE}Installing oh-my-zsh...${RESET}"
-        CHSH=no RUNZSH=no sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+        KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
     fi
 }
 
