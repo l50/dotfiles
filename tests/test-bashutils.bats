@@ -29,62 +29,62 @@ teardown() {
 }
 
 @test "check_disk_space_with_no_arguments" {
-    run check_disk_space
-    assert_failure
-    assert_output "Error: Required space in MB must be provided"
+	run check_disk_space
+	assert_failure
+	assert_output "Error: Required space in MB must be provided"
 }
 
 @test "check_disk_space_with_invalid_argument" {
-    run check_disk_space "abc"
-    assert_failure
-    assert_output "Error: Required space must be a positive integer"
+	run check_disk_space "abc"
+	assert_failure
+	assert_output "Error: Required space must be a positive integer"
 }
 
 @test "check_disk_space_with_negative_number" {
-    run check_disk_space "-100"
-    assert_failure
-    assert_output "Error: Required space must be a positive integer"
+	run check_disk_space "-100"
+	assert_failure
+	assert_output "Error: Required space must be a positive integer"
 }
 
 @test "check_disk_space_with_zero" {
-    run check_disk_space "0"
-    assert_success
+	run check_disk_space "0"
+	assert_success
 }
 
 @test "check_disk_space_with_small_required_space" {
-    run check_disk_space "1"
-    assert_success
+	run check_disk_space "1"
+	assert_success
 }
 
 @test "check_disk_space_with_available_space" {
-    # Mock df command to return a fixed amount of space (10GB)
-    # shellcheck disable=SC2317
-    df() {
-        # shellcheck disable=SC2317
-        echo "Filesystem     1K-blocks      Used Available Use% Mounted on"
-        # shellcheck disable=SC2317
-        echo "/dev/sda1      41943040  31457280  10485760  75% /"
-    }
-    export -f df
+	# Mock df command to return a fixed amount of space (10GB)
+	# shellcheck disable=SC2317
+	df() {
+		# shellcheck disable=SC2317
+		echo "Filesystem     1K-blocks      Used Available Use% Mounted on"
+		# shellcheck disable=SC2317
+		echo "/dev/sda1      41943040  31457280  10485760  75% /"
+	}
+	export -f df
 
-    run check_disk_space "1000"  # Request 1GB
-    assert_success
+	run check_disk_space "1000" # Request 1GB
+	assert_success
 }
 
 @test "check_disk_space_with_insufficient_space" {
-    # Mock df command to return a small amount of space (100MB)
-    # shellcheck disable=SC2317
-    df() {
-        # shellcheck disable=SC2317
-        echo "Filesystem     1K-blocks      Used Available Use% Mounted on"
-        # shellcheck disable=SC2317
-        echo "/dev/sda1      41943040  41841664    102400  98% /"
-    }
-    export -f df
+	# Mock df command to return a small amount of space (100MB)
+	# shellcheck disable=SC2317
+	df() {
+		# shellcheck disable=SC2317
+		echo "Filesystem     1K-blocks      Used Available Use% Mounted on"
+		# shellcheck disable=SC2317
+		echo "/dev/sda1      41943040  41841664    102400  98% /"
+	}
+	export -f df
 
-    run check_disk_space "1000"  # Request 1GB
-    assert_failure
-    assert_output "Error: Not enough disk space. Required: 1000MB, Available: 100MB"
+	run check_disk_space "1000" # Request 1GB
+	assert_failure
+	assert_output "Error: Not enough disk space. Required: 1000MB, Available: 100MB"
 }
 
 @test "getJSONKeys_function_returns_expected_keys" {
@@ -157,41 +157,41 @@ teardown() {
 }
 
 @test "process_files_from_config_with_specific_patterns" {
-    # Setup for CI environment
-    if [[ -n "${CI}" ]]; then
-        # Create a mock xclip that doesn't need X display
-        xclip() {
-            case "$1" in
-                -selection)
-                    shift  # consume the -selection argument
-                    shift  # consume the clipboard/primary argument
-                    cat > /dev/null  # consume input without using X
-                    ;;
-                -o|-out)
-                    echo "mocked clipboard content"
-                    ;;
-                *)
-                    cat > /dev/null  # default behavior - consume input
-                    ;;
-            esac
-            return 0
-        }
-        export -f xclip
-    fi
+	# Setup for CI environment
+	if [[ -n "${CI}" ]]; then
+		# Create a mock xclip that doesn't need X display
+		xclip() {
+			case "$1" in
+			-selection)
+				shift          # consume the -selection argument
+				shift          # consume the clipboard/primary argument
+				cat >/dev/null # consume input without using X
+				;;
+			-o | -out)
+				echo "mocked clipboard content"
+				;;
+			*)
+				cat >/dev/null # default behavior - consume input
+				;;
+			esac
+			return 0
+		}
+		export -f xclip
+	fi
 
-    # Setup - create a temporary working directory
-    local temp_working_dir
-    temp_working_dir=$(mktemp -d)
+	# Setup - create a temporary working directory
+	local temp_working_dir
+	temp_working_dir=$(mktemp -d)
 
-    # Create a temporary config file with patterns
-    local temp_config
-    temp_config=$(mktemp)
+	# Create a temporary config file with patterns
+	local temp_config
+	temp_config=$(mktemp)
 
-    # Change to the temporary directory
-    cd "$temp_working_dir" || exit 1
+	# Change to the temporary directory
+	cd "$temp_working_dir" || exit 1
 
-    # Add file patterns to the config file
-    cat <<EOF >"$temp_config"
+	# Add file patterns to the config file
+	cat <<EOF >"$temp_config"
 ./.git/*
 ./.hooks/*
 ./.github/*
@@ -205,35 +205,35 @@ teardown() {
 ./*.md
 EOF
 
-    # Create dummy files and directories to match the patterns
-    mkdir -p .git .hooks .github magefiles changelogs .vscode
-    touch .git/dummy .hooks/dummy .github/dummy magefiles/dummy changelogs/dummy .vscode/dummy
-    touch go.mod go.sum LICENSE .mdlrc .pre-commit-config.yaml README.md
+	# Create dummy files and directories to match the patterns
+	mkdir -p .git .hooks .github magefiles changelogs .vscode
+	touch .git/dummy .hooks/dummy .github/dummy magefiles/dummy changelogs/dummy .vscode/dummy
+	touch go.mod go.sum LICENSE .mdlrc .pre-commit-config.yaml README.md
 
-    # Call process_files_from_config with the config file
-    run process_files_from_config "$temp_config"
+	# Call process_files_from_config with the config file
+	run process_files_from_config "$temp_config"
 
-    # Assert success
-    assert_success
+	# Assert success
+	assert_success
 
-    # Verify that the files exist
-    assert [ -f "go.mod" ]
-    assert [ -f "go.sum" ]
-    assert [ -f "LICENSE" ]
-    assert [ -f ".mdlrc" ]
-    assert [ -f ".pre-commit-config.yaml" ]
-    assert [ -f "README.md" ]
-    assert [ -d ".git" ]
-    assert [ -d ".hooks" ]
-    assert [ -d ".github" ]
-    assert [ -d "magefiles" ]
-    assert [ -d "changelogs" ]
-    assert [ -d ".vscode" ]
+	# Verify that the files exist
+	assert [ -f "go.mod" ]
+	assert [ -f "go.sum" ]
+	assert [ -f "LICENSE" ]
+	assert [ -f ".mdlrc" ]
+	assert [ -f ".pre-commit-config.yaml" ]
+	assert [ -f "README.md" ]
+	assert [ -d ".git" ]
+	assert [ -d ".hooks" ]
+	assert [ -d ".github" ]
+	assert [ -d "magefiles" ]
+	assert [ -d "changelogs" ]
+	assert [ -d ".vscode" ]
 
-    # Cleanup
-    cd - || exit 1
-    rm -rf "$temp_working_dir"
-    rm -f "$temp_config"
+	# Cleanup
+	cd - || exit 1
+	rm -rf "$temp_working_dir"
+	rm -f "$temp_config"
 }
 
 @test "process_files_from_config_with_invalid_config_file" {

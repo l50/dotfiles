@@ -124,6 +124,8 @@ jobs:
           ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,main
 
       - name: Install the dotfiles
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           chmod +x install_dot_files.sh
           if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
