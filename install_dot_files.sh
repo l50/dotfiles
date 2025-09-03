@@ -48,9 +48,10 @@ declare -a files=(
 )
 
 ##### Color output
-YELLOW="\033[01;33m"
+GREEN="\033[01;32m"
 BLUE="\033[01;34m"
 RESET="\033[00m"
+YELLOW="\033[01;33m"
 
 # Identify OS type
 OS_TYPE="$(uname)"
@@ -61,6 +62,8 @@ create_directories() {
         "${HOME}/.sqlmap"
         "${HOME}/.kali"
         "${HOME}/.android_sec_tools"
+        "${HOME}/ansible-logs"
+        "${HOME}/ansible-logs/hosts"
     )
 
     for dir in "${dirs[@]}"; do
@@ -119,6 +122,76 @@ install_oh_my_zsh() {
     fi
 }
 
+setup_ansible_config() {
+    echo -e "${BLUE}Setting up Ansible configuration...${RESET}"
+
+    # Create ansible directories
+    local ansible_dirs=(
+        "${HOME}/.ansible"
+        "${HOME}/.ansible/collections"
+        "${HOME}/.ansible/roles"
+        "${HOME}/.ansible/fact_cache"
+        "${HOME}/ansible-logs"
+        "${HOME}/ansible-logs/hosts"
+        "/tmp/.ansible/tmp"
+    )
+
+    for dir in "${ansible_dirs[@]}"; do
+        if [[ ! -d "$dir" ]]; then
+            echo -e "${BLUE}Creating directory: ${dir}${RESET}"
+            mkdir -p "$dir"
+        fi
+    done
+
+    # Backup existing ansible.cfg if present
+    if [[ -f "${HOME}/.ansible.cfg" ]]; then
+        local backup_file
+        backup_file="${HOME}/.ansible.cfg.bak.$(date +%Y%m%d_%H%M%S)"
+        echo -e "${YELLOW}Backing up existing ansible.cfg to ${backup_file}${RESET}"
+        cp "${HOME}/.ansible.cfg" "${backup_file}"
+    fi
+
+    # Check if template exists
+    local template_file="${INSTALL_DIR}/templates/ansible.cfg.tmpl"
+    if [[ ! -f "${template_file}" ]]; then
+        echo -e "${RED}Error: ansible.cfg.tmpl not found in ${INSTALL_DIR}/templates/${RESET}"
+        return 1
+    fi
+
+    # Process the template - replace HOME_DIR with actual home directory
+    echo -e "${BLUE}Processing ansible.cfg template...${RESET}"
+    sed "s|HOME_DIR|${HOME}|g" "${template_file}" > "${HOME}/.ansible.cfg"
+
+    # Set appropriate permissions
+    chmod 644 "${HOME}/.ansible.cfg"
+
+    # Create initial log file with proper permissions
+    if [[ ! -f "${HOME}/ansible.log" ]]; then
+        touch "${HOME}/ansible.log"
+        chmod 666 "${HOME}/ansible.log"
+    fi
+
+    echo -e "${GREEN}✓ Ansible configuration installed to ${HOME}/.ansible.cfg${RESET}"
+
+    # Verify the configuration if ansible-config is available
+    if command -v ansible-config &> /dev/null; then
+        echo -e "${BLUE}Verifying Ansible configuration...${RESET}"
+        if ansible-config dump --only-changed &> /dev/null 2>&1; then
+            echo -e "${GREEN}✓ Ansible configuration is valid${RESET}"
+
+            # Display key configuration paths
+            echo -e "\n${GREEN}=== Ansible Configuration Summary ===${RESET}"
+            echo -e "${BLUE}Main log file:${RESET} ${HOME}/ansible.log"
+            echo -e "${BLUE}Per-host logs:${RESET} ${HOME}/ansible-logs/hosts/"
+            echo -e "${BLUE}Fact cache:${RESET} ${HOME}/.ansible/fact_cache"
+            echo -e "${BLUE}Collections:${RESET} ${HOME}/.ansible/collections"
+            echo -e "${BLUE}Roles:${RESET} ${HOME}/.ansible/roles"
+        else
+            echo -e "${YELLOW}⚠ Warning: Could not verify Ansible configuration${RESET}"
+        fi
+    fi
+}
+
 setup_ansible() {
     echo "Setting up Ansible environment..."
 
@@ -127,6 +200,9 @@ setup_ansible() {
         echo "Ansible is not installed. Please install it first."
         exit 1
     fi
+
+    # Setup ansible configuration
+    setup_ansible_config
 
     # Clone ansible-collection-workstation if not present
     if [[ ! -d "${ANSIBLE_DIR}" ]]; then
@@ -221,6 +297,8 @@ if [[ "${RUN_ANSIBLE}" == true ]]; then
     setup_ansible
 else
     echo -e "${YELLOW}Skipping Ansible setup (--skip-ansible flag was used)${RESET}"
+    # Still setup ansible config even if not running ansible
+    setup_ansible_config
 fi
 
 echo -e "${BLUE}Dotfiles installation complete!${RESET}"

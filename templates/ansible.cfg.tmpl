@@ -1,0 +1,66 @@
+[defaults]
+# Core settings
+remote_tmp = /tmp/.ansible/tmp
+host_key_checking = False
+retry_files_enabled = False
+
+# Paths
+collections_path = HOME_DIR/.ansible/collections:./collections
+roles_path = HOME_DIR/.ansible/roles:./roles
+
+# Logging configuration
+# Single log file for all playbook runs - gets appended to
+log_path = HOME_DIR/ansible.log
+no_log = False
+
+# Filter out specific Python loggers from the log file (empty = no filtering)
+# Useful for reducing noise from verbose libraries
+log_filter =
+
+# Display settings
+# Sets the main stdout callback plugin (only one can be active)
+stdout_callback = default
+callback_result_format = yaml
+callback_format_pretty = true
+
+# Performance and profiling callbacks
+callbacks_enabled = community.general.log_plays, ansible.posix.profile_tasks, ansible.posix.timer
+
+# Error handling
+any_errors_fatal = False
+display_failed_stderr = True
+display_ok_hosts = True
+display_skipped_hosts = False
+
+# Fact caching (optional but useful for debugging)
+gathering = smart
+fact_caching = jsonfile
+fact_caching_connection = HOME_DIR/.ansible/fact_cache
+fact_caching_timeout = 86400
+
+# Diff output
+always_show_diff = False
+diff_add = green
+diff_remove = red
+diff_lines = 3
+
+[ssh_connection]
+# Enable pipelining to reduce SSH connections and improve performance
+pipelining = True
+# SSH ControlPath for connection multiplexing
+control_path = /tmp/ansible-ssh-%%h-%%p-%%r
+
+# Callback plugin configurations
+[callback_counter_enabled]
+# Configuration for the counter_enabled stdout callback
+enabled = True
+
+[callback_profile_tasks]
+# Shows execution time for each task
+task_output_limit = 20
+sort_order = descending
+
+[callback_log_plays]
+# Writes per-host logs to separate files
+# Creates one log file per host in this directory
+log_folder = HOME_DIR/ansible-logs/hosts
