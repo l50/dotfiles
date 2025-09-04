@@ -165,12 +165,6 @@ setup_ansible_config() {
     # Set appropriate permissions
     chmod 644 "${HOME}/.ansible.cfg"
 
-    # Create initial log file with proper permissions
-    if [[ ! -f "${HOME}/ansible.log" ]]; then
-        touch "${HOME}/ansible.log"
-        chmod 666 "${HOME}/ansible.log"
-    fi
-
     echo -e "${GREEN}✓ Ansible configuration installed to ${HOME}/.ansible.cfg${RESET}"
 
     # Verify the configuration if ansible-config is available
@@ -181,7 +175,6 @@ setup_ansible_config() {
 
             # Display key configuration paths
             echo -e "\n${GREEN}=== Ansible Configuration Summary ===${RESET}"
-            echo -e "${BLUE}Main log file:${RESET} ${HOME}/ansible.log"
             echo -e "${BLUE}Per-host logs:${RESET} ${HOME}/ansible-logs/hosts/"
             echo -e "${BLUE}Fact cache:${RESET} ${HOME}/.ansible/fact_cache"
             echo -e "${BLUE}Collections:${RESET} ${HOME}/.ansible/collections"
