@@ -143,14 +143,6 @@ setup_ansible_config() {
         fi
     done
 
-    # Backup existing ansible.cfg if present
-    if [[ -f "${HOME}/.ansible.cfg" ]]; then
-        local backup_file
-        backup_file="${HOME}/.ansible.cfg.bak.$(date +%Y%m%d_%H%M%S)"
-        echo -e "${YELLOW}Backing up existing ansible.cfg to ${backup_file}${RESET}"
-        cp "${HOME}/.ansible.cfg" "${backup_file}"
-    fi
-
     # Check if template exists
     local template_file="${INSTALL_DIR}/templates/ansible.cfg.tmpl"
     if [[ ! -f "${template_file}" ]]; then
