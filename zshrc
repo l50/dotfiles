@@ -9,6 +9,10 @@ export ZSH="${HOME}/.oh-my-zsh"
 export ZSH_THEME="af-magic"
 export plugins=(asdf aws git docker kubectl zsh-completions)
 
+# Enable zsh completion system
+autoload -U compinit && compinit
+
+
 # shellcheck source=/dev/null
 source "${ZSH}/oh-my-zsh.sh"
 
