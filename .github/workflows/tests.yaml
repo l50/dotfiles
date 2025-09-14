@@ -119,9 +119,10 @@ jobs:
               brew install curl git zsh python3 ansible
           fi
 
-      - name: Install the workstation collection
+      - name: Install the necessary ansible collections
         run: |
           ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,main
+          ansible-galaxy collection install git+https://github.com/cowdogmoo/grafana-ansible-collection.git,main
 
       - name: Install the dotfiles
         env:
