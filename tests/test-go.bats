@@ -1,9 +1,11 @@
 #!/usr/bin/env bats
+
+# Set this BEFORE loading go.sh
+export RUNNING_BATS_TEST=1
+
 load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
 load '../go.sh'
-
-export RUNNING_BATS_TEST=1
 
 setup_file() {
 	TEST_TEMP_DIR=$(mktemp -d)
@@ -18,6 +20,9 @@ author: test <test@example.com>
 license: MIT
 useViper: true
 EOF
+
+	# Also create mage_completion.sh to avoid any issues
+	touch "${FILES}/mage_completion.sh"
 }
 
 teardown_file() {
