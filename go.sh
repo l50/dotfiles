@@ -156,6 +156,52 @@ import_path() {
         | sed -E -e 's/.\/src\/(.).*\/\1//'
 }
 
+# Generates Go tests for a specified Go source file using fabric AI.
+# It reads the Go source file and pipes it through fabric to generate comprehensive tests.
+# The output is formatted to 80 characters width for better readability.
+# Usage:
+#   generate_go_tests [file] [model]
+#
+# Parameters:
+#   file: The Go source file to generate tests for (required).
+#   model: The AI model to use (default: claude-opus-4-1-20250805).
+#
+# Output:
+#   Prints generated Go test code formatted to 80 character width.
+# Example usage:
+#
+#  ```bash
+#  generate_go_tests logging.go
+#  generate_go_tests logging.go claude-3-5-sonnet-20241022
+#  ```
+generate_go_tests() {
+    local file="${1}"
+    local model="${2:-claude-opus-4-1-20250805}"
+
+    if [ -z "$file" ]; then
+        echo "Error: Please specify a Go source file"
+        echo "Usage: generate_go_tests <file.go> [model]"
+        return 1
+    fi
+
+    if [ ! -f "$file" ]; then
+        echo "Error: File '$file' not found"
+        return 1
+    fi
+
+    if [[ ! "$file" =~ \.go$ ]]; then
+        echo "Warning: File '$file' does not have .go extension"
+    fi
+
+    echo "Generating Go tests for $file using model $model..."
+    echo ""
+
+    fabric \
+        --vendor Anthropic \
+        --model "$model" \
+        --pattern go-tests < "$file" | fold -s -w 80
+}
+
 ### Mage Autocomplete ###
 # This section will not run during a bats test.
 if [[ $RUNNING_BATS_TEST != 1 ]]; then
