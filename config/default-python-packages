@@ -1,4 +1,4 @@
-ansible
+ansible-core>=2.18,<2.19
 ansible-lint
 antsibull-changelog
 aws-consoler
