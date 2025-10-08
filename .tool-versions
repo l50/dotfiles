@@ -1,7 +1,7 @@
 golang 1.25.1
-python 3.13.7
+python 3.14.0
 ruby 3.4.7
 helm 3.19.0
 kubectl 1.34.1
 packer 1.14.1
-awscli 2.31.8
+awscli 2.31.10
