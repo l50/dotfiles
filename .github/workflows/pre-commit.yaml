@@ -22,9 +22,9 @@ concurrency:
 
 env:
   BATS_VERSION: 1.9.0
-  GO_VERSION: 1.23.1
-  PYTHON_VERSION: 3.12.6
-  TASK_VERSION: 3.38.0
+  GO_VERSION: 1.25.2
+  PYTHON_VERSION: 3.14.0
+  TASK_VERSION: 3.45.4
 
 jobs:
   pre-commit:
