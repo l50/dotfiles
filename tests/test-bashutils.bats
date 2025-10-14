@@ -57,34 +57,36 @@ teardown() {
 }
 
 @test "check_disk_space_with_available_space" {
-	# Mock df command to return a fixed amount of space (10GB)
-	# shellcheck disable=SC2317
-	df() {
-		# shellcheck disable=SC2317
-		echo "Filesystem     1K-blocks      Used Available Use% Mounted on"
-		# shellcheck disable=SC2317
-		echo "/dev/sda1      41943040  31457280  10485760  75% /"
-	}
-	export -f df
+        # Mock df command to return a fixed amount of space (10GB)
+        # shellcheck disable=SC2329
+        # shellcheck disable=SC2317
+        df() {
+                # shellcheck disable=SC2317
+                echo "Filesystem     1K-blocks      Used Available Use% Mounted on"
+                # shellcheck disable=SC2317
+                echo "/dev/sda1      41943040  31457280  10485760  75% /"
+        }
+        export -f df
 
-	run check_disk_space "1000" # Request 1GB
-	assert_success
+        run check_disk_space "1000" # Request 1GB
+        assert_success
 }
 
 @test "check_disk_space_with_insufficient_space" {
-	# Mock df command to return a small amount of space (100MB)
-	# shellcheck disable=SC2317
-	df() {
-		# shellcheck disable=SC2317
-		echo "Filesystem     1K-blocks      Used Available Use% Mounted on"
-		# shellcheck disable=SC2317
-		echo "/dev/sda1      41943040  41841664    102400  98% /"
-	}
-	export -f df
+        # Mock df command to return a small amount of space (100MB)
+        # shellcheck disable=SC2329
+        # shellcheck disable=SC2317
+        df() {
+                # shellcheck disable=SC2317
+                echo "Filesystem     1K-blocks      Used Available Use% Mounted on"
+                # shellcheck disable=SC2317
+                echo "/dev/sda1      41943040  41841664    102400  98% /"
+        }
+        export -f df
 
-	run check_disk_space "1000" # Request 1GB
-	assert_failure
-	assert_output "Error: Not enough disk space. Required: 1000MB, Available: 100MB"
+        run check_disk_space "1000" # Request 1GB
+        assert_failure
+        assert_output "Error: Not enough disk space. Required: 1000MB, Available: 100MB"
 }
 
 @test "getJSONKeys_function_returns_expected_keys" {
