@@ -896,3 +896,71 @@ alias ipaddr="ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo 
 
 # Create Claude friendly variables to avoid copy-paste hell
 alias claudyvars="sed 's/{{\./{./g; s/}}/}/g'"
+
+# Fetches the definition of a word from the Free Dictionary API.
+#
+# Usage:
+#   dictionary [word]
+#
+# Parameters:
+#   word: The word to look up.
+#
+# Output:
+#   Prints the word, its phonetic pronunciation, part of speech, and definitions.
+#   If the word is not found, prints an error message.
+#
+# Example(s):
+#   dictionary hello
+#   dictionary serendipity
+#
+# Note:
+#   Requires curl and jq to be installed.
+dictionary() {
+    local word="$1"
+
+    if [[ -z "$word" ]]; then
+        echo "Usage: dictionary [word]"
+        return 1
+    fi
+
+    # Check if curl is installed
+    if ! command -v curl > /dev/null 2>&1; then
+        echo "Error: curl is not installed. Please install curl and try again."
+        return 1
+    fi
+
+    # Check if jq is installed
+    if ! command -v jq > /dev/null 2>&1; then
+        echo "Error: jq is not installed. Please install jq and try again."
+        return 1
+    fi
+
+    local api_url="https://api.dictionaryapi.dev/api/v2/entries/en/${word}"
+    local response
+
+    response=$(curl -s "$api_url")
+
+    # Check if the word was found
+    if echo "$response" | jq -e 'if type == "object" then has("title") else false end' > /dev/null 2>&1; then
+        echo "Word not found: $word"
+        return 1
+    fi
+
+    # Parse and display the results
+    echo "$response" | jq -r '
+        .[] |
+        "Word: \(.word)",
+        (if .phonetic then "Phonetic: \(.phonetic)" else empty end),
+        "",
+        (.meanings[] |
+            "Part of Speech: \(.partOfSpeech)",
+            "",
+            (.definitions[] |
+                "  Definition: \(.definition)",
+                (if .example then "  Example: \(.example)" else empty end),
+                (if .synonyms and (.synonyms | length > 0) then "  Synonyms: \(.synonyms | join(", "))" else empty end),
+                ""
+            )
+        )
+    '
+}

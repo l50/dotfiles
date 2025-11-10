@@ -291,3 +291,71 @@ EOF
 	popd || return 1
 	rm -rf "$temp_working_dir"
 }
+
+@test "dictionary_with_valid_word" {
+	# Test with a simple word that should exist
+	run dictionary "test"
+
+	assert_success
+	assert_output --partial "Word: test"
+	assert_output --partial "Definition:"
+}
+
+@test "dictionary_with_no_arguments" {
+	run dictionary
+
+	assert_failure
+	assert_output "Usage: dictionary [word]"
+}
+
+@test "dictionary_with_nonexistent_word" {
+	# Use a random string that should not exist
+	run dictionary "asdfqwerzxcv"
+
+	assert_failure
+	assert_output "Word not found: asdfqwerzxcv"
+}
+
+@test "dictionary_without_curl" {
+	# Mock command to simulate curl not being installed
+	# shellcheck disable=SC2317
+	command() {
+		# shellcheck disable=SC2317
+		if [[ "$2" == "curl" ]]; then
+			# shellcheck disable=SC2317
+			return 1
+		fi
+		# shellcheck disable=SC2317
+		builtin command "$@"
+	}
+	export -f command
+
+	run dictionary "hello"
+
+	assert_failure
+	assert_output "Error: curl is not installed. Please install curl and try again."
+
+	unset -f command
+}
+
+@test "dictionary_without_jq" {
+	# Mock command to simulate jq not being installed
+	# shellcheck disable=SC2317
+	command() {
+		# shellcheck disable=SC2317
+		if [[ "$2" == "jq" ]]; then
+			# shellcheck disable=SC2317
+			return 1
+		fi
+		# shellcheck disable=SC2317
+		builtin command "$@"
+	}
+	export -f command
+
+	run dictionary "hello"
+
+	assert_failure
+	assert_output "Error: jq is not installed. Please install jq and try again."
+
+	unset -f command
+}
