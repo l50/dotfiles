@@ -39,6 +39,7 @@ declare -a files=(
     'config'
     'containers.sh'
     'docker.sh'
+    'git.sh'
     'go.sh'
     'k8s.sh'
     'python.sh'

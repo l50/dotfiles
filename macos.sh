@@ -167,6 +167,22 @@ alias ls='ls -lartGF'
 # Insecure Chrome for security testing
 alias chromeInsecure="'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --disable-xss-auditor --enable-devtools-experiments --disable-features=enable-automatic-password-saving --disable-web-security"
 
+# chrome_devtools() activates Google Chrome and opens the Developer Tools
+# using the Command + Option + I keyboard shortcut.
+#
+# Usage:
+#   chrome_devtools
+#
+# Output:
+#   Opens Chrome Developer Tools in the active Chrome window.
+#
+# Example:
+#   chrome_devtools
+chrome_devtools() {
+    osascript -e 'tell application "Google Chrome" to activate' \
+        && osascript -e 'tell application "System Events" to keystroke "i" using {command down, option down}'
+}
+
 alias firefox="open -a /Applications/Firefox.app"
 
 # Use GNU grep
