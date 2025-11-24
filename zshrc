@@ -70,3 +70,9 @@ fpath+=${ZSH_CUSTOM:-${ZSH:-$HOME/.oh-my-zsh}/custom}/plugins/zsh-completions/sr
 
 # Remove the % from the end of terminal output
 export PROMPT_EOL_MARK=''
+
+# Key bindings for word jumping with option+arrow keys
+bindkey "\e[1;3C" forward-word
+bindkey "\e[1;3D" backward-word
+bindkey "\e[1;5C" forward-word
+bindkey "\e[1;5D" backward-word
