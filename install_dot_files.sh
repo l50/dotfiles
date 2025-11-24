@@ -233,8 +233,14 @@ fi
 mkdir -p "${DOT_DIR}"
 
 # Copy base configuration files
-cp ./zshrc "${HOME}/.zshrc"
-cp ./tmux.conf "${HOME}/.tmux.conf"
+# Only copy if source and destination are different
+if [[ ! -f "${HOME}/.zshrc" ]] || ! cmp -s ./zshrc "${HOME}/.zshrc"; then
+    cp ./zshrc "${HOME}/.zshrc"
+fi
+
+if [[ ! -f "${HOME}/.tmux.conf" ]] || ! cmp -s ./tmux.conf "${HOME}/.tmux.conf"; then
+    cp ./tmux.conf "${HOME}/.tmux.conf"
+fi
 
 # Copy dotfiles
 for file in "${files[@]}"; do

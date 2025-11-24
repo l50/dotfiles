@@ -13,7 +13,7 @@ repos:
       - id: check-shebang-scripts-are-executable
 
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.8
+    rev: v1.7.9
     hooks:
       - id: actionlint
 
@@ -39,13 +39,13 @@ repos:
       - id: shellcheck
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.45.0
+    rev: v0.46.0
     hooks:
       - id: markdownlint
         args: ["--fix", "--config", ".hooks/linters/markdownlint.json"]
 
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.8
+    rev: v1.7.9
     hooks:
       - id: actionlint
 
