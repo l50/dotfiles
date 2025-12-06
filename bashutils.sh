@@ -17,8 +17,8 @@ set -o pipefail
 #   process_terminator "chrome"
 #   process_terminator "python"
 process_terminator() {
-    if pgrep -i "$1" > /dev/null; then
-        pkill -i "$1"
+    if pgrep -fi "$1" > /dev/null; then
+        pkill -fi "$1"
         echo "Process $1 has been terminated."
     else
         echo "No processes found with the name: $1"
