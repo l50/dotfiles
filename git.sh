@@ -34,5 +34,5 @@ check_fabric() {
 #   Requires git alias 'ds' and the fabric tool to be installed.
 fabric_commit() {
     check_fabric || return 1
-    git ds | fabric --pattern commit | git commit -F - && git push
+    git ds | fabric --pattern commit | ~/.config/fabric/patterns/commit/filter.sh | git commit -F - && git push
 }
