@@ -139,7 +139,10 @@ alias pgstop='pg_ctl -D /usr/local/var/postgres stop -s -m fast'
 
 alias openPorts='sudo lsof -iTCP -sTCP:LISTEN -n -P'
 
-# Enable aliases to be sudo’ed
+# Show accurate APFS disk space (container-level, not per-volume)
+alias diskspace="diskutil info / | grep -E 'Container Total Space|Container Free Space'"
+
+# Enable aliases to be sudo'ed
 alias sudo='sudo '
 
 # Lock the screen (when going AFK)
