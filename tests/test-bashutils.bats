@@ -318,7 +318,7 @@ EOF
 
 @test "dictionary_without_curl" {
 	# Mock command to simulate curl not being installed
-	# shellcheck disable=SC2317
+	# shellcheck disable=SC2317,SC2329
 	command() {
 		# shellcheck disable=SC2317
 		if [[ "$2" == "curl" ]]; then
@@ -340,7 +340,7 @@ EOF
 
 @test "dictionary_without_jq" {
 	# Mock command to simulate jq not being installed
-	# shellcheck disable=SC2317
+	# shellcheck disable=SC2317,SC2329
 	command() {
 		# shellcheck disable=SC2317
 		if [[ "$2" == "jq" ]]; then
