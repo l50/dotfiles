@@ -87,26 +87,45 @@ join_wifi() {
 }
 
 # largest_files() finds the largest files in the current directory
-# and its subdirectories.
+# and its subdirectories, sorted by size (largest first).
 #
 # Usage:
-#   largest_files [directory]
+#   largest_files [directory] [count] [min_size]
+#
+# Arguments:
+#   directory  - Directory to search (default: current directory)
+#   count      - Number of results to show (default: 20)
+#   min_size   - Minimum file size in MB (default: 10)
 #
 # Output:
-#   The largest files in the current directory and its subdirectories.
+#   The largest files sorted by size with human-readable sizes.
 #
 # Example(s):
-#   largest_files
-#   largest_files /Users/username
-#
-# Resource:
-#   https://www.fonepaw.com/eraser/find-large-files-mac.html
+#   largest_files                    # Top 20 files >= 10MB in current dir
+#   largest_files /Users/username    # Top 20 files >= 10MB in specified dir
+#   largest_files . 50               # Top 50 files >= 10MB
+#   largest_files . 50 100           # Top 50 files >= 100MB
 largest_files() {
-    if [ -z "$1" ]; then
-        find . -type f -size +100000k -exec sh -c 'ls -lh "$1" | awk "{ print \$9 \": \" \$5 }"' sh {} \;
-    else
-        find "$1" -type f -size +100000k -exec sh -c 'ls -lh "$1" | awk "{ print \$9 \": \" \$5 }"' sh {} \;
-    fi
+    local dir="${1:-.}"
+    local count="${2:-20}"
+    local min_size="${3:-10}"
+
+    # Use find with -ls to get size info, sort numerically by size (7th column),
+    # then format output with awk. Much faster than spawning shells per file.
+    find "$dir" -type f -size +"${min_size}M" -ls 2> /dev/null \
+        | sort -k7 -rn \
+        | head -n "$count" \
+        | awk '{
+            size = $7;
+            # Convert bytes to human-readable format
+            if (size >= 1073741824) printf "%.1fG", size/1073741824;
+            else if (size >= 1048576) printf "%.1fM", size/1048576;
+            else if (size >= 1024) printf "%.1fK", size/1024;
+            else printf "%dB", size;
+            # Print the file path (everything from column 11 onwards)
+            printf " ";
+            for (i=11; i<=NF; i++) printf "%s%s", $i, (i<NF ? " " : "\n");
+        }'
 }
 
 # gw() gets the default gateway.

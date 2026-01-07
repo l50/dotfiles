@@ -42,8 +42,16 @@ teardown() {
 	assert_success
 
 	# Check if output contains the expected filename and size format
-	[[ "$output" == *"large_file.dat: "* ]] || {
-		echo "Expected output to contain 'large_file.dat: ' followed by size"
+	# Format is: SIZE FILEPATH (e.g., "200.0M /path/to/large_file.dat")
+	[[ "$output" == *"large_file.dat"* ]] || {
+		echo "Expected output to contain 'large_file.dat'"
+		echo "Actual output: $output"
+		return 1
+	}
+
+	# Verify the output contains a size in megabytes
+	[[ "$output" == *"M "* ]] || {
+		echo "Expected output to contain size in MB format"
 		echo "Actual output: $output"
 		return 1
 	}
