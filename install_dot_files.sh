@@ -205,9 +205,18 @@ setup_ansible() {
         fi
     fi
 
+    # Create dynamic inventory with actual hostname
+    local hostname
+    hostname=$(hostname -s)
+    local inventory_file="${ANSIBLE_DIR}/playbooks/workstation/inventory"
+    cat > "${inventory_file}" << EOF
+[workstation]
+${hostname} ansible_connection=local
+EOF
+
     # Run the workstation playbook
     ansible-playbook "${ANSIBLE_DIR}/playbooks/workstation/workstation.yml" \
-        -i "${ANSIBLE_DIR}/playbooks/workstation/molecule/default/inventory"
+        -i "${inventory_file}"
 }
 
 ### MAIN ###
