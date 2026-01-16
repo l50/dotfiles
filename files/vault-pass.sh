@@ -1,8 +1,9 @@
 #!/bin/bash
 # Retrieves Ansible Vault password from 1Password
 
-# Skip in CI environments or if op is not available
+# Return dummy password in CI environments or if op is not available
 if [ -n "$CI" ] || ! command -v op &> /dev/null; then
+    echo "dummy-vault-password-for-ci"
     exit 0
 fi
 
