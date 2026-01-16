@@ -37,6 +37,89 @@ fabric_commit() {
     git ds | fabric --pattern commit | ~/.config/fabric/patterns/commit/filter.sh | git commit --cleanup=verbatim -F - && git push
 }
 
+# fabric_pr() generates a PR title/body using fabric AI and opens a PR with gh.
+#
+# Usage:
+#   fabric_pr [gh pr create args...]
+#
+# Output:
+#   Creates a GitHub PR with an AI-generated title/body from branch diff against main.
+#
+# Example:
+#   fabric_pr --draft
+#
+# Note:
+#   Requires the fabric tool and a 'pr' fabric pattern.
+fabric_pr() {
+    check_fabric || return 1
+    if ! command -v gh &> /dev/null; then
+        echo "error: gh is not installed"
+        return 1
+    fi
+
+    local pr_text
+    local title
+    local body
+    local branch
+    local repo
+
+    branch=$(git branch --show-current)
+    repo=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2> /dev/null)
+
+    echo "⏺ Generating PR with Fabric AI..."
+    echo
+
+    pr_text=$(git diff main | fabric --pattern pr | ~/.config/fabric/patterns/pr/filter.sh)
+    if [ -z "$pr_text" ]; then
+        echo "error: PR text is empty"
+        return 1
+    fi
+
+    title=$(printf "%s
+" "$pr_text" | head -n 1)
+    body=$(printf "%s
+" "$pr_text" | tail -n +2)
+
+    if [ -z "$title" ]; then
+        echo "error: PR title is empty"
+        return 1
+    fi
+
+    echo "  PR Details:"
+    echo "  - Title: $title"
+    echo "  - Branch: $branch"
+    if [ -n "$repo" ]; then
+        echo "  - Repo: $repo"
+    fi
+    echo
+
+    if git push -u origin HEAD; then
+        echo "✓ Pushed branch to remote"
+        echo
+        local pr_url
+        if pr_url=$(gh pr create --title "$title" --body "$body" "$@"); then
+            if [ -n "$pr_url" ]; then
+                echo "⏺ Successfully created pull request!"
+                echo
+                echo "  Pull Request:"
+                echo "  - URL: $pr_url"
+                echo "  - Title: $title"
+                echo "  - Branch: $branch"
+                echo
+            else
+                echo "error: PR URL is empty"
+                return 1
+            fi
+        else
+            echo "error: Failed to create PR"
+            return 1
+        fi
+    else
+        echo "error: Failed to push branch"
+        return 1
+    fi
+}
+
 # gh_cancel() cancels a GitHub workflow run by ID, or the most recent run.
 #
 # Usage:
