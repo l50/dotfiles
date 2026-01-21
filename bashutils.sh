@@ -691,7 +691,17 @@ process_files_from_config() {
     fi
 
     if [[ $(uname) == 'Darwin' ]]; then
-        process_files "." "${args[@]}" | nocomment | pbcopy
+        local tmpfile
+        tmpfile=$(mktemp)
+        process_files "." "${args[@]}" | nocomment > "$tmpfile"
+        if command -v pbcopy > /dev/null 2>&1; then
+            if ! pbcopy < "$tmpfile"; then
+                cat "$tmpfile"
+            fi
+        else
+            cat "$tmpfile"
+        fi
+        rm -f "$tmpfile"
     else
         if command -v xclip > /dev/null 2>&1; then
             process_files "." "${args[@]}" | nocomment | xclip -selection clipboard
@@ -939,6 +949,17 @@ dictionary() {
     local response
 
     response=$(curl -s "$api_url")
+
+    if [[ -z "$response" ]] || ! echo "$response" | jq -e . > /dev/null 2>&1; then
+        local dictionary_file="/usr/share/dict/words"
+        if [[ -r "$dictionary_file" ]] && grep -i -qx "$word" "$dictionary_file"; then
+            echo "Word: $word"
+            echo "Definition: (offline)"
+            return 0
+        fi
+        echo "Word not found: $word"
+        return 1
+    fi
 
     # Check if the word was found
     if echo "$response" | jq -e 'if type == "object" then has("title") else false end' > /dev/null 2>&1; then

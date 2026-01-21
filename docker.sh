@@ -64,6 +64,16 @@ alias laverna="docker run --rm -d -p 5000:80 --name laverna elliotjreed/laverna"
 alias postgres="docker run --rm -d --name postgres postgres"
 alias ghost="docker run --rm -d -p 2368:2368 --name ghost ghost"
 
+# Removes unused Docker resources (containers, images, networks, volumes, cache).
+#
+# Usage:
+#   cleanseDocker
+#
+# Output:
+#   Prints cleanup progress and runs Docker prune commands.
+#
+# Example(s):
+#   cleanseDocker
 cleanseDocker() {
     echo "🧹 Starting Docker cleanup..."
 

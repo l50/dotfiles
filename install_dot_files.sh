@@ -45,6 +45,7 @@ declare -a files=(
     'python.sh'
     'macos.sh'
     'terraform.sh'
+    'ssh-agent.sh'
     'cloud'
 )
 
@@ -116,6 +117,16 @@ setup_brewfile() {
     wget -q "${brewfile_dl}" -O "${brewfile_path}/Brewfile"
 }
 
+# Installs oh-my-zsh if it isn't already installed.
+#
+# Usage:
+#   install_oh_my_zsh
+#
+# Output:
+#   Prints status messages and installs oh-my-zsh if missing.
+#
+# Example(s):
+#   install_oh_my_zsh
 install_oh_my_zsh() {
     if [ ! -d "${HOME}/.oh-my-zsh" ]; then
         echo -e "${BLUE}Installing oh-my-zsh...${RESET}"
@@ -123,6 +134,16 @@ install_oh_my_zsh() {
     fi
 }
 
+# Creates the local Ansible configuration and supporting directories.
+#
+# Usage:
+#   setup_ansible_config
+#
+# Output:
+#   Creates Ansible directories and writes ~/.ansible.cfg with status output.
+#
+# Example(s):
+#   setup_ansible_config
 setup_ansible_config() {
     echo -e "${BLUE}Setting up Ansible configuration...${RESET}"
 
@@ -178,6 +199,16 @@ setup_ansible_config() {
     fi
 }
 
+# Sets up the Ansible workstation environment and runs the playbook.
+#
+# Usage:
+#   setup_ansible
+#
+# Output:
+#   Clones the workstation repo, installs collections, and runs the playbook.
+#
+# Example(s):
+#   setup_ansible
 setup_ansible() {
     echo "Setting up Ansible environment..."
 

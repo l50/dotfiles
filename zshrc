@@ -35,6 +35,10 @@ if [[ -d "$HOME/Library/Android/sdk/platform-tools" ]]; then
     export PATH="$PATH:$HOME/Library/Android/sdk/platform-tools"
 fi
 
+# Load SSH agent setup early
+# shellcheck source=/dev/null
+source "${HOME}/.dotfiles/ssh-agent.sh"
+
 # Source all dotfiles
 source_dotfiles "${HOME}/.dotfiles"
 

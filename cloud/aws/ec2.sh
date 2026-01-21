@@ -73,6 +73,19 @@ delete_instance_profile() {
     fi
 }
 
+# Deletes instance profiles provided on stdin.
+#
+# Usage:
+#   list_instance_profiles | delete_instance_profile_from_input
+#
+# Input:
+#   Instance profile names from stdin, one per line.
+#
+# Output:
+#   Removes roles and deletes each instance profile, printing actions taken.
+#
+# Example(s):
+#   list_instance_profiles | delete_instance_profile_from_input
 delete_instance_profile_from_input() {
     while IFS= read -r instance_profile_name; do
         # List the roles in the instance profile
