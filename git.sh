@@ -75,10 +75,11 @@ fabric_pr() {
         return 1
     fi
 
-    title=$(printf "%s
-" "$pr_text" | head -n 1)
-    body=$(printf "%s
-" "$pr_text" | tail -n +2)
+    # Trim leading blank lines before extracting title/body
+    pr_text=$(printf "%s\n" "$pr_text" | sed -n '/[^[:space:]]/,$p')
+
+    title=$(printf "%s\n" "$pr_text" | head -n 1)
+    body=$(printf "%s\n" "$pr_text" | tail -n +2)
 
     if [ -z "$title" ]; then
         echo "error: PR title is empty"
