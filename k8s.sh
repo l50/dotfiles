@@ -30,6 +30,7 @@ alias kgn='kg nodes'
 alias kgns='kg namespaces'
 alias kgd='kg deployments'
 alias kgi='kg ingress'
+alias kgpc="kg pods -o custom-columns='NAMESPACE:.metadata.namespace,POD:.metadata.name,CONTAINERS:.spec.containers[*].name'"
 
 # Advanced Resource Watching and Listing Aliases
 # These aliases add specific options to the get command for more detailed or dynamic listings.
