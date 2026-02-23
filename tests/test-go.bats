@@ -42,45 +42,6 @@ teardown() {
 	rm -rf "$TEST_DIR"
 }
 
-@test "pull_repos updates repositories successfully" {
-	# Setup test repository
-	mkdir -p "${TEST_TEMP_DIR}/testrepo_origin/.git/info"
-
-	# Initialize test repository
-	pushd "${TEST_TEMP_DIR}/testrepo_origin"
-	git init
-	touch .git/info/exclude
-	echo "initial content" >testfile
-	git add testfile
-	git commit -m "Initial commit"
-	popd
-
-	# Clone test repository twice
-	git clone "${TEST_TEMP_DIR}/testrepo_origin" "${TEST_TEMP_DIR}/testrepo_clone1"
-	git clone "${TEST_TEMP_DIR}/testrepo_origin" "${TEST_TEMP_DIR}/testrepo_clone2"
-
-	# Make changes in first clone
-	pushd "${TEST_TEMP_DIR}/testrepo_clone1"
-	git checkout -b testbranch
-	echo "new content" >>testfile
-	git add testfile
-	git commit -m "New commit"
-	git push origin testbranch
-	popd
-
-	# Test pull_repos on second clone
-	pushd "${TEST_TEMP_DIR}/testrepo_clone2"
-	git fetch
-	git checkout testbranch
-
-	run pull_repos "$PWD"
-
-	assert_success
-	assert_output --partial "All repositories successfully updated."
-	assert [ "$(git log -1 --pretty=%B)" = "New commit" ]
-	popd
-}
-
 @test "get_exported_go_funcs_function" {
 	run get_exported_go_funcs "$PWD"
 	[ "$status" -eq 0 ]

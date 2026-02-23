@@ -1,5 +1,25 @@
 #!/usr/bin/env bash
 
+# pull_repos updates all git repositories found in the given directory by pulling
+# changes from the upstream branch using fast-forward only.
+#
+# Usage:
+#   pull_repos [dir]
+#
+# Example(s):
+#   pull_repos
+#   pull_repos .
+#   pull_repos ~/projects
+pull_repos() {
+    if ! command -v fd &> /dev/null; then
+        echo "error: fd is not installed"
+        echo "install it from: https://github.com/sharkdp/fd"
+        return 1
+    fi
+    fd -H -t d '^\.git$' "${1:-.}" -x git -C '{//}' pull --ff-only
+    echo "All repositories successfully updated."
+}
+
 # check_fabric() verifies that the fabric tool is installed and available.
 #
 # Usage:

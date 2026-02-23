@@ -330,6 +330,71 @@ teardown() {
 	assert_output --partial "Triggering workflow '$TEST_WORKFLOW'"
 }
 
+# pull_repos tests
+
+@test "pull_repos fails when fd is not installed" {
+	# Mock command to simulate fd not being installed
+	# shellcheck disable=SC2317,SC2329
+	command() {
+		# shellcheck disable=SC2317
+		if [[ "$2" == "fd" ]]; then
+			return 1
+		fi
+		# shellcheck disable=SC2317
+		builtin command "$@"
+	}
+	export -f command
+
+	run pull_repos
+
+	assert_failure
+	assert_output --partial "error: fd is not installed"
+	assert_output --partial "https://github.com/sharkdp/fd"
+}
+
+@test "pull_repos updates repositories successfully" {
+	# Set up git identity for this test
+	git config --global user.email "action@github.com"
+	git config --global user.name "GitHub Action"
+
+	# Setup test repository
+	mkdir -p "$BATS_TEST_TMPDIR/testrepo_origin/.git/info"
+
+	# Initialize test repository
+	pushd "$BATS_TEST_TMPDIR/testrepo_origin" >/dev/null
+	git init
+	touch .git/info/exclude
+	echo "initial content" >testfile
+	git add testfile
+	git commit -m "Initial commit"
+	popd >/dev/null
+
+	# Clone test repository twice
+	git clone "$BATS_TEST_TMPDIR/testrepo_origin" "$BATS_TEST_TMPDIR/testrepo_clone1"
+	git clone "$BATS_TEST_TMPDIR/testrepo_origin" "$BATS_TEST_TMPDIR/testrepo_clone2"
+
+	# Make changes in first clone
+	pushd "$BATS_TEST_TMPDIR/testrepo_clone1" >/dev/null
+	git checkout -b testbranch
+	echo "new content" >>testfile
+	git add testfile
+	git commit -m "New commit"
+	git push origin testbranch
+	popd >/dev/null
+
+	# Test pull_repos on second clone
+	pushd "$BATS_TEST_TMPDIR/testrepo_clone2" >/dev/null
+	git fetch
+	git checkout testbranch
+
+	run pull_repos "$PWD"
+
+	assert_success
+	assert_output --partial "All repositories successfully updated."
+	assert [ "$(git log -1 --pretty=%B)" = "New commit" ]
+	popd >/dev/null
+}
+
 # check_fabric tests
 
 @test "check_fabric succeeds when fabric is installed" {

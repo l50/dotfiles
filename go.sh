@@ -4,34 +4,6 @@ FILES="${HOME}/.dotfiles/files"
 export GOSUMDB=sum.golang.org
 export GOPROXY=https://proxy.golang.org,direct
 
-# pull_repos updates all git repositories found in the given directory by pulling changes from the upstream branch.
-# It looks for repositories by finding directories with a ".git" subdirectory.
-# If a repository is not on the default branch, it will switch to the default branch before pulling changes.
-#
-# Usage:
-#   pull_repos [dir]
-#
-# Example(s):
-#   pull_repos
-#   pull_repos .
-#   pull_repos $PWD
-pull_repos() {
-    if [[ $# -eq 0 ]]; then
-        filepath="."
-
-        goeval -i git=github.com/l50/goutils/v2/git@latest \
-            'fmt.Println(git.PullRepos("'"${PWD}"'"))'
-    else
-        filepath="$1"
-        pushd "$filepath" || return 1
-        goeval -i git=github.com/l50/goutils/v2/git@latest \
-            'fmt.Println(git.PullRepos("'"${PWD}"'"))'
-        popd || return 1
-    fi
-
-    echo "All repositories successfully updated."
-}
-
 # get_exported_go_funcs prints a list of all exported functions in the current Go project.
 #
 # This function uses the Go eval tool to execute a Go one-liner that imports the
