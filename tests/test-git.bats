@@ -387,6 +387,22 @@ teardown() {
 	git fetch
 	git checkout testbranch
 
+	# Mock fd to simulate finding .git directories and running git pull
+	# fd -H -t d '^\.git$' DIR -x git -C '{//}' pull --ff-only
+	# shellcheck disable=SC2317,SC2329
+	fd() {
+		# shellcheck disable=SC2317
+		local search_dir
+		# Parse args: -H -t d '^\.git$' DIR -x git -C '{//}' pull --ff-only
+		# The directory is the 4th argument (after -H -t d pattern)
+		# shellcheck disable=SC2317
+		search_dir="$4"
+		# Run git pull in the search directory
+		# shellcheck disable=SC2317
+		git -C "$search_dir" pull --ff-only
+	}
+	export -f fd
+
 	run pull_repos "$PWD"
 
 	assert_success
