@@ -30,6 +30,8 @@ teardown_file() {
 }
 
 setup() {
+	# Use isolated git config to avoid polluting user's ~/.gitconfig
+	export GIT_CONFIG_GLOBAL="$BATS_TEST_TMPDIR/.gitconfig"
 	git config --global user.email "action@github.com"
 	git config --global user.name "GitHub Action"
 	# Create temp test directory for each test

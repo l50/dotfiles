@@ -353,7 +353,8 @@ teardown() {
 }
 
 @test "pull_repos updates repositories successfully" {
-	# Set up git identity for this test
+	# Use isolated git config to avoid polluting user's ~/.gitconfig
+	export GIT_CONFIG_GLOBAL="$BATS_TEST_TMPDIR/.gitconfig"
 	git config --global user.email "action@github.com"
 	git config --global user.name "GitHub Action"
 
