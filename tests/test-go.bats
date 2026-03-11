@@ -20,9 +20,6 @@ author: test <test@example.com>
 license: MIT
 useViper: true
 EOF
-
-	# Also create mage_completion.sh to avoid any issues
-	touch "${FILES}/mage_completion.sh"
 }
 
 teardown_file() {
