@@ -145,63 +145,67 @@ alias wifidown='networksetup -setairportpower en0 off'
 alias wifiup='networksetup -setairportpower en0 on'
 
 # Bluetooth utils (requires: brew install blueutil)
-alias bton='blueutil --power 1'
-alias btoff='blueutil --power 0'
-alias btpaired='blueutil --paired'
-alias btconnected='blueutil --connected'
-alias btdiscoverable='blueutil --discoverable 1'
+if ! command -v blueutil &> /dev/null; then
+    echo "blueutil not found. Install with: brew install blueutil"
+else
+    alias bton='blueutil --power 1'
+    alias btoff='blueutil --power 0'
+    alias btpaired='blueutil --paired'
+    alias btconnected='blueutil --connected'
+    alias btdiscoverable='blueutil --discoverable 1'
 
-# btconnect connects to a Bluetooth device by MAC address.
-#
-# Usage:
-#   btconnect <MAC>
-#
-# Arguments:
-#   MAC - Device MAC address (format: XX-XX-XX-XX-XX-XX or XX:XX:XX:XX:XX:XX)
-#
-# Example:
-#   btconnect 00-11-22-33-44-55
-btconnect() {
-    if [[ -z "$1" ]]; then
-        echo "Usage: btconnect <MAC>"
-        echo "Example: btconnect 00-11-22-33-44-55"
-        return 1
-    fi
-    blueutil --connect "$1"
-}
+    # btconnect connects to a Bluetooth device by MAC address.
+    #
+    # Usage:
+    #   btconnect <MAC>
+    #
+    # Arguments:
+    #   MAC - Device MAC address (format: XX-XX-XX-XX-XX-XX or XX:XX:XX:XX:XX:XX)
+    #
+    # Example:
+    #   btconnect 00-11-22-33-44-55
+    btconnect() {
+        if [[ -z "$1" ]]; then
+            echo "Usage: btconnect <MAC>"
+            echo "Example: btconnect 00-11-22-33-44-55"
+            return 1
+        fi
+        blueutil --connect "$1"
+    }
 
-# btdisconnect disconnects a Bluetooth device by MAC address.
-#
-# Usage:
-#   btdisconnect <MAC>
-#
-# Arguments:
-#   MAC - Device MAC address (format: XX-XX-XX-XX-XX-XX or XX:XX:XX:XX:XX:XX)
-#
-# Example:
-#   btdisconnect 00-11-22-33-44-55
-btdisconnect() {
-    if [[ -z "$1" ]]; then
-        echo "Usage: btdisconnect <MAC>"
-        echo "Example: btdisconnect 00-11-22-33-44-55"
-        return 1
-    fi
-    blueutil --disconnect "$1"
-}
+    # btdisconnect disconnects a Bluetooth device by MAC address.
+    #
+    # Usage:
+    #   btdisconnect <MAC>
+    #
+    # Arguments:
+    #   MAC - Device MAC address (format: XX-XX-XX-XX-XX-XX or XX:XX:XX:XX:XX:XX)
+    #
+    # Example:
+    #   btdisconnect 00-11-22-33-44-55
+    btdisconnect() {
+        if [[ -z "$1" ]]; then
+            echo "Usage: btdisconnect <MAC>"
+            echo "Example: btdisconnect 00-11-22-33-44-55"
+            return 1
+        fi
+        blueutil --disconnect "$1"
+    }
 
-# btinfo displays the current Bluetooth status.
-#
-# Usage:
-#   btinfo
-#
-# Output:
-#   Power state, discoverability, and connected devices.
-btinfo() {
-    echo "Power: $(blueutil --power)"
-    echo "Discoverable: $(blueutil --discoverable)"
-    echo "Connected devices:"
-    blueutil --connected
-}
+    # btinfo displays the current Bluetooth status.
+    #
+    # Usage:
+    #   btinfo
+    #
+    # Output:
+    #   Power state, discoverability, and connected devices.
+    btinfo() {
+        echo "Power: $(blueutil --power)"
+        echo "Discoverable: $(blueutil --discoverable)"
+        echo "Connected devices:"
+        blueutil --connected
+    }
+fi
 
 alias remountSD='sudo kextunload -b com.apple.driver.AppleSDXC; sudo kextload -b com.apple.driver.AppleSDXC'
 alias leaving="guard-my-macbook-when-i-am-away"
