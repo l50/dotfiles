@@ -17,25 +17,6 @@ git clone --recurse-submodules https://github.com/l50/dotfiles.git
 
 ## Dependencies
 
-- [Install asdf](https://asdf-vm.com/):
-
-  ```bash
-  git clone https://github.com/asdf-vm/asdf.git ~/.asdf
-  ```
-
-- Install and use asdf plugins to manage go and python for this project:
-
-  ```bash
-  source .asdf
-  ```
-
-  Alternatively, you can pick and choose which plugins to install:
-
-  ```bash
-  # Employ asdf for this project's python:
-  source .asdf python
-  ```
-
 - [Install pre-commit](https://pre-commit.com/):
 
   ```bash

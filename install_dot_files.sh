@@ -309,7 +309,7 @@ cp -r "${INSTALL_DIR}/files" "${DOT_DIR}/files"
 cp "${DOT_DIR}/files/.gitconfig" "${HOME}/.gitconfig"
 echo -e "${YELLOW}Remember to configure ${HOME}/.gitconfig.userparams${RESET}"
 
-# Copy asdf default package files
+# Copy mise default package files
 cp "${DOT_DIR}/config/default-golang-pkgs" "${HOME}/.default-golang-pkgs"
 cp "${DOT_DIR}/config/default-python-packages" "${HOME}/.default-python-packages"
 cp "${DOT_DIR}/config/default-ruby-gems" "${HOME}/.default-gems"

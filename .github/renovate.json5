@@ -82,15 +82,6 @@
         "^(?<depName>[^ ]+) (?<currentValue>[^ ]+)$"
       ],
       "datasourceTemplate": "rubygems"
-    },
-    {
-      "customType": "regex",
-      "fileMatch": ["^files/setup_asdf\\.sh$"],
-      "matchStrings": [
-        "ASDF_VERSION=\"(?<currentValue>[0-9.]+)\""
-      ],
-      "depNameTemplate": "asdf-vm/asdf",
-      "datasourceTemplate": "github-releases"
     }
   ],
   "ignorePaths": [
