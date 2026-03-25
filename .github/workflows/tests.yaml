@@ -108,7 +108,7 @@ jobs:
           go install github.com/dolmen-go/goeval@latest
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
 
       - name: Install dependencies
         run: |
