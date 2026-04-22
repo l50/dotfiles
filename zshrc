@@ -75,6 +75,11 @@ fpath+=${ZSH_CUSTOM:-${ZSH:-$HOME/.oh-my-zsh}/custom}/plugins/zsh-completions/sr
 # Remove the % from the end of terminal output
 export PROMPT_EOL_MARK=''
 
+# direnv - auto-load .envrc per directory
+if command -v direnv &> /dev/null; then
+  eval "$(direnv hook zsh)"
+fi
+
 # Key bindings for word jumping with option+arrow keys
 bindkey "\e[1;3C" forward-word
 bindkey "\e[1;3D" backward-word
