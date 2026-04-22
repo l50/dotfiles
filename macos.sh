@@ -207,6 +207,22 @@ else
     }
 fi
 
+# synctime syncs the system clock with an NTP server.
+#
+# Usage:
+#   synctime [server]
+#
+# Arguments:
+#   server - NTP server to sync with (default: time.apple.com)
+#
+# Example(s):
+#   synctime
+#   synctime pool.ntp.org
+synctime() {
+    local server="${1:-time.apple.com}"
+    sudo sntp -sS "$server"
+}
+
 alias remountSD='sudo kextunload -b com.apple.driver.AppleSDXC; sudo kextload -b com.apple.driver.AppleSDXC'
 alias leaving="guard-my-macbook-when-i-am-away"
 
