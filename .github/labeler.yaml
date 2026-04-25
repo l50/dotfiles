@@ -71,7 +71,7 @@ area/keeper:
       - any-glob-to-any-file: "keeper"
 area/1password:
   - changed-files:
-      - any-glob-to-any-file: "op"
+      - any-glob-to-any-file: "op.sh"
 
 # Platform Specific
 area/android:
