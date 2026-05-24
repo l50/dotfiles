@@ -50,6 +50,13 @@
       "automerge": true,
       "automergeType": "pr",
       "matchUpdateTypes": ["minor", "patch"]
+    },
+    {
+      "description": "Auto-merge pre-commit hooks",
+      "matchManagers": ["pre-commit"],
+      "automerge": true,
+      "automergeType": "pr",
+      "matchUpdateTypes": ["minor", "patch"]
     }
   ],
   "npm": {
