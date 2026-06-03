@@ -12,6 +12,9 @@ export plugins=(mise aws git docker kubectl zsh-completions)
 # Enable zsh completion system
 autoload -U compinit && compinit
 
+# Auto-update oh-my-zsh without prompting
+zstyle ':omz:update' mode auto
+zstyle ':omz:update' frequency 7
 
 # shellcheck source=/dev/null
 source "${ZSH}/oh-my-zsh.sh"
