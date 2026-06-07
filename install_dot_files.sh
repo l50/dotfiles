@@ -50,38 +50,12 @@ declare -a files=(
 )
 
 ##### Color output
-GREEN="\033[01;32m"
 BLUE="\033[01;34m"
 RESET="\033[00m"
 YELLOW="\033[01;33m"
 
 # Identify OS type
 OS_TYPE="$(uname)"
-
-# Create necessary directories
-create_directories() {
-    local dirs=(
-        "${HOME}/.sqlmap"
-        "${HOME}/.kali"
-        "${HOME}/.android_sec_tools"
-        "${HOME}/ansible-logs"
-        "${HOME}/ansible-logs/hosts"
-    )
-
-    for dir in "${dirs[@]}"; do
-        if [ ! -d "$dir" ]; then
-            echo -e "${BLUE}Creating directory at ${dir}, please wait...${RESET}"
-            mkdir -p "$dir"
-        fi
-    done
-}
-
-# Adds a cron job to update dotfiles every day at 6PM
-add_cron_job() {
-    # Add the cron job if it doesn't already exist
-    # This will prevent duplicate entries if the script is run multiple times
-    crontab -l 2> /dev/null | grep -q "$(basename "$0")" || echo "0 18 * * * ${INSTALL_DIR}/$(basename "$0")" | crontab -
-}
 
 # Creates a launchd job to update the dotfiles every day at 10AM
 setup_auto_update() {
@@ -103,102 +77,6 @@ setup_auto_update() {
     fi
 }
 
-# Downloads and installs Brewfile to $HOME/.brewfile/Brewfile (macOS only)
-setup_brewfile() {
-    if [[ "$OS_TYPE" != 'Darwin' ]]; then
-        return
-    fi
-
-    brewfile_path="${HOME}/.config/brewfile"
-    brewfile_dl='https://raw.githubusercontent.com/l50/homebrew-brewfile/main/Brewfile'
-
-    mkdir -p "${brewfile_path}"
-    echo -e "${YELLOW}Downloading latest Brewfile...${RESET}"
-    wget -q "${brewfile_dl}" -O "${brewfile_path}/Brewfile"
-}
-
-# Installs oh-my-zsh if it isn't already installed.
-#
-# Usage:
-#   install_oh_my_zsh
-#
-# Output:
-#   Prints status messages and installs oh-my-zsh if missing.
-#
-# Example(s):
-#   install_oh_my_zsh
-install_oh_my_zsh() {
-    if [ ! -d "${HOME}/.oh-my-zsh" ]; then
-        echo -e "${BLUE}Installing oh-my-zsh...${RESET}"
-        KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-    fi
-}
-
-# Creates the local Ansible configuration and supporting directories.
-#
-# Usage:
-#   setup_ansible_config
-#
-# Output:
-#   Creates Ansible directories and writes ~/.ansible.cfg with status output.
-#
-# Example(s):
-#   setup_ansible_config
-setup_ansible_config() {
-    echo -e "${BLUE}Setting up Ansible configuration...${RESET}"
-
-    # Create ansible directories
-    local ansible_dirs=(
-        "${HOME}/.ansible"
-        "${HOME}/.ansible/collections"
-        "${HOME}/.ansible/roles"
-        "${HOME}/.ansible/fact_cache"
-        "${HOME}/ansible-logs"
-        "${HOME}/ansible-logs/hosts"
-        "/tmp/.ansible/tmp"
-    )
-
-    for dir in "${ansible_dirs[@]}"; do
-        if [[ ! -d "$dir" ]]; then
-            echo -e "${BLUE}Creating directory: ${dir}${RESET}"
-            mkdir -p "$dir"
-        fi
-    done
-
-    # Check if template exists
-    local template_file="${INSTALL_DIR}/templates/ansible.cfg.tmpl"
-    if [[ ! -f "${template_file}" ]]; then
-        echo -e "${RED}Error: ansible.cfg.tmpl not found in ${INSTALL_DIR}/templates/${RESET}"
-        return 1
-    fi
-
-    # Process the template - replace HOME_DIR with actual home directory
-    echo -e "${BLUE}Processing ansible.cfg template...${RESET}"
-    sed "s|HOME_DIR|${HOME}|g" "${template_file}" > "${HOME}/.ansible.cfg"
-
-    # Set appropriate permissions
-    chmod 644 "${HOME}/.ansible.cfg"
-
-    echo -e "${GREEN}✓ Ansible configuration installed to ${HOME}/.ansible.cfg${RESET}"
-
-    # Verify the configuration if ansible-config is available
-    if command -v ansible-config &> /dev/null; then
-        echo -e "${BLUE}Verifying Ansible configuration...${RESET}"
-        if ansible-config dump --only-changed &> /dev/null 2>&1; then
-            echo -e "${GREEN}✓ Ansible configuration is valid${RESET}"
-
-            # Display key configuration paths
-            echo -e "\n${GREEN}=== Ansible Configuration Summary ===${RESET}"
-            echo -e "${BLUE}Per-host logs:${RESET} ${HOME}/ansible-logs/hosts/"
-            echo -e "${BLUE}Fact cache:${RESET} ${HOME}/.ansible/fact_cache"
-            echo -e "${BLUE}Collections:${RESET} ${HOME}/.ansible/collections"
-            echo -e "${BLUE}Roles:${RESET} ${HOME}/.ansible/roles"
-        else
-            echo -e "${YELLOW}⚠ Warning: Could not verify Ansible configuration${RESET}"
-        fi
-    fi
-}
-
 # Sets up the Ansible workstation environment and runs the playbook.
 #
 # Usage:
@@ -217,9 +95,6 @@ setup_ansible() {
         echo "Ansible is not installed. Please install it first."
         exit 1
     fi
-
-    # Setup ansible configuration
-    setup_ansible_config
 
     # Clone ansible-collection-workstation if not present
     if [[ ! -d "${ANSIBLE_DIR}" ]]; then
@@ -301,36 +176,24 @@ done
 
 echo "${INSTALL_DIR}" > "${DOT_DIR}/.dotinstalldir"
 
-# Create required directories
-create_directories
-
 # Copy additional files
 cp -r "${INSTALL_DIR}/files" "${DOT_DIR}/files"
 cp "${DOT_DIR}/files/.gitconfig" "${HOME}/.gitconfig"
 echo -e "${YELLOW}Remember to configure ${HOME}/.gitconfig.userparams${RESET}"
 
-# Copy mise default package files
-cp "${DOT_DIR}/config/default-golang-pkgs" "${HOME}/.default-golang-pkgs"
-cp "${DOT_DIR}/config/default-python-packages" "${HOME}/.default-python-packages"
-cp "${DOT_DIR}/config/default-ruby-gems" "${HOME}/.default-gems"
-
 # macOS specific setup
 if [[ "$OS_TYPE" == 'Darwin' ]]; then
     setup_auto_update
-    setup_brewfile
 fi
 
-# Install oh-my-zsh
-install_oh_my_zsh
-
-# Only run Ansible setup if RUN_ANSIBLE is true
+# Only run Ansible setup if RUN_ANSIBLE is true. The workstation playbook owns
+# ~/.ansible.cfg, ~/.ansible/* state dirs, oh-my-zsh, the Brewfile, and the
+# mise default-package list files — they used to be created here.
 if [[ "${RUN_ANSIBLE}" == true ]]; then
     echo -e "${BLUE}Running Ansible setup...${RESET}"
     setup_ansible
 else
     echo -e "${YELLOW}Skipping Ansible setup (--skip-ansible flag was used)${RESET}"
-    # Still setup ansible config even if not running ansible
-    setup_ansible_config
 fi
 
 echo -e "${BLUE}Dotfiles installation complete!${RESET}"
