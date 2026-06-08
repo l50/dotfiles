@@ -26,3 +26,9 @@ opcp() {
 oprun() {
     op run --env-file "${1:-.env}" -- "${@:2}"
 }
+
+# Regenerate ~/.config/fabric/.env from its op:// template
+fabric_refresh_env() {
+    op inject -i "$HOME/.config/fabric/.env.tpl" \
+        -o "$HOME/.config/fabric/.env" --force
+}
