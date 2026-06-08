@@ -23,6 +23,8 @@ EOF
 }
 
 teardown_file() {
+	# Go marks module cache files read-only; chmod first so rm can clean up.
+	chmod -R u+w "${TEST_TEMP_DIR}" 2> /dev/null || true
 	rm -rf "${TEST_TEMP_DIR}"
 }
 

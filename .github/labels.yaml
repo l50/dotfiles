@@ -117,7 +117,7 @@
 - name: area/dotfiles
   color: "F4D1B7" # Peach
   description: >-
-    Changes made to dotfiles (install_dot_files.sh, tmux.conf, zshrc)
+    Changes made to dotfiles (install_dot_files.sh)
 
 # Style
 - name: area/style
