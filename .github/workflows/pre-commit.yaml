@@ -58,7 +58,7 @@ jobs:
           go install mvdan.cc/sh/v3/cmd/shfmt@latest
 
       - name: Setup BATS
-        uses: mig4/setup-bats@af9a00deb21b5d795cabfeaa8d9060410377686d # v1
+        uses: bats-core/bats-action@77d6fb60505b4d0d1d73e48bd035b55074bbfb43 # 4.0.0
         with:
           bats-version: ${{ env.BATS_VERSION }}
 
