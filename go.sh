@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-FILES="${HOME}/.dotfiles/files"
+FILES="${HOME}/.dotfiles/config"
 
 export GOSUMDB=sum.golang.org
 export GOPROXY=https://proxy.golang.org,direct
