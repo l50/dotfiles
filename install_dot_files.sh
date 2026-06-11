@@ -28,34 +28,19 @@ INSTALL_CLAUDE=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --skip-ansible)
-            RUN_ANSIBLE=false
-            shift
-            ;;
-        --install-alloy)
-            INSTALL_ALLOY=true
-            shift
-            ;;
-        --install-mise)
-            INSTALL_MISE=true
-            shift
-            ;;
-        --install-go-task)
-            INSTALL_GO_TASK=true
-            shift
-            ;;
-        --install-claude)
-            INSTALL_CLAUDE=true
-            shift
-            ;;
+        --skip-ansible) RUN_ANSIBLE=false ;;
+        --install-alloy) INSTALL_ALLOY=true ;;
+        --install-mise) INSTALL_MISE=true ;;
+        --install-go-task) INSTALL_GO_TASK=true ;;
+        --install-claude) INSTALL_CLAUDE=true ;;
         *)
             echo "Unknown option: $1"
             echo "Usage: $0 [--skip-ansible] [--install-alloy] [--install-mise] [--install-go-task] [--install-claude]"
             exit 1
             ;;
     esac
+    shift
 done
-
 
 INSTALL_DIR="$(pwd)"
 ANSIBLE_DIR="$HOME/cowdogmoo/ansible-collection-workstation"
@@ -89,15 +74,25 @@ setup_ansible() {
         echo -e "${YELLOW}Using existing ansible workstation repo...${RESET}"
     fi
 
-    echo "Installing CowDogMoo workstation collection..."
-    ansible-galaxy collection install git+https://github.com/CowDogMoo/ansible-collection-workstation.git,main --upgrade
+    echo "Installing CowDogMoo workstation collection and dependencies..."
+    local install_ok=true
+    ansible-galaxy collection install git+https://github.com/CowDogMoo/ansible-collection-workstation.git,main --upgrade || install_ok=false
+    # The playbook statically imports grafana.grafana.alloy, so its collection
+    # must be present for the play to parse even when the role is skipped.
+    if [[ -f "${ANSIBLE_DIR}/requirements.yml" ]]; then
+        ansible-galaxy collection install -r "${ANSIBLE_DIR}/requirements.yml" --upgrade || install_ok=false
+    fi
 
-    # Only install heavy dependencies if requested
-    if [[ "${INSTALL_ALLOY}" == true ]]; then
-        echo "Installing collection dependencies for Alloy..."
-        if [[ -f "${ANSIBLE_DIR}/requirements.yml" ]]; then
-            ansible-galaxy collection install -r "${ANSIBLE_DIR}/requirements.yml" --upgrade
+    if [[ "${install_ok}" == false ]]; then
+        # Tolerate upgrade failures (e.g. offline) when the collections exist.
+        local installed
+        installed=$(ansible-galaxy collection list 2> /dev/null)
+        if ! grep -q "cowdogmoo.workstation" <<< "${installed}" \
+            || ! grep -q "grafana.grafana" <<< "${installed}"; then
+            echo "Failed to install required Ansible collections." >&2
+            exit 1
         fi
+        echo -e "${YELLOW}Collection upgrade failed; using existing installed collections.${RESET}"
     fi
 
     local hostname
@@ -108,31 +103,31 @@ setup_ansible() {
 ${hostname} ansible_connection=local
 EOF
 
+    # Opt-in roles: skip each playbook tag unless its --install-* flag was set.
     local skip_tags=()
-    if [[ "${INSTALL_ALLOY}" == false ]]; then
-        skip_tags+=("alloy")
-    fi
-    if [[ "${INSTALL_MISE}" == false ]]; then
-        skip_tags+=("mise")
-    fi
-    if [[ "${INSTALL_GO_TASK}" == false ]]; then
-        skip_tags+=("go_task")
-    fi
-    if [[ "${INSTALL_CLAUDE}" == false ]]; then
-        skip_tags+=("claude")
-    fi
+    local entry
+    for entry in "alloy:${INSTALL_ALLOY}" "mise:${INSTALL_MISE}" \
+        "go_task:${INSTALL_GO_TASK}" "claude:${INSTALL_CLAUDE}"; do
+        if [[ "${entry#*:}" == false ]]; then
+            skip_tags+=("${entry%%:*}")
+        fi
+    done
 
     local extra_args=()
     if [[ ${#skip_tags[@]} -gt 0 ]]; then
-        # Join tags with commas
-        local joined_tags=$(IFS=,; echo "${skip_tags[*]}")
+        local joined_tags
+        joined_tags=$(
+            IFS=,
+            echo "${skip_tags[*]}"
+        )
         extra_args+=("--skip-tags" "${joined_tags}")
     fi
 
+    # ${arr[@]+...} keeps the empty-array expansion safe under set -u on bash 3.2.
     ansible-playbook "${ANSIBLE_DIR}/playbooks/workstation/workstation.yml" \
         -i "${inventory_file}" \
         -e "shell_functions_source_path=${INSTALL_DIR}" \
-        "${extra_args[@]}"
+        ${extra_args[@]+"${extra_args[@]}"}
 }
 
 ### MAIN ###
