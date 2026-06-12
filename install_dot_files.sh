@@ -15,6 +15,7 @@
 #   --install-mise     Install and configure Mise tool manager.
 #   --install-go-task  Install and configure Go Task.
 #   --install-claude   Install and configure Claude Code CLI (requires Node).
+#   --install-fabric   Install and configure Fabric AI framework.
 #
 # Jayson Grace <jayson.e.grace at gmail.com>
 # -----------------------------------------------------------------------------
@@ -25,6 +26,7 @@ INSTALL_ALLOY=false
 INSTALL_MISE=false
 INSTALL_GO_TASK=false
 INSTALL_CLAUDE=false
+INSTALL_FABRIC=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -33,9 +35,10 @@ while [[ $# -gt 0 ]]; do
         --install-mise) INSTALL_MISE=true ;;
         --install-go-task) INSTALL_GO_TASK=true ;;
         --install-claude) INSTALL_CLAUDE=true ;;
+        --install-fabric) INSTALL_FABRIC=true ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0 [--skip-ansible] [--install-alloy] [--install-mise] [--install-go-task] [--install-claude]"
+            echo "Usage: $0 [--skip-ansible] [--install-alloy] [--install-mise] [--install-go-task] [--install-claude] [--install-fabric]"
             exit 1
             ;;
     esac
@@ -107,7 +110,8 @@ EOF
     local skip_tags=()
     local entry
     for entry in "alloy:${INSTALL_ALLOY}" "mise:${INSTALL_MISE}" \
-        "go_task:${INSTALL_GO_TASK}" "claude:${INSTALL_CLAUDE}"; do
+        "go_task:${INSTALL_GO_TASK}" "claude:${INSTALL_CLAUDE}" \
+        "fabric:${INSTALL_FABRIC}"; do
         if [[ "${entry#*:}" == false ]]; then
             skip_tags+=("${entry%%:*}")
         fi
