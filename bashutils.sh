@@ -890,12 +890,6 @@ generate_pr() {
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"
 
-# If gshuf and cowsay are installed, then evolve our vocab with cowsay
-# https://www.quora.com/What-is-the-most-interesting-shell-script-you-have-ever-written
-if hash cowsay 2> /dev/null && hash gshuf 2> /dev/null && [[ -f "$HOME/.dotfiles/files/gre" ]]; then
-    gshuf -n 1 "$HOME/.dotfiles/files/gre" | cowsay
-fi
-
 # Set alias for nmap if it's installed
 # https://github.com/hriesco/dotfiles/blob/master/.aliases
 if hash nmap 2> /dev/null; then
