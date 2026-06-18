@@ -226,7 +226,11 @@ synctime() {
 alias remountSD='sudo kextunload -b com.apple.driver.AppleSDXC; sudo kextload -b com.apple.driver.AppleSDXC'
 alias leaving="guard-my-macbook-when-i-am-away"
 
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+# Only load in a real interactive iTerm terminal so its escape codes don't
+# leak into captured/piped output.
+if [[ -o interactive ]] && [[ -t 1 ]] && [[ "${TERM_PROGRAM}" == "iTerm.app" ]] && [[ "${TERM}" != "dumb" ]]; then
+    test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+fi
 
 alias updatebrew='brew update && brew upgrade && brew cleanup && brew doctor'
 
