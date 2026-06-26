@@ -57,13 +57,17 @@ fabric_commit() {
     git ds | fabric --pattern commit | ~/.config/fabric/patterns/commit/filter.sh | git commit --cleanup=verbatim -F - && git push
 }
 
-# fabric_pr() generates a PR title/body using fabric AI and opens a PR with gh.
+# fabric_pr() generates a PR title/body using fabric AI and creates or updates
+# the branch's PR with gh. If a PR already exists it is updated in place with
+# freshly regenerated text (e.g. after a rebase); otherwise a new PR is opened.
+# The title/body are ALWAYS fabric output — never hand-write or hand-edit them.
 #
 # Usage:
-#   fabric_pr [gh pr create args...]
+#   fabric_pr [gh pr create args...]   # extra args apply only when creating
 #
 # Output:
-#   Creates a GitHub PR with an AI-generated title/body from branch diff against main.
+#   Creates or updates a GitHub PR with AI-generated title/body from the diff
+#   against main. Re-run any time the branch changes to refresh the PR.
 #
 # Example:
 #   fabric_pr --draft
@@ -114,29 +118,50 @@ fabric_pr() {
     fi
     echo
 
-    if git push -u origin HEAD; then
-        echo "✓ Pushed branch to remote"
-        echo
-        local pr_url
-        if pr_url=$(gh pr create --title "$title" --body "$body" "$@"); then
-            if [ -n "$pr_url" ]; then
-                echo "⏺ Successfully created pull request!"
-                echo
-                echo "  Pull Request:"
-                echo "  - URL: $pr_url"
-                echo "  - Title: $title"
-                echo "  - Branch: $branch"
-                echo
-            else
-                echo "error: PR URL is empty"
-                return 1
-            fi
+    # Push the branch. After a rebase/amend the remote has diverged, so fall
+    # back to --force-with-lease (refuses if the remote moved unexpectedly).
+    if ! git push -u origin HEAD 2> /dev/null; then
+        if ! git push --force-with-lease -u origin HEAD; then
+            echo "error: Failed to push branch"
+            return 1
+        fi
+    fi
+    echo "✓ Pushed branch to remote"
+    echo
+
+    local pr_url
+    # If a PR already exists for this branch, update it in place with the
+    # freshly generated title/body (e.g. after a rebase) instead of failing.
+    # Otherwise create a new PR. The body is ALWAYS fabric output, never
+    # hand-written. Create-only flags ("$@", e.g. --draft) apply on create.
+    if pr_url=$(gh pr view --json url --jq '.url' 2> /dev/null) && [ -n "$pr_url" ]; then
+        if gh pr edit --title "$title" --body "$body" > /dev/null; then
+            echo "⏺ Updated existing pull request with regenerated title/body!"
+            echo
+            echo "  Pull Request:"
+            echo "  - URL: $pr_url"
+            echo "  - Title: $title"
+            echo "  - Branch: $branch"
+            echo
         else
-            echo "error: Failed to create PR"
+            echo "error: Failed to update existing PR"
+            return 1
+        fi
+    elif pr_url=$(gh pr create --title "$title" --body "$body" "$@"); then
+        if [ -n "$pr_url" ]; then
+            echo "⏺ Successfully created pull request!"
+            echo
+            echo "  Pull Request:"
+            echo "  - URL: $pr_url"
+            echo "  - Title: $title"
+            echo "  - Branch: $branch"
+            echo
+        else
+            echo "error: PR URL is empty"
             return 1
         fi
     else
-        echo "error: Failed to push branch"
+        echo "error: Failed to create PR"
         return 1
     fi
 }
