@@ -67,7 +67,7 @@ go install github.com/dolmen-go/goeval@latest
 ### Dotfiles
 
 ```bash
-bash install_dot_files.sh
+bash install_dotfiles.sh
 ```
 
 ### Git user config

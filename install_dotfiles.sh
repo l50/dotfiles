@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # -----------------------------------------------------------------------------
-# install_dot_files.sh
+# install_dotfiles.sh
 #
 # Bootstraps the workstation by cloning ansible-collection-workstation and
 # running its workstation playbook against this host. The ansible roles own
 # ~/.zshrc, ~/.tmux.conf, ~/.gitconfig, ~/.ansible.cfg, the vault-pass helper,
 # and the deployment of shell-function libraries into ~/.dotfiles.
 #
-# Usage: bash install_dot_files.sh [options]
+# Usage: bash install_dotfiles.sh [options]
 #
 # Options:
 #   --skip-ansible     Skip the entire Ansible setup.

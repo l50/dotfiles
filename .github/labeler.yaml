@@ -85,7 +85,7 @@ area/macos:
 area/dotfiles:
   - changed-files:
       - any-glob-to-any-file: [
-          "install_dot_files.sh"
+          "install_dotfiles.sh"
         ]
 
 # Style

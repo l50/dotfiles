@@ -30,7 +30,7 @@
       "description": "Group shell script dependencies",
       "matchFileNames": [
         "**/*.sh",
-        "install_dot_files.sh"
+        "install_dotfiles.sh"
       ],
       "groupName": "shell-scripts"
     },
