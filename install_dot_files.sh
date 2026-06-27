@@ -12,10 +12,10 @@
 # Options:
 #   --skip-ansible     Skip the entire Ansible setup.
 #   --install-alloy    Install and configure Grafana Alloy (requires Node).
-#   --install-mise     Install and configure Mise tool manager.
-#   --install-go-task  Install and configure Go Task.
 #   --install-claude   Install and configure Claude Code CLI (requires Node).
-#   --install-fabric   Install and configure Fabric AI framework.
+#   --skip-mise        Skip Mise tool manager (runs by default).
+#   --skip-go-task     Skip Go Task (runs by default).
+#   --skip-fabric      Skip Fabric AI framework (runs by default).
 #
 # Jayson Grace <jayson.e.grace at gmail.com>
 # -----------------------------------------------------------------------------
@@ -23,22 +23,22 @@ set -eou pipefail
 
 RUN_ANSIBLE=true
 INSTALL_ALLOY=false
-INSTALL_MISE=false
-INSTALL_GO_TASK=false
+INSTALL_MISE=true
+INSTALL_GO_TASK=true
 INSTALL_CLAUDE=false
-INSTALL_FABRIC=false
+INSTALL_FABRIC=true
 
 while [[ $# -gt 0 ]]; do
     case $1 in
         --skip-ansible) RUN_ANSIBLE=false ;;
         --install-alloy) INSTALL_ALLOY=true ;;
-        --install-mise) INSTALL_MISE=true ;;
-        --install-go-task) INSTALL_GO_TASK=true ;;
         --install-claude) INSTALL_CLAUDE=true ;;
-        --install-fabric) INSTALL_FABRIC=true ;;
+        --skip-mise) INSTALL_MISE=false ;;
+        --skip-go-task) INSTALL_GO_TASK=false ;;
+        --skip-fabric) INSTALL_FABRIC=false ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0 [--skip-ansible] [--install-alloy] [--install-mise] [--install-go-task] [--install-claude] [--install-fabric]"
+            echo "Usage: $0 [--skip-ansible] [--install-alloy] [--install-claude] [--skip-mise] [--skip-go-task] [--skip-fabric]"
             exit 1
             ;;
     esac
@@ -106,7 +106,8 @@ setup_ansible() {
 ${hostname} ansible_connection=local
 EOF
 
-    # Opt-in roles: skip each playbook tag unless its --install-* flag was set.
+    # Skip each playbook tag whose role is toggled off (mise/go_task/fabric run
+    # by default; alloy/claude are opt-in via their --install-* flags).
     local skip_tags=()
     local entry
     for entry in "alloy:${INSTALL_ALLOY}" "mise:${INSTALL_MISE}" \
