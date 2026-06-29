@@ -93,7 +93,10 @@ fabric_pr() {
     echo "⏺ Generating PR with Fabric AI..."
     echo
 
-    pr_text=$(git diff main | fabric --pattern pr | ~/.config/fabric/patterns/pr/filter.sh)
+    local base
+    base=$(gh pr view --json baseRefName --jq '.baseRefName' 2> /dev/null)
+    : "${base:=main}"
+    pr_text=$(git diff "origin/${base}...HEAD" | fabric --pattern pr | ~/.config/fabric/patterns/pr/filter.sh)
     if [ -z "$pr_text" ]; then
         echo "error: PR text is empty"
         return 1
