@@ -8,6 +8,7 @@ fi
 # 1Password shell plugins (biometric auth for CLIs like gh, aws)
 # Initialize new plugins with: op plugin init <tool>
 [[ -f "$HOME/.config/op/plugins.sh" ]] && source "$HOME/.config/op/plugins.sh"
+unalias aws 2> /dev/null
 
 # Quick secret read
 # Usage: opsecret "Private/Database/password"
