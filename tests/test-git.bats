@@ -453,3 +453,55 @@ teardown() {
 	assert_output --partial "error: fabric is not installed"
 	assert_output --partial "install it from: https://github.com/danielmiessler/fabric"
 }
+
+# fabric_commit tests
+
+# Stubs the fabric commit filter under a throwaway HOME and mocks the commands
+# fabric_commit shells out to, so it can run without touching the real repo.
+# $1 is the message fabric should emit. Every git invocation is appended to
+# $GIT_LOG so tests can assert on what was (and was not) run.
+stub_fabric_commit() {
+	export FABRIC_MSG="$1"
+	export HOME="$BATS_TEST_TMPDIR/home"
+	export GIT_LOG="$BATS_TEST_TMPDIR/git.log"
+
+	mkdir -p "$HOME/.config/fabric/patterns/commit"
+	printf '#!/usr/bin/env bash\ncat\n' > "$HOME/.config/fabric/patterns/commit/filter.sh"
+	chmod +x "$HOME/.config/fabric/patterns/commit/filter.sh"
+	: > "$GIT_LOG"
+
+	check_fabric() { return 0; }
+	fabric() { printf '%s' "$FABRIC_MSG"; }
+	git() {
+		echo "git $*" >> "$GIT_LOG"
+		case "$1" in
+			ds) printf 'diff --git a/x b/x\n' ;;
+			commit) cat > /dev/null ;;
+		esac
+		return 0
+	}
+	export -f check_fabric fabric git
+}
+
+@test "fabric_commit aborts without committing when fabric returns an empty message" {
+	stub_fabric_commit "   "
+
+	run fabric_commit
+
+	assert_failure
+	assert_output --partial "commit message is empty"
+	refute grep -q "git commit" "$GIT_LOG"
+	refute grep -q "git push" "$GIT_LOG"
+}
+
+@test "fabric_commit pushes with an explicit refspec so a renamed upstream still works" {
+	stub_fabric_commit "fix: correct the thing"
+
+	run fabric_commit
+
+	assert_success
+	assert grep -q "git commit --cleanup=verbatim -F -" "$GIT_LOG"
+	# A bare "git push" breaks when the local branch tracks a differently-named
+	# upstream, so the refspec must be explicit.
+	assert grep -q "git push -u origin HEAD" "$GIT_LOG"
+}
