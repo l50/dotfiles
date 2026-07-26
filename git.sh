@@ -54,7 +54,15 @@ check_fabric() {
 #   Requires git alias 'ds' and the fabric tool to be installed.
 fabric_commit() {
     check_fabric || return 1
-    git ds | fabric --pattern commit | ~/.config/fabric/patterns/commit/filter.sh | git commit --cleanup=verbatim -F - && git push
+    local msg
+    msg=$(git ds | fabric --pattern commit | ~/.config/fabric/patterns/commit/filter.sh)
+    # git commit --cleanup=verbatim -F - accepts empty stdin, so a failed fabric
+    # call (dead API key, no credits) would otherwise create a message-less commit.
+    if [ -z "$(printf '%s' "$msg" | tr -d '[:space:]')" ]; then
+        echo "error: commit message is empty — fabric call failed; check 'git ds | fabric --pattern commit'" >&2
+        return 1
+    fi
+    printf '%s\n' "$msg" | git commit --cleanup=verbatim -F - && git push
 }
 
 # fabric_pr() generates a PR title/body using fabric AI and creates or updates
