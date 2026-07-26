@@ -28,10 +28,9 @@ area/templates:
 # Cloud
 area/aws:
   - changed-files:
-      - any-glob-to-any-file: [
-          "aws",
-          "cloud/aws/**/*"
-        ]
+      - any-glob-to-any-file:
+          - "aws"
+          - "cloud/aws/**/*"
 area/gcloud:
   - changed-files:
       - any-glob-to-any-file: "gcloud"
@@ -59,10 +58,9 @@ area/common:
       - any-glob-to-any-file: "common"
 area/containers:
   - changed-files:
-      - any-glob-to-any-file: [
-          "containers",
-          "docker"
-        ]
+      - any-glob-to-any-file:
+          - "containers"
+          - "docker"
 area/k8s:
   - changed-files:
       - any-glob-to-any-file: "k8s"
@@ -84,9 +82,7 @@ area/macos:
 # Configuration
 area/dotfiles:
   - changed-files:
-      - any-glob-to-any-file: [
-          "install_dotfiles.sh"
-        ]
+      - any-glob-to-any-file: "install_dotfiles.sh"
 
 # Style
 area/style:
