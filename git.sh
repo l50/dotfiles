@@ -62,7 +62,10 @@ fabric_commit() {
         echo "error: commit message is empty — fabric call failed; check 'git ds | fabric --pattern commit'" >&2
         return 1
     fi
-    printf '%s\n' "$msg" | git commit --cleanup=verbatim -F - && git push
+    # Push with an explicit refspec: a bare "git push" fails when the local
+    # branch tracks a differently-named upstream (e.g. after
+    # "git checkout -b topic origin/main"), which aborts before pushing.
+    printf '%s\n' "$msg" | git commit --cleanup=verbatim -F - && git push -u origin HEAD
 }
 
 # fabric_pr() generates a PR title/body using fabric AI and creates or updates
