@@ -64,6 +64,40 @@ git_push_remote() {
     printf '%s\n' "${remote:-origin}"
 }
 
+# git_remote_for_repo() prints the local remote whose URL points at the given
+# GitHub <owner>/<name>, defaulting to origin when nothing matches.
+#
+# Usage:
+#   git_remote_for_repo l50/dotfiles
+#
+# Output:
+#   A remote name, defaulting to "origin".
+#
+# Example:
+#   git diff "$(git_remote_for_repo "$(gh repo view --json nameWithOwner --jq .nameWithOwner)")/main...HEAD"
+#
+# Note:
+#   Used to pick a diff base matching the repo a PR is opened against. That is normally
+#   origin, but "gh repo set-default" can aim PRs at a fork instead, in which case
+#   origin's copy of the base branch is the stale one.
+git_remote_for_repo() {
+    local repo=$1 remote url
+    if [ -n "$repo" ]; then
+        # Remote names cannot contain whitespace, so word splitting is safe here.
+        # shellcheck disable=SC2013
+        for remote in $(git remote); do
+            url=$(git remote get-url "$remote" 2> /dev/null) || continue
+            case "${url%.git}" in
+                *[:/]"$repo")
+                    printf '%s\n' "$remote"
+                    return
+                    ;;
+            esac
+        done
+    fi
+    printf '%s\n' "origin"
+}
+
 # fabric_commit() generates a commit message using fabric AI and commits
 # the staged changes, then pushes to remote.
 #
@@ -130,14 +164,19 @@ fabric_pr() {
     echo "⏺ Generating PR with Fabric AI..."
     echo
 
-    local base remote
+    local base remote base_remote
     base=$(gh pr view --json baseRefName --jq '.baseRefName' 2> /dev/null)
     : "${base:=main}"
-    # Diff against origin's copy of the base branch, not the push remote's. The PR is
-    # opened against origin, and baseRefName names a branch there; a fork's own copy is
-    # usually stale and often never fetched, which would either pad the diff with commits
-    # the PR does not contain or abort on an unknown revision.
-    pr_text=$(git diff "origin/${base}...HEAD" | fabric --pattern pr | ~/.config/fabric/patterns/pr/filter.sh)
+    # Diff against the base branch as it exists in the repo the PR is opened against, not
+    # the push remote's copy. That repo is usually origin, but "gh repo set-default" can
+    # aim PRs at a fork, and then origin is the stale one and would pad the diff with
+    # commits the PR does not contain. Fall back to origin when the resolved remote's copy
+    # was never fetched, since a missing revision aborts the diff outright.
+    base_remote=$(git_remote_for_repo "$repo")
+    if ! git rev-parse --verify --quiet "${base_remote}/${base}" > /dev/null 2>&1; then
+        base_remote=origin
+    fi
+    pr_text=$(git diff "${base_remote}/${base}...HEAD" | fabric --pattern pr | ~/.config/fabric/patterns/pr/filter.sh)
     if [ -z "$pr_text" ]; then
         echo "error: PR text is empty"
         return 1

@@ -492,10 +492,34 @@ stub_fabric() {
 	}
 	git() {
 		echo "git $*" >> "$GIT_LOG"
+		local entry
 		case "$1" in
 			ds | diff) printf 'diff --git a/x b/x\n' ;;
 			commit) cat > /dev/null ;;
 			branch) printf '%s\n' "topic" ;;
+			# STUB_REMOTES is a space-separated list of <name>=<url> pairs, so a test can
+			# describe a fork layout without creating real remotes.
+			remote)
+				if [[ "$2" == "get-url" ]]; then
+					for entry in ${STUB_REMOTES:-}; do
+						if [[ "${entry%%=*}" == "$3" ]]; then
+							printf '%s\n' "${entry#*=}"
+							return 0
+						fi
+					done
+					return 1
+				fi
+				for entry in ${STUB_REMOTES:-}; do
+					printf '%s\n' "${entry%%=*}"
+				done
+				;;
+			# git rev-parse --verify --quiet <ref>, so the ref is $4. Refs named in
+			# STUB_MISSING_REFS stand in for a remote branch that was never fetched.
+			rev-parse)
+				case " ${STUB_MISSING_REFS:-} " in
+					*" $4 "*) return 1 ;;
+				esac
+				;;
 			config)
 				case "$*" in
 					*pushRemote) printf '%s' "${STUB_BRANCH_PUSH_REMOTE:-}" ;;
@@ -518,6 +542,13 @@ stub_fabric_pr() { stub_fabric pr "$1"; }
 stub_branch_push_remote() { export STUB_BRANCH_PUSH_REMOTE="$1"; }
 
 stub_push_default() { export STUB_PUSH_DEFAULT="$1"; }
+
+# Describe the repo's remotes as "<name>=<url>" pairs, so git_remote_for_repo can map
+# gh's base repo onto one of them.
+stub_remotes() { export STUB_REMOTES="$*"; }
+
+# Mark remote-tracking refs as never fetched, so rev-parse --verify fails on them.
+stub_missing_refs() { export STUB_MISSING_REFS="$*"; }
 
 @test "fabric_commit aborts without committing when fabric returns an empty message" {
 	stub_fabric_commit "   "
@@ -580,4 +611,60 @@ Body of the PR."
 	refute grep -q "git diff fork/main" "$GIT_LOG"
 	# The push still honours the configured remote.
 	assert grep -q "git push -u fork HEAD" "$GIT_LOG"
+}
+
+@test "fabric_pr diffs against the fork when gh opens PRs there" {
+	stub_fabric_pr "feat: add a thing
+
+Body of the PR."
+	stub_branch_push_remote fork
+	# "gh repo set-default" can aim PRs at the fork, which is what the stubbed
+	# "gh repo view" reports. Then origin is the stale copy, and diffing it would pad
+	# the PR body with commits the PR does not contain.
+	stub_remotes "origin=https://github.com/upstream/dotfiles.git" \
+		"fork=https://github.com/l50/dotfiles.git"
+
+	run fabric_pr
+
+	assert_success
+	assert grep -q "git diff fork/main\.\.\.HEAD" "$GIT_LOG"
+	refute grep -q "git diff origin/main" "$GIT_LOG"
+}
+
+@test "fabric_pr falls back to origin when the base repo's remote branch is unfetched" {
+	stub_fabric_pr "feat: add a thing
+
+Body of the PR."
+	stub_remotes "origin=https://github.com/upstream/dotfiles.git" \
+		"fork=https://github.com/l50/dotfiles.git"
+	# A missing revision aborts the diff outright, so a never-fetched fork branch has to
+	# degrade to origin rather than take the whole PR down.
+	stub_missing_refs "fork/main"
+
+	run fabric_pr
+
+	assert_success
+	assert grep -q "git diff origin/main\.\.\.HEAD" "$GIT_LOG"
+	refute grep -q "git diff fork/main" "$GIT_LOG"
+}
+
+@test "git_remote_for_repo falls back to origin when no remote matches" {
+	stub_fabric_pr "unused"
+	stub_remotes "origin=https://github.com/upstream/dotfiles.git"
+
+	run git_remote_for_repo "l50/dotfiles"
+
+	assert_success
+	assert_output "origin"
+}
+
+@test "git_remote_for_repo matches an ssh remote URL" {
+	stub_fabric_pr "unused"
+	stub_remotes "origin=https://github.com/upstream/dotfiles.git" \
+		"fork=git@github.com:l50/dotfiles.git"
+
+	run git_remote_for_repo "l50/dotfiles"
+
+	assert_success
+	assert_output "fork"
 }
