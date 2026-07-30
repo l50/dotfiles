@@ -46,8 +46,10 @@ jobs:
               brew install curl git zsh python3 ansible
           fi
 
+      # Pinned to a commit rather than main: an unrelated merge upstream would otherwise
+      # turn this workflow red with no change on our side. Renovate bumps the digests.
       - name: Install workstation collection
-        run: ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,main
+        run: ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,bc6c9c8ecf3071e0f38fd869d244345018103660
 
       - name: Install the dotfiles
         run: |
@@ -119,10 +121,12 @@ jobs:
               brew install curl git zsh python3 ansible
           fi
 
+      # Pinned to commits rather than main: an unrelated merge upstream would otherwise
+      # turn this workflow red with no change on our side. Renovate bumps the digests.
       - name: Install the necessary ansible collections
         run: |
-          ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,main
-          ansible-galaxy collection install git+https://github.com/grafana/grafana-ansible-collection.git,main
+          ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,bc6c9c8ecf3071e0f38fd869d244345018103660
+          ansible-galaxy collection install git+https://github.com/grafana/grafana-ansible-collection.git,521b006dabf4f605e9663c6539bfdec653badb1b
 
       - name: Install the dotfiles
         env:

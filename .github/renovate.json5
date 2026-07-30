@@ -89,6 +89,19 @@
         "^(?<depName>[^ ]+) (?<currentValue>[^ ]+)$"
       ],
       "datasourceTemplate": "rubygems"
+    },
+    {
+      // ansible-galaxy takes the git ref inline, so no manager recognizes these.
+      // Tracking the branch tip by digest keeps CI reproducible while still surfacing
+      // upstream movement as a reviewable PR instead of a surprise red build.
+      "customType": "regex",
+      "fileMatch": ["^\\.github/workflows/tests\\.yaml$"],
+      "matchStrings": [
+        "ansible-galaxy collection install git\\+https://github\\.com/(?<depName>[^,\\s]+?)\\.git,(?<currentDigest>[0-9a-f]{40})"
+      ],
+      "packageNameTemplate": "https://github.com/{{{depName}}}",
+      "currentValueTemplate": "main",
+      "datasourceTemplate": "git-refs"
     }
   ],
   "ignorePaths": [
