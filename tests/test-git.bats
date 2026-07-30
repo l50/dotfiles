@@ -20,6 +20,7 @@ teardown() {
 	# Clean up any mock functions
 	unset -f gh git 2>/dev/null
 	unset TEST_BRANCH TEST_REPO TEST_RUN_ID TEST_WORKFLOW
+	unset STUB_BRANCH_PUSH_REMOTE STUB_PUSH_DEFAULT
 }
 
 # gh_cancel tests
@@ -477,6 +478,13 @@ stub_fabric_commit() {
 		case "$1" in
 			ds) printf 'diff --git a/x b/x\n' ;;
 			commit) cat > /dev/null ;;
+			branch) printf '%s\n' "topic" ;;
+			config)
+				case "$*" in
+					*pushRemote) printf '%s' "${STUB_BRANCH_PUSH_REMOTE:-}" ;;
+					*remote.pushDefault) printf '%s' "${STUB_PUSH_DEFAULT:-}" ;;
+				esac
+				;;
 		esac
 		return 0
 	}
@@ -504,4 +512,26 @@ stub_fabric_commit() {
 	# A bare "git push" breaks when the local branch tracks a differently-named
 	# upstream, so the refspec must be explicit.
 	assert grep -q "git push -u origin HEAD" "$GIT_LOG"
+}
+
+@test "fabric_commit pushes to the branch's pushRemote instead of origin" {
+	stub_fabric_commit "fix: correct the thing"
+	# In a fork, origin is the read-only upstream and pushing there 403s.
+	export STUB_BRANCH_PUSH_REMOTE="fork"
+
+	run fabric_commit
+
+	assert_success
+	assert grep -q "git push -u fork HEAD" "$GIT_LOG"
+	refute grep -q "git push -u origin HEAD" "$GIT_LOG"
+}
+
+@test "fabric_commit falls back to remote.pushDefault when no branch pushRemote" {
+	stub_fabric_commit "fix: correct the thing"
+	export STUB_PUSH_DEFAULT="fork"
+
+	run fabric_commit
+
+	assert_success
+	assert grep -q "git push -u fork HEAD" "$GIT_LOG"
 }
