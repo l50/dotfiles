@@ -133,10 +133,11 @@ fabric_pr() {
     local base remote
     base=$(gh pr view --json baseRefName --jq '.baseRefName' 2> /dev/null)
     : "${base:=main}"
-    # Diff against the base branch on the remote the PR will live in, which is
-    # the fork rather than origin when working from one.
-    remote=$(git_push_remote)
-    pr_text=$(git diff "${remote}/${base}...HEAD" | fabric --pattern pr | ~/.config/fabric/patterns/pr/filter.sh)
+    # Diff against origin's copy of the base branch, not the push remote's. The PR is
+    # opened against origin, and baseRefName names a branch there; a fork's own copy is
+    # usually stale and often never fetched, which would either pad the diff with commits
+    # the PR does not contain or abort on an unknown revision.
+    pr_text=$(git diff "origin/${base}...HEAD" | fabric --pattern pr | ~/.config/fabric/patterns/pr/filter.sh)
     if [ -z "$pr_text" ]; then
         echo "error: PR text is empty"
         return 1
@@ -163,6 +164,7 @@ fabric_pr() {
 
     # Push the branch. After a rebase/amend the remote has diverged, so fall
     # back to --force-with-lease (refuses if the remote moved unexpectedly).
+    remote=$(git_push_remote)
     if ! git push -u "$remote" HEAD 2> /dev/null; then
         if ! git push --force-with-lease -u "$remote" HEAD; then
             echo "error: Failed to push branch"
