@@ -457,26 +457,43 @@ teardown() {
 
 # fabric_commit tests
 
-# Stubs the fabric commit filter under a throwaway HOME and mocks the commands
-# fabric_commit shells out to, so it can run without touching the real repo.
-# $1 is the message fabric should emit. Every git invocation is appended to
-# $GIT_LOG so tests can assert on what was (and was not) run.
-stub_fabric_commit() {
-	export FABRIC_MSG="$1"
+# Stubs a fabric pattern filter under a throwaway HOME and mocks every command the
+# fabric_* helpers shell out to, so they can run without touching the real repo or
+# GitHub. $1 is the pattern directory (commit or pr), $2 the text fabric should emit.
+# Each git and gh invocation is appended to $GIT_LOG / $GH_LOG so tests can assert on
+# what was (and was not) run.
+stub_fabric() {
+	export FABRIC_MSG="$2"
 	export HOME="$BATS_TEST_TMPDIR/home"
 	export GIT_LOG="$BATS_TEST_TMPDIR/git.log"
+	export GH_LOG="$BATS_TEST_TMPDIR/gh.log"
 
-	mkdir -p "$HOME/.config/fabric/patterns/commit"
-	printf '#!/usr/bin/env bash\ncat\n' > "$HOME/.config/fabric/patterns/commit/filter.sh"
-	chmod +x "$HOME/.config/fabric/patterns/commit/filter.sh"
+	mkdir -p "$HOME/.config/fabric/patterns/$1"
+	printf '#!/usr/bin/env bash\ncat\n' > "$HOME/.config/fabric/patterns/$1/filter.sh"
+	chmod +x "$HOME/.config/fabric/patterns/$1/filter.sh"
 	: > "$GIT_LOG"
+	: > "$GH_LOG"
 
 	check_fabric() { return 0; }
-	fabric() { printf '%s' "$FABRIC_MSG"; }
+	fabric() {
+		cat > /dev/null
+		printf '%s' "$FABRIC_MSG"
+	}
+	gh() {
+		echo "gh $*" >> "$GH_LOG"
+		case "$*" in
+			"repo view"*) printf '%s\n' "l50/dotfiles" ;;
+			"pr view"*baseRefName*) printf '%s\n' "main" ;;
+			# No existing PR, so fabric_pr takes the create path.
+			"pr view"*) return 1 ;;
+			"pr create"*) printf '%s\n' "https://github.com/l50/dotfiles/pull/1" ;;
+		esac
+		return 0
+	}
 	git() {
 		echo "git $*" >> "$GIT_LOG"
 		case "$1" in
-			ds) printf 'diff --git a/x b/x\n' ;;
+			ds | diff) printf 'diff --git a/x b/x\n' ;;
 			commit) cat > /dev/null ;;
 			branch) printf '%s\n' "topic" ;;
 			config)
@@ -488,8 +505,19 @@ stub_fabric_commit() {
 		esac
 		return 0
 	}
-	export -f check_fabric fabric git
+	export -f check_fabric fabric gh git
 }
+
+stub_fabric_commit() { stub_fabric commit "$1"; }
+
+stub_fabric_pr() { stub_fabric pr "$1"; }
+
+# Point the mocked git config at a branch pushRemote / remote.pushDefault of $1, so
+# git_push_remote resolves to it. Wrapped in functions because a bare export inside a
+# @test reads as a subshell-local modification to shellcheck.
+stub_branch_push_remote() { export STUB_BRANCH_PUSH_REMOTE="$1"; }
+
+stub_push_default() { export STUB_PUSH_DEFAULT="$1"; }
 
 @test "fabric_commit aborts without committing when fabric returns an empty message" {
 	stub_fabric_commit "   "
@@ -517,7 +545,7 @@ stub_fabric_commit() {
 @test "fabric_commit pushes to the branch's pushRemote instead of origin" {
 	stub_fabric_commit "fix: correct the thing"
 	# In a fork, origin is the read-only upstream and pushing there 403s.
-	export STUB_BRANCH_PUSH_REMOTE="fork"
+	stub_branch_push_remote fork
 
 	run fabric_commit
 
@@ -528,10 +556,28 @@ stub_fabric_commit() {
 
 @test "fabric_commit falls back to remote.pushDefault when no branch pushRemote" {
 	stub_fabric_commit "fix: correct the thing"
-	export STUB_PUSH_DEFAULT="fork"
+	stub_push_default fork
 
 	run fabric_commit
 
 	assert_success
+	assert grep -q "git push -u fork HEAD" "$GIT_LOG"
+}
+
+@test "fabric_pr diffs against origin's base branch even when pushing elsewhere" {
+	stub_fabric_pr "feat: add a thing
+
+Body of the PR."
+	stub_branch_push_remote fork
+
+	run fabric_pr
+
+	assert_success
+	# The PR is opened against origin and baseRefName names a branch there, so the diff
+	# base stays origin/<base>. A fork's own copy is usually stale and often unfetched,
+	# which would pad the diff or abort on an unknown revision.
+	assert grep -q "git diff origin/main\.\.\.HEAD" "$GIT_LOG"
+	refute grep -q "git diff fork/main" "$GIT_LOG"
+	# The push still honours the configured remote.
 	assert grep -q "git push -u fork HEAD" "$GIT_LOG"
 }
