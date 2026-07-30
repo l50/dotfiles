@@ -38,6 +38,32 @@ check_fabric() {
     fi
 }
 
+# git_push_remote() prints the remote the current branch should be pushed to,
+# preferring the branch's own pushRemote, then remote.pushDefault, then origin.
+#
+# Usage:
+#   git_push_remote
+#
+# Output:
+#   A remote name, defaulting to "origin".
+#
+# Example:
+#   git push -u "$(git_push_remote)" HEAD
+#
+# Note:
+#   In a fork, origin usually points at the read-only upstream and pushes go to
+#   the fork remote, so hardcoding origin makes every push fail with a 403. Set
+#   the target once per repo with "git config remote.pushDefault <remote>".
+git_push_remote() {
+    local branch remote
+    branch=$(git branch --show-current)
+    if [ -n "$branch" ]; then
+        remote=$(git config --get "branch.${branch}.pushRemote")
+    fi
+    [ -n "$remote" ] || remote=$(git config --get remote.pushDefault)
+    printf '%s\n' "${remote:-origin}"
+}
+
 # fabric_commit() generates a commit message using fabric AI and commits
 # the staged changes, then pushes to remote.
 #
@@ -65,7 +91,7 @@ fabric_commit() {
     # Push with an explicit refspec: a bare "git push" fails when the local
     # branch tracks a differently-named upstream (e.g. after
     # "git checkout -b topic origin/main"), which aborts before pushing.
-    printf '%s\n' "$msg" | git commit --cleanup=verbatim -F - && git push -u origin HEAD
+    printf '%s\n' "$msg" | git commit --cleanup=verbatim -F - && git push -u "$(git_push_remote)" HEAD
 }
 
 # fabric_pr() generates a PR title/body using fabric AI and creates or updates
@@ -104,10 +130,13 @@ fabric_pr() {
     echo "⏺ Generating PR with Fabric AI..."
     echo
 
-    local base
+    local base remote
     base=$(gh pr view --json baseRefName --jq '.baseRefName' 2> /dev/null)
     : "${base:=main}"
-    pr_text=$(git diff "origin/${base}...HEAD" | fabric --pattern pr | ~/.config/fabric/patterns/pr/filter.sh)
+    # Diff against the base branch on the remote the PR will live in, which is
+    # the fork rather than origin when working from one.
+    remote=$(git_push_remote)
+    pr_text=$(git diff "${remote}/${base}...HEAD" | fabric --pattern pr | ~/.config/fabric/patterns/pr/filter.sh)
     if [ -z "$pr_text" ]; then
         echo "error: PR text is empty"
         return 1
@@ -134,8 +163,8 @@ fabric_pr() {
 
     # Push the branch. After a rebase/amend the remote has diverged, so fall
     # back to --force-with-lease (refuses if the remote moved unexpectedly).
-    if ! git push -u origin HEAD 2> /dev/null; then
-        if ! git push --force-with-lease -u origin HEAD; then
+    if ! git push -u "$remote" HEAD 2> /dev/null; then
+        if ! git push --force-with-lease -u "$remote" HEAD; then
             echo "error: Failed to push branch"
             return 1
         fi
