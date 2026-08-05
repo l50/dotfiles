@@ -176,6 +176,16 @@ fabric_pr() {
     if ! git rev-parse --verify --quiet "${base_remote}/${base}" > /dev/null 2>&1; then
         base_remote=origin
     fi
+    # Refresh the base before diffing. Remote-tracking refs only move when that
+    # branch is fetched, and fetching a feature branch does not touch them, so
+    # the local copy of the base drifts behind without any visible signal. A
+    # stale base pads the diff with commits already merged upstream and fabric
+    # then writes a PR describing someone else's work. Non-fatal so the command
+    # still works offline, but warn, since the result is silently wrong.
+    if ! git fetch --quiet "$base_remote" "$base" 2> /dev/null; then
+        echo "warning: could not refresh ${base_remote}/${base} — diff may include already-merged commits"
+        echo
+    fi
     pr_text=$(git diff "${base_remote}/${base}...HEAD" | fabric --pattern pr | ~/.config/fabric/patterns/pr/filter.sh)
     if [ -z "$pr_text" ]; then
         echo "error: PR text is empty"
