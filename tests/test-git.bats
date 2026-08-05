@@ -526,6 +526,9 @@ stub_fabric() {
 					*remote.pushDefault) printf '%s' "${STUB_PUSH_DEFAULT:-}" ;;
 				esac
 				;;
+			# A failing fetch stands in for an offline run, where the base cannot be
+			# refreshed but the stale copy is still diffable.
+			fetch) return "${STUB_FETCH_STATUS:-0}" ;;
 		esac
 		return 0
 	}
@@ -549,6 +552,9 @@ stub_remotes() { export STUB_REMOTES="$*"; }
 
 # Mark remote-tracking refs as never fetched, so rev-parse --verify fails on them.
 stub_missing_refs() { export STUB_MISSING_REFS="$*"; }
+
+# Make "git fetch" fail, so the base branch cannot be refreshed.
+stub_failing_fetch() { export STUB_FETCH_STATUS=1; }
 
 @test "fabric_commit aborts without committing when fabric returns an empty message" {
 	stub_fabric_commit "   "
@@ -646,6 +652,39 @@ Body of the PR."
 	assert_success
 	assert grep -q "git diff origin/main\.\.\.HEAD" "$GIT_LOG"
 	refute grep -q "git diff fork/main" "$GIT_LOG"
+}
+
+@test "fabric_pr refreshes the base branch it diffs against" {
+	stub_fabric_pr "feat: add a thing
+
+Body of the PR."
+	stub_remotes "origin=https://github.com/upstream/dotfiles.git" \
+		"fork=https://github.com/l50/dotfiles.git"
+
+	run fabric_pr
+
+	assert_success
+	# Pushing a feature branch never moves the base's remote-tracking ref, so without
+	# this fetch the diff replays commits already merged upstream. It has to target the
+	# same remote the diff uses, or the refresh lands on a ref nothing reads.
+	assert grep -q "git fetch --quiet fork main" "$GIT_LOG"
+	assert grep -q "git diff fork/main\.\.\.HEAD" "$GIT_LOG"
+}
+
+@test "fabric_pr warns but still opens the PR when the base cannot be refreshed" {
+	stub_fabric_pr "feat: add a thing
+
+Body of the PR."
+	# Offline, the stale base is still diffable, so a failed refresh degrades to a
+	# warning instead of taking the PR down.
+	stub_failing_fetch
+
+	run fabric_pr
+
+	assert_success
+	assert_output --partial "could not refresh origin/main"
+	assert grep -q "git diff origin/main\.\.\.HEAD" "$GIT_LOG"
+	assert grep -q "gh pr create" "$GH_LOG"
 }
 
 @test "git_remote_for_repo falls back to origin when no remote matches" {
