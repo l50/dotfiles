@@ -79,7 +79,7 @@ setup_ansible() {
 
     echo "Installing CowDogMoo workstation collection and dependencies..."
     local install_ok=true
-    ansible-galaxy collection install git+https://github.com/CowDogMoo/ansible-collection-workstation.git,main --upgrade || install_ok=false
+    ansible-galaxy collection install "${ANSIBLE_DIR}" --force || install_ok=false
     # The playbook statically imports grafana.grafana.alloy, so its collection
     # must be present for the play to parse even when the role is skipped.
     if [[ -f "${ANSIBLE_DIR}/requirements.yml" ]]; then
