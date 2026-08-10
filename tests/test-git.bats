@@ -494,7 +494,16 @@ stub_fabric() {
 		echo "git $*" >> "$GIT_LOG"
 		local entry
 		case "$1" in
-			ds | diff) printf 'diff --git a/x b/x\n' ;;
+			# STUB_BIG_DIFF stands in for a diff too large to pipe into fabric, so the
+			# raw form has to outgrow the byte cap while --stat stays small.
+			ds | diff)
+				if [[ -n "${STUB_BIG_DIFF:-}" && "$*" != *--stat* ]]; then
+					head -c 500000 /dev/zero | tr '\0' 'x'
+				else
+					printf 'diff --git a/x b/x\n'
+				fi
+				;;
+			log) printf '%s\n' "abc1234 feat: a commit" ;;
 			commit) cat > /dev/null ;;
 			branch) printf '%s\n' "topic" ;;
 			# STUB_REMOTES is a space-separated list of <name>=<url> pairs, so a test can
@@ -543,6 +552,8 @@ stub_fabric_pr() { stub_fabric pr "$1"; }
 # git_push_remote resolves to it. Wrapped in functions because a bare export inside a
 # @test reads as a subshell-local modification to shellcheck.
 stub_branch_push_remote() { export STUB_BRANCH_PUSH_REMOTE="$1"; }
+
+stub_big_diff() { export STUB_BIG_DIFF=1; }
 
 stub_push_default() { export STUB_PUSH_DEFAULT="$1"; }
 
@@ -635,6 +646,22 @@ Body of the PR."
 	assert_success
 	assert grep -q "git diff fork/main\.\.\.HEAD" "$GIT_LOG"
 	refute grep -q "git diff origin/main" "$GIT_LOG"
+}
+
+@test "fabric_pr summarises with log and diffstat when the raw diff is too large to send" {
+	stub_fabric_pr "feat: add a thing
+
+Body of the PR."
+	# A fork sync carries thousands of commits, and piping that diff whole overruns
+	# fabric's context, so the body degrades to the commit list plus a diffstat rather
+	# than failing or truncating mid-hunk.
+	stub_big_diff
+
+	run fabric_pr
+
+	assert_success
+	assert grep -q "git log --oneline origin/main\.\.HEAD" "$GIT_LOG"
+	assert grep -q "git diff --stat origin/main\.\.\.HEAD" "$GIT_LOG"
 }
 
 @test "fabric_pr falls back to origin when the base repo's remote branch is unfetched" {

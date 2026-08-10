@@ -186,7 +186,17 @@ fabric_pr() {
         echo "warning: could not refresh ${base_remote}/${base} — diff may include already-merged commits"
         echo
     fi
-    pr_text=$(git diff "${base_remote}/${base}...HEAD" | fabric --pattern pr | ~/.config/fabric/patterns/pr/filter.sh)
+    local diff_range="${base_remote}/${base}...HEAD"
+    local max_diff_bytes=400000
+    local pr_input
+    pr_input=$(git diff "$diff_range")
+    if [ "${#pr_input}" -gt "$max_diff_bytes" ]; then
+        pr_input=$(
+            git log --oneline "${base_remote}/${base}..HEAD"
+            git diff --stat "$diff_range"
+        )
+    fi
+    pr_text=$(printf '%s\n' "$pr_input" | fabric --pattern pr | ~/.config/fabric/patterns/pr/filter.sh)
     if [ -z "$pr_text" ]; then
         echo "error: PR text is empty"
         return 1
