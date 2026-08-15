@@ -533,7 +533,15 @@ stub_fabric() {
 		case "$*" in
 			"repo view"*) printf '%s\n' "l50/dotfiles" ;;
 			"pr view"*baseRefName*) printf '%s\n' "main" ;;
-			# No existing PR, so fabric_pr takes the create path.
+			# gh pr view resolves closed/merged PRs too, but the OPEN filter in
+			# the --jq expression drops them: gh still exits 0, just with empty
+			# output. STUB_PR_STATE picks the scenario; unset means no PR.
+			"pr view"*url*)
+				[[ -n "${STUB_PR_STATE:-}" ]] || return 1
+				if [[ "$STUB_PR_STATE" == "OPEN" ]]; then
+					printf '%s\n' "https://github.com/l50/dotfiles/pull/1"
+				fi
+				;;
 			"pr view"*) return 1 ;;
 			"pr create"*) printf '%s\n' "https://github.com/l50/dotfiles/pull/1" ;;
 		esac
@@ -615,6 +623,10 @@ stub_missing_refs() { export STUB_MISSING_REFS="$*"; }
 
 # Make "git fetch" fail, so the base branch cannot be refreshed.
 stub_failing_fetch() { export STUB_FETCH_STATUS=1; }
+
+# State of the branch's existing PR as gh pr view reports it (OPEN, CLOSED,
+# MERGED). Leave unset for a branch with no PR at all.
+stub_pr_state() { export STUB_PR_STATE="$1"; }
 
 @test "fabric_commit aborts without committing when fabric returns an empty message" {
 	stub_fabric_commit "   "
@@ -761,6 +773,49 @@ Body of the PR."
 	assert_output --partial "could not refresh origin/main"
 	assert grep -q "git diff origin/main\.\.\.HEAD" "$GIT_LOG"
 	assert grep -q "gh pr create" "$GH_LOG"
+}
+
+@test "fabric_pr updates the PR in place when the branch has an open PR" {
+	stub_fabric_pr "feat: add a thing
+
+Body of the PR."
+	stub_pr_state OPEN
+
+	run fabric_pr
+
+	assert_success
+	assert_output --partial "Updated existing pull request"
+	assert grep -q "gh pr edit" "$GH_LOG"
+	refute grep -q "gh pr create" "$GH_LOG"
+}
+
+@test "fabric_pr opens a new PR when the branch's previous PR was closed" {
+	stub_fabric_pr "feat: add a thing
+
+Body of the PR."
+	# gh pr view resolves the branch to its most relevant PR even after that PR
+	# was closed unmerged (e.g. by a branch deletion). Taking the edit path then
+	# rewrites the dead PR forever and the branch never gets a new one.
+	stub_pr_state CLOSED
+
+	run fabric_pr
+
+	assert_success
+	assert grep -q "gh pr create" "$GH_LOG"
+	refute grep -q "gh pr edit" "$GH_LOG"
+}
+
+@test "fabric_pr does not edit an already-merged PR" {
+	stub_fabric_pr "feat: add a thing
+
+Body of the PR."
+	stub_pr_state MERGED
+
+	run fabric_pr
+
+	assert_success
+	assert grep -q "gh pr create" "$GH_LOG"
+	refute grep -q "gh pr edit" "$GH_LOG"
 }
 
 @test "git_remote_for_repo falls back to origin when no remote matches" {
