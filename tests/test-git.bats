@@ -455,6 +455,55 @@ teardown() {
 	assert_output --partial "install it from: https://github.com/danielmiessler/fabric"
 }
 
+# check_squad tests
+
+@test "check_squad succeeds when squad is installed" {
+	# Mock command function
+	# shellcheck disable=SC2317,SC2329
+	command() {
+		# shellcheck disable=SC2317
+		if [[ "$2" == "squad" ]]; then
+			# shellcheck disable=SC2317
+			return 0
+		fi
+		# shellcheck disable=SC2317
+		builtin command "$@"
+	}
+	export -f command
+
+	run check_squad
+
+	assert_success
+}
+
+@test "check_squad fails when squad is not installed" {
+	# Mock command function
+	# shellcheck disable=SC2317,SC2329
+	command() {
+		# shellcheck disable=SC2317
+		if [[ "$2" == "squad" ]]; then
+			# shellcheck disable=SC2317
+			return 1
+		fi
+		# shellcheck disable=SC2317
+		builtin command "$@"
+	}
+	export -f command
+
+	run check_squad
+
+	assert_failure
+	assert_output --partial "error: squad is not installed"
+	assert_output --partial "install it from: https://github.com/CowDogMoo/squad"
+}
+
+@test "squad_gen fails for unknown pattern" {
+	run squad_gen no-such-pattern < /dev/null
+
+	assert_failure
+	assert_output --partial "error: pattern not found"
+}
+
 # fabric_commit tests
 
 # Stubs a fabric pattern filter under a throwaway HOME and mocks every command the

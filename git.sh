@@ -312,6 +312,283 @@ fabric_pr() {
     fi
 }
 
+# check_squad() verifies that the squad tool is installed and available.
+#
+# Usage:
+#   check_squad
+#
+# Output:
+#   Returns 0 if squad is installed, exits with error message if not.
+#
+# Example:
+#   check_squad
+check_squad() {
+    if ! command -v squad &> /dev/null; then
+        echo "error: squad is not installed"
+        echo "install it from: https://github.com/CowDogMoo/squad"
+        return 1
+    fi
+}
+
+# squad_gen() transforms stdin using a fabric-patterns-hub pattern, run by
+# squad's generic text-transform agent on the claude-code provider so the
+# call is billed to the local Claude subscription instead of an API key.
+# The pattern's system.md is injected via --system and its filter.sh
+# post-processes the output, so pattern content stays single-sourced in
+# the hub repo.
+#
+# Usage:
+#   <input> | squad_gen <pattern>
+#
+# Output:
+#   The transformed text on stdout.
+#
+# Example:
+#   git ds | squad_gen commit
+#
+# Note:
+#   Requires the text-transform agent from the squad-agents repo, which
+#   squad discovers via agents.local_paths (see squad config show).
+#   Override locations with FABRIC_PATTERNS_HUB and SQUAD_AGENTS_REPO.
+squad_gen() {
+    local pattern=$1
+    local hub="${FABRIC_PATTERNS_HUB:-$HOME/cowdogmoo/fabric-patterns-hub}"
+    local system="$hub/patterns/$pattern/system.md"
+    local filter="$hub/patterns/$pattern/filter.sh"
+    if [ ! -f "$system" ]; then
+        echo "error: pattern not found: $system" >&2
+        return 1
+    fi
+    local agents_repo="${SQUAD_AGENTS_REPO:-$HOME/cowdogmoo/squad-agents}"
+    if [ ! -d "$agents_repo/text-transform" ]; then
+        echo "error: text-transform agent not found in $agents_repo" >&2
+        echo "clone https://github.com/CowDogMoo/squad-agents (or set SQUAD_AGENTS_REPO) and register it in squad's agents.local_paths" >&2
+        return 1
+    fi
+    # squad's info logs (session banner, metrics) go to stderr; suppress them
+    # so callers get only the transformed text. Re-run without 2>/dev/null to
+    # debug a failing generation.
+    squad run --agent text-transform --provider claude-code --mode readonly \
+        --require-actionable=false --system "$(cat "$system")" 2> /dev/null \
+        | "$filter"
+}
+
+# squad_branch() generates an idiomatic branch name with squad on the Claude
+# subscription and checks it out. With no arguments, the name is inferred
+# from uncommitted changes (diff against HEAD, falling back to git status).
+#
+# Usage:
+#   squad_branch [description...]
+#
+# Output:
+#   Creates and switches to a new branch with an AI-generated name.
+#
+# Example:
+#   squad_branch fix auth token expiry issue AUTH-456
+#
+# Note:
+#   Subscription-billed twin of fabric_branch; uses the hub 'branch' pattern.
+squad_branch() {
+    check_squad || return 1
+    local input="$*"
+    if [ -z "$input" ]; then
+        input=$(git diff HEAD 2> /dev/null)
+        if [ -z "$input" ]; then
+            input=$(git status --short 2> /dev/null)
+        fi
+    fi
+
+    if [ -z "$input" ]; then
+        echo "error: no description provided and no git changes found" >&2
+        return 1
+    fi
+
+    local branch_name
+    branch_name=$(printf '%s\n' "$input" | squad_gen branch)
+
+    if [ -z "$(printf '%s' "$branch_name" | tr -d '[:space:]')" ]; then
+        echo "error: branch name is empty — squad call failed; check 'echo <desc> | squad_gen branch'" >&2
+        return 1
+    fi
+
+    echo "✓ Checking out branch: $branch_name"
+    git checkout -b "$branch_name"
+}
+
+# squad_commit() generates a commit message with squad on the Claude
+# subscription and commits the staged changes, then pushes to remote.
+#
+# Usage:
+#   squad_commit
+#
+# Output:
+#   Commits staged changes with an AI-generated commit message and pushes to remote.
+#
+# Example:
+#   squad_commit
+#
+# Note:
+#   Subscription-billed twin of fabric_commit; uses the hub 'commit' pattern
+#   and requires git alias 'ds'.
+squad_commit() {
+    check_squad || return 1
+    local msg
+    msg=$(git ds | squad_gen commit)
+    # git commit --cleanup=verbatim -F - accepts empty stdin, so a failed
+    # generation would otherwise create a message-less commit.
+    if [ -z "$(printf '%s' "$msg" | tr -d '[:space:]')" ]; then
+        echo "error: commit message is empty — squad call failed; check 'git ds | squad_gen commit'" >&2
+        return 1
+    fi
+    # Push with an explicit refspec: a bare "git push" fails when the local
+    # branch tracks a differently-named upstream (e.g. after
+    # "git checkout -b topic origin/main"), which aborts before pushing.
+    printf '%s\n' "$msg" | git commit --cleanup=verbatim -F - && git push -u "$(git_push_remote)" HEAD
+}
+
+# squad_pr() generates a PR title/body with squad on the Claude subscription
+# and creates or updates the branch's PR with gh. If a PR already exists it
+# is updated in place with freshly regenerated text (e.g. after a rebase);
+# otherwise a new PR is opened. The title/body are ALWAYS generated output —
+# never hand-write or hand-edit them.
+#
+# Usage:
+#   squad_pr [gh pr create args...]   # extra args apply only when creating
+#
+# Output:
+#   Creates or updates a GitHub PR with AI-generated title/body from the diff
+#   against main. Re-run any time the branch changes to refresh the PR.
+#
+# Example:
+#   squad_pr --draft
+#
+# Note:
+#   Subscription-billed twin of fabric_pr; uses the hub 'pr' pattern.
+squad_pr() {
+    check_squad || return 1
+    if ! command -v gh &> /dev/null; then
+        echo "error: gh is not installed"
+        return 1
+    fi
+
+    local pr_text
+    local title
+    local body
+    local branch
+    local repo
+
+    branch=$(git branch --show-current)
+    repo=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2> /dev/null)
+
+    echo "⏺ Generating PR with Squad (claude-code)..."
+    echo
+
+    local base remote base_remote
+    base=$(gh pr view --json baseRefName --jq '.baseRefName' 2> /dev/null)
+    : "${base:=main}"
+    # Diff against the base branch as it exists in the repo the PR is opened against, not
+    # the push remote's copy. That repo is usually origin, but "gh repo set-default" can
+    # aim PRs at a fork, and then origin is the stale one and would pad the diff with
+    # commits the PR does not contain. Fall back to origin when the resolved remote's copy
+    # was never fetched, since a missing revision aborts the diff outright.
+    base_remote=$(git_remote_for_repo "$repo")
+    if ! git rev-parse --verify --quiet "${base_remote}/${base}" > /dev/null 2>&1; then
+        base_remote=origin
+    fi
+    # Refresh the base before diffing. Remote-tracking refs only move when that
+    # branch is fetched, and fetching a feature branch does not touch them, so
+    # the local copy of the base drifts behind without any visible signal. A
+    # stale base pads the diff with commits already merged upstream and the
+    # model then writes a PR describing someone else's work. Non-fatal so the
+    # command still works offline, but warn, since the result is silently wrong.
+    if ! git fetch --quiet "$base_remote" "$base" 2> /dev/null; then
+        echo "warning: could not refresh ${base_remote}/${base} — diff may include already-merged commits"
+        echo
+    fi
+    local diff_range="${base_remote}/${base}...HEAD"
+    local max_diff_bytes=400000
+    local pr_input
+    pr_input=$(git diff "$diff_range")
+    if [ "${#pr_input}" -gt "$max_diff_bytes" ]; then
+        pr_input=$(
+            git log --oneline "${base_remote}/${base}..HEAD"
+            git diff --stat "$diff_range"
+        )
+    fi
+    pr_text=$(printf '%s\n' "$pr_input" | squad_gen pr)
+    if [ -z "$pr_text" ]; then
+        echo "error: PR text is empty"
+        return 1
+    fi
+
+    # Trim leading blank lines before extracting title/body
+    pr_text=$(printf "%s\n" "$pr_text" | sed -n '/[^[:space:]]/,$p')
+
+    title=$(printf "%s\n" "$pr_text" | head -n 1)
+    body=$(printf "%s\n" "$pr_text" | tail -n +2)
+
+    if [ -z "$title" ]; then
+        echo "error: PR title is empty"
+        return 1
+    fi
+
+    echo "  PR Details:"
+    echo "  - Title: $title"
+    echo "  - Branch: $branch"
+    if [ -n "$repo" ]; then
+        echo "  - Repo: $repo"
+    fi
+    echo
+
+    # Push the branch. After a rebase/amend the remote has diverged, so fall
+    # back to --force-with-lease (refuses if the remote moved unexpectedly).
+    remote=$(git_push_remote)
+    if ! git push -u "$remote" HEAD 2> /dev/null; then
+        if ! git push --force-with-lease -u "$remote" HEAD; then
+            echo "error: Failed to push branch"
+            return 1
+        fi
+    fi
+    echo "✓ Pushed branch to remote"
+    echo
+
+    local pr_url
+    # If a PR already exists for this branch, update it in place with the
+    # freshly generated title/body (e.g. after a rebase) instead of failing.
+    # Otherwise create a new PR. The body is ALWAYS generated output, never
+    # hand-written. Create-only flags ("$@", e.g. --draft) apply on create.
+    if pr_url=$(gh pr view --json url --jq '.url' 2> /dev/null) && [ -n "$pr_url" ]; then
+        if gh pr edit --title "$title" --body "$body" > /dev/null; then
+            echo "⏺ Updated existing pull request with regenerated title/body!"
+            echo
+            echo "  Pull Request:"
+            echo "  - URL: $pr_url"
+            echo "  - Title: $title"
+            echo "  - Branch: $branch"
+            echo
+        else
+            echo "error: Failed to update existing PR"
+            return 1
+        fi
+    elif pr_url=$(gh pr create --title "$title" --body "$body" "$@"); then
+        if [ -n "$pr_url" ]; then
+            echo "⏺ Successfully created pull request!"
+            echo
+            echo "  Pull Request:"
+            echo "  - URL: $pr_url"
+            echo "  - Title: $title"
+            echo "  - Branch: $branch"
+            echo
+        else
+            echo "error: PR URL is empty"
+            return 1
+        fi
+    else
+        echo "error: Failed to create PR"
+        return 1
+    fi
+}
+
 # gh_cancel() cancels a GitHub workflow run by ID, or the most recent run.
 #
 # Usage:
