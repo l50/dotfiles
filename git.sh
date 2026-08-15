@@ -98,6 +98,48 @@ git_remote_for_repo() {
     printf '%s\n' "origin"
 }
 
+# fabric_branch() generates an idiomatic branch name using fabric AI and
+# checks it out. With no arguments, the name is inferred from uncommitted
+# changes (diff against HEAD, falling back to git status).
+#
+# Usage:
+#   fabric_branch [description...]
+#
+# Output:
+#   Creates and switches to a new branch with an AI-generated name.
+#
+# Example:
+#   fabric_branch fix auth token expiry issue AUTH-456
+#
+# Note:
+#   Requires the fabric tool and a 'branch' fabric pattern.
+fabric_branch() {
+    check_fabric || return 1
+    local input="$*"
+    if [ -z "$input" ]; then
+        input=$(git diff HEAD 2> /dev/null)
+        if [ -z "$input" ]; then
+            input=$(git status --short 2> /dev/null)
+        fi
+    fi
+
+    if [ -z "$input" ]; then
+        echo "error: no description provided and no git changes found" >&2
+        return 1
+    fi
+
+    local branch_name
+    branch_name=$(printf '%s\n' "$input" | fabric --pattern branch | ~/.config/fabric/patterns/branch/filter.sh)
+
+    if [ -z "$(printf '%s' "$branch_name" | tr -d '[:space:]')" ]; then
+        echo "error: branch name is empty — fabric call failed; check 'fabric --pattern branch'" >&2
+        return 1
+    fi
+
+    echo "✓ Checking out branch: $branch_name"
+    git checkout -b "$branch_name"
+}
+
 # fabric_commit() generates a commit message using fabric AI and commits
 # the staged changes, then pushes to remote.
 #
