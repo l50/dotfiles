@@ -207,7 +207,9 @@ fabric_pr() {
     echo
 
     local base remote base_remote
-    base=$(gh pr view --json baseRefName --jq '.baseRefName' 2> /dev/null)
+    # Only an open PR pins the base; a closed/merged PR's base has no bearing
+    # on the PR this run creates.
+    base=$(gh pr view --json baseRefName,state --jq 'select(.state == "OPEN") | .baseRefName' 2> /dev/null)
     : "${base:=main}"
     # Diff against the base branch as it exists in the repo the PR is opened against, not
     # the push remote's copy. That repo is usually origin, but "gh repo set-default" can
@@ -276,11 +278,13 @@ fabric_pr() {
     echo
 
     local pr_url
-    # If a PR already exists for this branch, update it in place with the
+    # If an open PR already exists for this branch, update it in place with the
     # freshly generated title/body (e.g. after a rebase) instead of failing.
-    # Otherwise create a new PR. The body is ALWAYS fabric output, never
-    # hand-written. Create-only flags ("$@", e.g. --draft) apply on create.
-    if pr_url=$(gh pr view --json url --jq '.url' 2> /dev/null) && [ -n "$pr_url" ]; then
+    # Otherwise create a new PR — gh pr view also resolves closed/merged PRs,
+    # and editing one of those rewrites a dead PR instead of opening a fresh
+    # one. The body is ALWAYS fabric output, never hand-written. Create-only
+    # flags ("$@", e.g. --draft) apply on create.
+    if pr_url=$(gh pr view --json url,state --jq 'select(.state == "OPEN") | .url' 2> /dev/null) && [ -n "$pr_url" ]; then
         if gh pr edit --title "$title" --body "$body" > /dev/null; then
             echo "⏺ Updated existing pull request with regenerated title/body!"
             echo
@@ -484,7 +488,9 @@ squad_pr() {
     echo
 
     local base remote base_remote
-    base=$(gh pr view --json baseRefName --jq '.baseRefName' 2> /dev/null)
+    # Only an open PR pins the base; a closed/merged PR's base has no bearing
+    # on the PR this run creates.
+    base=$(gh pr view --json baseRefName,state --jq 'select(.state == "OPEN") | .baseRefName' 2> /dev/null)
     : "${base:=main}"
     # Diff against the base branch as it exists in the repo the PR is opened against, not
     # the push remote's copy. That repo is usually origin, but "gh repo set-default" can
@@ -553,11 +559,13 @@ squad_pr() {
     echo
 
     local pr_url
-    # If a PR already exists for this branch, update it in place with the
+    # If an open PR already exists for this branch, update it in place with the
     # freshly generated title/body (e.g. after a rebase) instead of failing.
-    # Otherwise create a new PR. The body is ALWAYS generated output, never
-    # hand-written. Create-only flags ("$@", e.g. --draft) apply on create.
-    if pr_url=$(gh pr view --json url --jq '.url' 2> /dev/null) && [ -n "$pr_url" ]; then
+    # Otherwise create a new PR — gh pr view also resolves closed/merged PRs,
+    # and editing one of those rewrites a dead PR instead of opening a fresh
+    # one. The body is ALWAYS generated output, never hand-written. Create-only
+    # flags ("$@", e.g. --draft) apply on create.
+    if pr_url=$(gh pr view --json url,state --jq 'select(.state == "OPEN") | .url' 2> /dev/null) && [ -n "$pr_url" ]; then
         if gh pr edit --title "$title" --body "$body" > /dev/null; then
             echo "⏺ Updated existing pull request with regenerated title/body!"
             echo
