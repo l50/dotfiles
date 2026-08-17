@@ -357,10 +357,16 @@ check_squad() {
 squad_gen() {
     local pattern=$1
     local hub="${FABRIC_PATTERNS_HUB:-$HOME/cowdogmoo/fabric-patterns-hub}"
+    if [ -z "$pattern" ]; then
+        echo "usage: <input> | squad_gen <pattern>" >&2
+        [ -d "$hub/patterns" ] && echo "patterns: $(cd "$hub/patterns" && printf '%s ' */ | tr -d '/')" >&2
+        return 1
+    fi
     local system="$hub/patterns/$pattern/system.md"
     local filter="$hub/patterns/$pattern/filter.sh"
     if [ ! -f "$system" ]; then
         echo "error: pattern not found: $system" >&2
+        [ -d "$hub/patterns" ] && echo "patterns: $(cd "$hub/patterns" && printf '%s ' */ | tr -d '/')" >&2
         return 1
     fi
     local agents_repo="${SQUAD_AGENTS_REPO:-$HOME/cowdogmoo/squad-agents}"
