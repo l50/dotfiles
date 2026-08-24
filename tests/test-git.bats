@@ -838,3 +838,113 @@ Body of the PR."
 	assert_success
 	assert_output "fork"
 }
+
+# squad integration tests
+
+# Layers the squad-side pieces on top of stub_fabric's git/gh mocks: a
+# throwaway patterns hub, a text-transform agent dir, and a squad function
+# that emits $2. $1 is the pattern directory (commit or pr). The result
+# exercises the real squad_gen pipeline (pattern lookup, filter, sentinel
+# guard) end to end without the squad CLI.
+stub_squad() {
+	stub_fabric "$1" ""
+	export SQUAD_MSG="$2"
+	export FABRIC_PATTERNS_HUB="$BATS_TEST_TMPDIR/hub"
+	export SQUAD_AGENTS_REPO="$BATS_TEST_TMPDIR/agents"
+
+	mkdir -p "$FABRIC_PATTERNS_HUB/patterns/$1" "$SQUAD_AGENTS_REPO/text-transform"
+	echo "transform prompt" > "$FABRIC_PATTERNS_HUB/patterns/$1/system.md"
+	printf '#!/usr/bin/env bash\ncat\n' > "$FABRIC_PATTERNS_HUB/patterns/$1/filter.sh"
+	chmod +x "$FABRIC_PATTERNS_HUB/patterns/$1/filter.sh"
+
+	check_squad() { return 0; }
+	squad() {
+		cat > /dev/null
+		printf '%s\n' "$SQUAD_MSG"
+	}
+	export -f check_squad squad
+}
+
+@test "squad_gen rejects the NO INPUT sentinel" {
+	stub_squad commit "NO INPUT"
+
+	run squad_gen commit <<< "diff --git a/foo b/foo"
+
+	assert_failure
+	assert_output --partial "error: squad returned the NO INPUT sentinel"
+}
+
+@test "squad_gen rejects the sentinel even when wrapped in prose" {
+	# Live runs showed the model padding the sentinel with an explanation, which
+	# slipped past an exact whole-output match.
+	stub_squad commit "I need the git diff to work from — the input was empty.
+
+NO INPUT"
+
+	run squad_gen commit <<< "diff --git a/foo b/foo"
+
+	assert_failure
+	assert_output --partial "error: squad returned the NO INPUT sentinel"
+}
+
+@test "squad_gen passes through normal output" {
+	stub_squad commit "feat: add foo"
+
+	run squad_gen commit <<< "diff --git a/foo b/foo"
+
+	assert_success
+	assert_output "feat: add foo"
+}
+
+@test "squad_gen keeps a message that merely mentions NO INPUT" {
+	stub_squad commit "fix: reject a literal NO INPUT commit message"
+
+	run squad_gen commit <<< "diff --git a/foo b/foo"
+
+	assert_success
+	assert_output "fix: reject a literal NO INPUT commit message"
+}
+
+@test "squad_commit aborts without committing when squad returns the sentinel" {
+	stub_squad commit "NO INPUT"
+
+	run squad_commit
+
+	assert_failure
+	assert_output --partial "error: squad returned the NO INPUT sentinel"
+	assert_output --partial "commit message is empty"
+	refute grep -q "git commit" "$GIT_LOG"
+	refute grep -q "git push" "$GIT_LOG"
+}
+
+@test "squad_commit commits and pushes the generated message" {
+	stub_squad commit "fix: correct the thing"
+
+	run squad_commit
+
+	assert_success
+	assert grep -q "git commit --cleanup=verbatim -F -" "$GIT_LOG"
+	assert grep -q "git push -u origin HEAD" "$GIT_LOG"
+}
+
+@test "squad_pr aborts before pushing when squad returns the sentinel" {
+	stub_squad pr "NO INPUT"
+
+	run squad_pr
+
+	assert_failure
+	assert_output --partial "error: PR text is empty"
+	refute grep -q "git push" "$GIT_LOG"
+	refute grep -q "gh pr create" "$GH_LOG"
+}
+
+@test "squad_pr opens a PR with the generated title and body" {
+	stub_squad pr "feat: add a thing
+
+Body of the PR."
+
+	run squad_pr
+
+	assert_success
+	assert grep -q "gh pr create" "$GH_LOG"
+}

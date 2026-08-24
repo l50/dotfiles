@@ -378,9 +378,19 @@ squad_gen() {
     # squad's info logs (session banner, metrics) go to stderr; suppress them
     # so callers get only the transformed text. Re-run without 2>/dev/null to
     # debug a failing generation.
-    squad run --agent text-transform --provider claude-code --mode readonly \
+    local out
+    out=$(squad run --agent text-transform --provider claude-code --mode readonly \
         --require-actionable=false --system "$(cat "$system")" 2> /dev/null \
-        | "$filter"
+        | "$filter")
+    # NO INPUT is the text-transform agent's no-stdin sentinel; any line
+    # matching it means the model treated the run as inputless (possibly with
+    # prose around the sentinel), so fail instead of handing callers the
+    # literal string to commit or publish.
+    if printf '%s\n' "$out" | grep -qxE '[[:space:]]*NO INPUT[[:space:]]*'; then
+        echo "error: squad returned the NO INPUT sentinel — the model saw no usable input; retry or debug with '<input> | squad_gen $pattern'" >&2
+        return 1
+    fi
+    printf '%s\n' "$out"
 }
 
 # squad_branch() generates an idiomatic branch name with squad on the Claude
