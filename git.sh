@@ -335,11 +335,11 @@ check_squad() {
 }
 
 # squad_gen() transforms stdin using a fabric-patterns-hub pattern, run by
-# squad's generic text-transform agent on the claude-code provider so the
-# call is billed to the local Claude subscription instead of an API key.
-# The pattern's system.md is injected via --system and its filter.sh
-# post-processes the output, so pattern content stays single-sourced in
-# the hub repo.
+# squad's built-in pure-text transform (squad run --system with no --agent)
+# on the claude-code provider so the call is billed to the local Claude
+# subscription instead of an API key. The pattern's system.md is injected
+# via --system and its filter.sh post-processes the output, so pattern
+# content stays single-sourced in the hub repo.
 #
 # Usage:
 #   <input> | squad_gen <pattern>
@@ -351,9 +351,8 @@ check_squad() {
 #   git ds | squad_gen commit
 #
 # Note:
-#   Requires the text-transform agent from the squad-agents repo, which
-#   squad discovers via agents.local_paths (see squad config show).
-#   Override locations with FABRIC_PATTERNS_HUB and SQUAD_AGENTS_REPO.
+#   Requires squad >= the build that supports agentless --system runs.
+#   Override the hub location with FABRIC_PATTERNS_HUB.
 squad_gen() {
     local pattern=$1
     local hub="${FABRIC_PATTERNS_HUB:-$HOME/cowdogmoo/fabric-patterns-hub}"
@@ -369,20 +368,13 @@ squad_gen() {
         [ -d "$hub/patterns" ] && echo "patterns: $(cd "$hub/patterns" && printf '%s ' */ | tr -d '/')" >&2
         return 1
     fi
-    local agents_repo="${SQUAD_AGENTS_REPO:-$HOME/cowdogmoo/squad-agents}"
-    if [ ! -d "$agents_repo/text-transform" ]; then
-        echo "error: text-transform agent not found in $agents_repo" >&2
-        echo "clone https://github.com/CowDogMoo/squad-agents (or set SQUAD_AGENTS_REPO) and register it in squad's agents.local_paths" >&2
-        return 1
-    fi
     # squad's info logs (session banner, metrics) go to stderr; suppress them
     # so callers get only the transformed text. Re-run without 2>/dev/null to
     # debug a failing generation.
     local out
-    out=$(squad run --agent text-transform --provider claude-code --mode readonly \
-        --require-actionable=false --system "$(cat "$system")" 2> /dev/null \
+    out=$(squad run --provider claude-code --system "$(cat "$system")" 2> /dev/null \
         | "$filter")
-    # NO INPUT is the text-transform agent's no-stdin sentinel; any line
+    # NO INPUT is the built-in transform's no-stdin sentinel; any line
     # matching it means the model treated the run as inputless (possibly with
     # prose around the sentinel), so fail instead of handing callers the
     # literal string to commit or publish.
