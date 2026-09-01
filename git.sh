@@ -98,6 +98,79 @@ git_remote_for_repo() {
     printf '%s\n' "origin"
 }
 
+# git_base_branch() prints the branch a new PR from the current branch should
+# target, resolved from the repo gh opens PRs against.
+#
+# Usage:
+#   git_base_branch
+#
+# Output:
+#   A branch name, defaulting to "main".
+#
+# Example:
+#   git diff "origin/$(git_base_branch)...HEAD"
+#
+# Note:
+#   Hardcoding main breaks every repo that names its default branch something
+#   else (mealie-next, master, develop): the diff range then references a
+#   revision that does not exist and the PR aborts before it is written. Falls
+#   back to the push remote's HEAD so the lookup still resolves offline, and to
+#   main only when nothing else answers.
+git_base_branch() {
+    local base remote
+    base=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name' 2> /dev/null)
+    if [ -z "$base" ]; then
+        remote=$(git_push_remote)
+        base=$(git symbolic-ref --quiet --short "refs/remotes/${remote}/HEAD" 2> /dev/null)
+        base=${base#"${remote}/"}
+    fi
+    printf '%s\n' "${base:-main}"
+}
+
+# git_required_pr_headings() prints the "## " headings a repo's pull request
+# template marks as required, one per line, newest-first in template order.
+#
+# Usage:
+#   git_required_pr_headings
+#
+# Output:
+#   Zero or more heading lines. Empty when the repo ships no template.
+#
+# Example:
+#   PR_REQUIRED_HEADINGS=$(git_required_pr_headings)
+#
+# Note:
+#   Mirrors the parse mealie-style "Validate PR template" checks run: a heading
+#   is required when the next "_(REQUIRED)_" line follows it with no intervening
+#   heading. Those checks grep the PR body for each heading as a literal
+#   substring, so a generated body that omits them fails CI no matter how good
+#   the prose is.
+git_required_pr_headings() {
+    local root template
+    root=$(git rev-parse --show-toplevel 2> /dev/null) || return 0
+    for template in \
+        "$root/.github/pull_request_template.md" \
+        "$root/.github/PULL_REQUEST_TEMPLATE.md"; do
+        [ -f "$template" ] || continue
+        awk '
+            /^## / {
+                heading = $0
+                sub(/[[:space:]]+$/, "", heading)
+                next
+            }
+            {
+                line = $0
+                gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
+                if (line == "_(REQUIRED)_" && heading != "") {
+                    print heading
+                    heading = ""
+                }
+            }
+        ' "$template"
+        return 0
+    done
+}
+
 # fabric_branch() generates an idiomatic branch name using fabric AI and
 # checks it out. With no arguments, the name is inferred from uncommitted
 # changes (diff against HEAD, falling back to git status).
@@ -210,7 +283,7 @@ fabric_pr() {
     # Only an open PR pins the base; a closed/merged PR's base has no bearing
     # on the PR this run creates.
     base=$(gh pr view --json baseRefName,state --jq 'select(.state == "OPEN") | .baseRefName' 2> /dev/null)
-    : "${base:=main}"
+    : "${base:=$(git_base_branch)}"
     # Diff against the base branch as it exists in the repo the PR is opened against, not
     # the push remote's copy. That repo is usually origin, but "gh repo set-default" can
     # aim PRs at a fork, and then origin is the stale one and would pad the diff with
@@ -240,7 +313,19 @@ fabric_pr() {
             git diff --stat "$diff_range"
         )
     fi
+    # A repo whose PR template marks headings required has a CI check grepping the
+    # body for them verbatim, so the generated body has to be built around those
+    # headings rather than the pattern's default section list. The model needs them
+    # in its input; the pattern's filter needs them in the environment, to stop the
+    # section merging that would reorder content out from under them.
+    local pr_headings
+    pr_headings=$(git_required_pr_headings)
+    if [ -n "$pr_headings" ]; then
+        pr_input=$(printf 'REQUIRED PR TEMPLATE HEADINGS\n%s\n\n---\n\n%s\n' "$pr_headings" "$pr_input")
+    fi
+    export PR_REQUIRED_HEADINGS="$pr_headings"
     pr_text=$(printf '%s\n' "$pr_input" | fabric --pattern pr | ~/.config/fabric/patterns/pr/filter.sh)
+    unset PR_REQUIRED_HEADINGS
     if [ -z "$pr_text" ]; then
         echo "error: PR text is empty"
         return 1
@@ -499,7 +584,7 @@ squad_pr() {
     # Only an open PR pins the base; a closed/merged PR's base has no bearing
     # on the PR this run creates.
     base=$(gh pr view --json baseRefName,state --jq 'select(.state == "OPEN") | .baseRefName' 2> /dev/null)
-    : "${base:=main}"
+    : "${base:=$(git_base_branch)}"
     # Diff against the base branch as it exists in the repo the PR is opened against, not
     # the push remote's copy. That repo is usually origin, but "gh repo set-default" can
     # aim PRs at a fork, and then origin is the stale one and would pad the diff with
@@ -529,7 +614,19 @@ squad_pr() {
             git diff --stat "$diff_range"
         )
     fi
+    # A repo whose PR template marks headings required has a CI check grepping the
+    # body for them verbatim, so the generated body has to be built around those
+    # headings rather than the pattern's default section list. The model needs them
+    # in its input; the pattern's filter needs them in the environment, to stop the
+    # section merging that would reorder content out from under them.
+    local pr_headings
+    pr_headings=$(git_required_pr_headings)
+    if [ -n "$pr_headings" ]; then
+        pr_input=$(printf 'REQUIRED PR TEMPLATE HEADINGS\n%s\n\n---\n\n%s\n' "$pr_headings" "$pr_input")
+    fi
+    export PR_REQUIRED_HEADINGS="$pr_headings"
     pr_text=$(printf '%s\n' "$pr_input" | squad_gen pr)
+    unset PR_REQUIRED_HEADINGS
     if [ -z "$pr_text" ]; then
         echo "error: PR text is empty"
         return 1

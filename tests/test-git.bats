@@ -531,8 +531,17 @@ stub_fabric() {
 	gh() {
 		echo "gh $*" >> "$GH_LOG"
 		case "$*" in
+			# STUB_DEFAULT_BRANCH stands in for a repo that does not name its default
+			# branch main, which is the base a PR gets when no open PR pins one.
+			"repo view"*defaultBranchRef*) printf '%s\n' "${STUB_DEFAULT_BRANCH:-main}" ;;
 			"repo view"*) printf '%s\n' "l50/dotfiles" ;;
-			"pr view"*baseRefName*) printf '%s\n' "main" ;;
+			# Only an open PR reports a base; otherwise gh exits 0 with no output and
+			# the caller has to resolve the default branch itself.
+			"pr view"*baseRefName*)
+				if [[ "${STUB_PR_STATE:-}" == "OPEN" ]]; then
+					printf '%s\n' "main"
+				fi
+				;;
 			# gh pr view resolves closed/merged PRs too, but the OPEN filter in
 			# the --jq expression drops them: gh still exits 0, just with empty
 			# output. STUB_PR_STATE picks the scenario; unset means no PR.
@@ -627,6 +636,10 @@ stub_failing_fetch() { export STUB_FETCH_STATUS=1; }
 # State of the branch's existing PR as gh pr view reports it (OPEN, CLOSED,
 # MERGED). Leave unset for a branch with no PR at all.
 stub_pr_state() { export STUB_PR_STATE="$1"; }
+
+# Name the default branch of the repo gh opens PRs against, for repos that do
+# not call it main.
+stub_default_branch() { export STUB_DEFAULT_BRANCH="$1"; }
 
 @test "fabric_commit aborts without committing when fabric returns an empty message" {
 	stub_fabric_commit "   "
@@ -740,6 +753,22 @@ Body of the PR."
 	assert_success
 	assert grep -q "git diff origin/main\.\.\.HEAD" "$GIT_LOG"
 	refute grep -q "git diff fork/main" "$GIT_LOG"
+}
+
+@test "fabric_pr targets the default branch when the repo does not call it main" {
+	stub_fabric_pr "feat: add a thing
+
+Body of the PR."
+	# With no open PR to pin a base, the base is the repo's default branch. Assuming
+	# main names a revision that does not exist on forks like mealie-next, and the
+	# diff aborts before the PR is ever written.
+	stub_default_branch "mealie-next"
+
+	run fabric_pr
+
+	assert_success
+	assert grep -q "git diff origin/mealie-next\.\.\.HEAD" "$GIT_LOG"
+	refute grep -q "git diff origin/main" "$GIT_LOG"
 }
 
 @test "fabric_pr refreshes the base branch it diffs against" {
@@ -863,6 +892,67 @@ stub_squad() {
 		printf '%s\n' "$SQUAD_MSG"
 	}
 	export -f check_squad squad
+}
+
+# git_required_pr_headings tests
+
+# Build a real repo (not the mocked git the fabric_* tests use) with a PR template,
+# since the parser reads a file off the worktree root.
+stub_pr_template() {
+	cd "$BATS_TEST_TMPDIR" || return 1
+	git init --quiet . 2> /dev/null
+	mkdir -p .github
+	cat > .github/pull_request_template.md
+}
+
+@test "git_required_pr_headings lists only the headings marked required" {
+	stub_pr_template << 'EOF'
+## What this PR does / why we need it:
+
+_(REQUIRED)_
+
+## Testing
+
+_(fill-in or delete this section)_
+
+## AI / LLM Assistance
+
+_(REQUIRED)_
+EOF
+
+	run git_required_pr_headings
+
+	assert_success
+	# Order matters: the generated body has to present them the way the template does.
+	assert_equal "$output" "## What this PR does / why we need it:
+## AI / LLM Assistance"
+}
+
+@test "git_required_pr_headings ignores a required marker with no heading above it" {
+	# A marker under an already-claimed heading belongs to no heading, and emitting a
+	# stray blank would make squad_pr export an empty required heading.
+	stub_pr_template << 'EOF'
+## What this PR does / why we need it:
+
+_(REQUIRED)_
+
+_(REQUIRED)_
+EOF
+
+	run git_required_pr_headings
+
+	assert_success
+	assert_equal "$output" "## What this PR does / why we need it:"
+}
+
+@test "git_required_pr_headings is silent when the repo ships no template" {
+	cd "$BATS_TEST_TMPDIR" || return 1
+	git init --quiet . 2> /dev/null
+
+	run git_required_pr_headings
+
+	assert_success
+	assert_output ""
 }
 
 @test "squad_gen rejects the NO INPUT sentinel" {
