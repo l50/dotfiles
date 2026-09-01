@@ -341,6 +341,17 @@ fabric_pr() {
         echo "error: PR title is empty"
         return 1
     fi
+    # A markdown heading in the title position means the model skipped the title line
+    # and opened with the body, so the first heading got consumed as the title. Left
+    # alone that ships a PR titled "## What this PR does", failing the semantic-title
+    # check and dropping a heading the template check needs.
+    case "$title" in
+        \#*)
+            echo "error: PR title is a markdown heading: $title" >&2
+            echo "the model omitted the title line; retry, or debug with 'git diff | squad_gen pr'" >&2
+            return 1
+            ;;
+    esac
 
     echo "  PR Details:"
     echo "  - Title: $title"
@@ -642,6 +653,17 @@ squad_pr() {
         echo "error: PR title is empty"
         return 1
     fi
+    # A markdown heading in the title position means the model skipped the title line
+    # and opened with the body, so the first heading got consumed as the title. Left
+    # alone that ships a PR titled "## What this PR does", failing the semantic-title
+    # check and dropping a heading the template check needs.
+    case "$title" in
+        \#*)
+            echo "error: PR title is a markdown heading: $title" >&2
+            echo "the model omitted the title line; retry, or debug with 'git diff | squad_gen pr'" >&2
+            return 1
+            ;;
+    esac
 
     echo "  PR Details:"
     echo "  - Title: $title"

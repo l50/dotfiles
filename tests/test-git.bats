@@ -804,6 +804,21 @@ Body of the PR."
 	assert grep -q "gh pr create" "$GH_LOG"
 }
 
+@test "fabric_pr aborts before pushing when the model omits the title line" {
+	# Opening with the body means the first heading lands in the title slot, which would
+	# ship a PR titled "## What this PR does" and leave the body a heading short.
+	stub_fabric_pr "## What this PR does / why we need it:
+
+Body of the PR."
+
+	run fabric_pr
+
+	assert_failure
+	assert_output --partial "PR title is a markdown heading"
+	refute grep -q "git push" "$GIT_LOG"
+	refute grep -q "pr create" "$GH_LOG"
+}
+
 @test "fabric_pr updates the PR in place when the branch has an open PR" {
 	stub_fabric_pr "feat: add a thing
 
@@ -1026,6 +1041,18 @@ NO INPUT"
 	assert_output --partial "error: PR text is empty"
 	refute grep -q "git push" "$GIT_LOG"
 	refute grep -q "gh pr create" "$GH_LOG"
+}
+
+@test "squad_pr aborts before pushing when the model omits the title line" {
+	stub_squad pr "## What this PR does / why we need it:
+
+Body of the PR."
+
+	run squad_pr
+
+	assert_failure
+	assert_output --partial "PR title is a markdown heading"
+	refute grep -q "git push" "$GIT_LOG"
 }
 
 @test "squad_pr opens a PR with the generated title and body" {
