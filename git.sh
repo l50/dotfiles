@@ -54,6 +54,21 @@ check_fabric() {
 #   In a fork, origin usually points at the read-only upstream and pushes go to
 #   the fork remote, so hardcoding origin makes every push fail with a 403. Set
 #   the target once per repo with "git config remote.pushDefault <remote>".
+# Resolve the branch a pull request should target. A hardcoded "main" breaks every
+# repository whose default is something else (mealie-next, master, develop), where the
+# diff range "origin/main...HEAD" aborts with "unknown revision" and the PR body comes
+# back empty. Ask the forge for the repo's own default, fall back to whatever origin/HEAD
+# points at, and only then to main.
+git_base_branch() {
+    local branch
+    branch=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name' 2> /dev/null)
+    if [ -z "$branch" ]; then
+        branch=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2> /dev/null)
+        branch=${branch#origin/}
+    fi
+    printf '%s' "${branch:-main}"
+}
+
 git_push_remote() {
     local branch remote
     branch=$(git branch --show-current)
@@ -210,7 +225,7 @@ fabric_pr() {
     # Only an open PR pins the base; a closed/merged PR's base has no bearing
     # on the PR this run creates.
     base=$(gh pr view --json baseRefName,state --jq 'select(.state == "OPEN") | .baseRefName' 2> /dev/null)
-    : "${base:=main}"
+    : "${base:=$(git_base_branch)}"
     # Diff against the base branch as it exists in the repo the PR is opened against, not
     # the push remote's copy. That repo is usually origin, but "gh repo set-default" can
     # aim PRs at a fork, and then origin is the stale one and would pad the diff with
@@ -499,7 +514,7 @@ squad_pr() {
     # Only an open PR pins the base; a closed/merged PR's base has no bearing
     # on the PR this run creates.
     base=$(gh pr view --json baseRefName,state --jq 'select(.state == "OPEN") | .baseRefName' 2> /dev/null)
-    : "${base:=main}"
+    : "${base:=$(git_base_branch)}"
     # Diff against the base branch as it exists in the repo the PR is opened against, not
     # the push remote's copy. That repo is usually origin, but "gh repo set-default" can
     # aim PRs at a fork, and then origin is the stale one and would pad the diff with
