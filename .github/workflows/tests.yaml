@@ -101,7 +101,8 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
-          go-version: "1.25.1"
+          go-version: "1.27.1"
+          cache: false # no go.mod in this repo; silences the setup-go restore warning
 
       - name: Install go module dependencies
         run: |
