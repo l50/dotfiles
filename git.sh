@@ -185,6 +185,48 @@ fabric_commit() {
     printf '%s\n' "$msg" | git commit --cleanup=verbatim -F - && git push -u "$(git_push_remote)" HEAD
 }
 
+# pr_required_headings() prints the current repo's required PR-template
+# headings, one per line, or nothing when the repo has no template or marks
+# nothing required. A heading counts as required when a line reading exactly
+# `_(REQUIRED)_` follows it before the next `## ` heading — the same parse a
+# template-enforcing CI check runs against the PR body, so what this prints
+# is exactly what that check greps for.
+#
+# Usage:
+#   pr_required_headings
+#
+# Output:
+#   The required `## ` heading lines, verbatim, one per line.
+pr_required_headings() {
+    local root template candidate
+    root=$(git rev-parse --show-toplevel 2> /dev/null) || return 0
+    template=""
+    for candidate in \
+        "$root/.github/pull_request_template.md" \
+        "$root/.github/PULL_REQUEST_TEMPLATE.md" \
+        "$root/pull_request_template.md" \
+        "$root/PULL_REQUEST_TEMPLATE.md" \
+        "$root/docs/pull_request_template.md" \
+        "$root/docs/PULL_REQUEST_TEMPLATE.md"; do
+        if [ -f "$candidate" ]; then
+            template="$candidate"
+            break
+        fi
+    done
+    [ -n "$template" ] || return 0
+    awk '
+        /^## / { heading = $0; sub(/[ \t\r]+$/, "", heading); next }
+        {
+            line = $0
+            gsub(/^[ \t]+|[ \t\r]+$/, "", line)
+            if (line == "_(REQUIRED)_" && heading != "") {
+                print heading
+                heading = ""
+            }
+        }
+    ' "$template"
+}
+
 # fabric_pr() generates a PR title/body using fabric AI and creates or updates
 # the branch's PR with gh. If a PR already exists it is updated in place with
 # freshly regenerated text (e.g. after a rebase); otherwise a new PR is opened.
@@ -255,7 +297,17 @@ fabric_pr() {
             git diff --stat "$diff_range"
         )
     fi
-    pr_text=$(printf '%s\n' "$pr_input" | fabric --pattern pr | ~/.config/fabric/patterns/pr/filter.sh)
+    # A repo that enforces a PR template fails CI unless the body carries every
+    # required heading verbatim. The pattern structures the body around the
+    # headings when the input opens with this block, and the filter needs the
+    # same list (via PR_REQUIRED_HEADINGS) to keep those sections and skip the
+    # default reordering that would strand bullets under the last heading.
+    local required_headings
+    required_headings=$(pr_required_headings)
+    if [ -n "$required_headings" ]; then
+        pr_input=$(printf 'REQUIRED PR TEMPLATE HEADINGS\n%s\n\n%s\n' "$required_headings" "$pr_input")
+    fi
+    pr_text=$(printf '%s\n' "$pr_input" | fabric --pattern pr | PR_REQUIRED_HEADINGS="$required_headings" ~/.config/fabric/patterns/pr/filter.sh)
     if [ -z "$pr_text" ]; then
         echo "error: PR text is empty"
         return 1
@@ -544,7 +596,15 @@ squad_pr() {
             git diff --stat "$diff_range"
         )
     fi
-    pr_text=$(printf '%s\n' "$pr_input" | squad_gen pr)
+    # Same template contract as fabric_pr: the heading block steers the
+    # pattern, and PR_REQUIRED_HEADINGS reaches the pattern's filter through
+    # squad_gen's environment.
+    local required_headings
+    required_headings=$(pr_required_headings)
+    if [ -n "$required_headings" ]; then
+        pr_input=$(printf 'REQUIRED PR TEMPLATE HEADINGS\n%s\n\n%s\n' "$required_headings" "$pr_input")
+    fi
+    pr_text=$(printf '%s\n' "$pr_input" | PR_REQUIRED_HEADINGS="$required_headings" squad_gen pr)
     if [ -z "$pr_text" ]; then
         echo "error: PR text is empty"
         return 1
