@@ -49,7 +49,7 @@ jobs:
       # Pinned to a commit rather than main: an unrelated merge upstream would otherwise
       # turn this workflow red with no change on our side. Renovate bumps the digests.
       - name: Install workstation collection
-        run: ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,78e3b0b40f674cb6dfb9bc99118d2f476ce9dc0d
+        run: ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,6b2115c1fde35dd9252b3120db47ea00a3f78a46
 
       - name: Install the dotfiles
         run: |
@@ -101,7 +101,8 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
-          go-version: "1.25.1"
+          go-version: "1.27.1"
+          cache: false # no go.mod in this repo; silences the setup-go restore warning
 
       - name: Install go module dependencies
         run: |
@@ -125,7 +126,7 @@ jobs:
       # turn this workflow red with no change on our side. Renovate bumps the digests.
       - name: Install the necessary ansible collections
         run: |
-          ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,78e3b0b40f674cb6dfb9bc99118d2f476ce9dc0d
+          ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,6b2115c1fde35dd9252b3120db47ea00a3f78a46
           ansible-galaxy collection install git+https://github.com/grafana/grafana-ansible-collection.git,521b006dabf4f605e9663c6539bfdec653badb1b
 
       - name: Install the dotfiles
