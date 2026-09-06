@@ -185,36 +185,54 @@ fabric_commit() {
     printf '%s\n' "$msg" | git commit --cleanup=verbatim -F - && git push -u "$(git_push_remote)" HEAD
 }
 
-# pr_required_headings() prints the current repo's required PR-template
-# headings, one per line, or nothing when the repo has no template or marks
-# nothing required. A heading counts as required when a line reading exactly
+# pr_required_headings() prints the repo's required PR-template headings, one
+# per line, or nothing when the repo has no template or marks nothing
+# required. A heading counts as required when a line reading exactly
 # `_(REQUIRED)_` follows it before the next `## ` heading — the same parse a
 # template-enforcing CI check runs against the PR body, so what this prints
 # is exactly what that check greps for.
 #
+# When a ref is given, the template is read from that ref first and the
+# working tree is only a fallback. A template check fetches the template from
+# the base branch, not from the PR, so a PR that edits the template is still
+# validated against the old one — reading the base ref keeps the generated
+# body in step with what CI actually greps for.
+#
 # Usage:
-#   pr_required_headings
+#   pr_required_headings [ref]
 #
 # Output:
 #   The required `## ` heading lines, verbatim, one per line.
 pr_required_headings() {
-    local root template candidate
+    local ref="${1:-}"
+    local root candidate template_text=""
+    local candidates=(
+        .github/pull_request_template.md
+        .github/PULL_REQUEST_TEMPLATE.md
+        pull_request_template.md
+        PULL_REQUEST_TEMPLATE.md
+        docs/pull_request_template.md
+        docs/PULL_REQUEST_TEMPLATE.md
+    )
     root=$(git rev-parse --show-toplevel 2> /dev/null) || return 0
-    template=""
-    for candidate in \
-        "$root/.github/pull_request_template.md" \
-        "$root/.github/PULL_REQUEST_TEMPLATE.md" \
-        "$root/pull_request_template.md" \
-        "$root/PULL_REQUEST_TEMPLATE.md" \
-        "$root/docs/pull_request_template.md" \
-        "$root/docs/PULL_REQUEST_TEMPLATE.md"; do
-        if [ -f "$candidate" ]; then
-            template="$candidate"
-            break
-        fi
-    done
-    [ -n "$template" ] || return 0
-    awk '
+    if [ -n "$ref" ]; then
+        for candidate in "${candidates[@]}"; do
+            if template_text=$(git show "${ref}:${candidate}" 2> /dev/null); then
+                break
+            fi
+            template_text=""
+        done
+    fi
+    if [ -z "$template_text" ]; then
+        for candidate in "${candidates[@]}"; do
+            if [ -f "$root/$candidate" ]; then
+                template_text=$(cat "$root/$candidate")
+                break
+            fi
+        done
+    fi
+    [ -n "$template_text" ] || return 0
+    printf '%s\n' "$template_text" | awk '
         /^## / { heading = $0; sub(/[ \t\r]+$/, "", heading); next }
         {
             line = $0
@@ -224,7 +242,7 @@ pr_required_headings() {
                 heading = ""
             }
         }
-    ' "$template"
+    '
 }
 
 # fabric_pr() generates a PR title/body using fabric AI and creates or updates
@@ -303,7 +321,7 @@ fabric_pr() {
     # same list (via PR_REQUIRED_HEADINGS) to keep those sections and skip the
     # default reordering that would strand bullets under the last heading.
     local required_headings
-    required_headings=$(pr_required_headings)
+    required_headings=$(pr_required_headings "${base_remote}/${base}")
     if [ -n "$required_headings" ]; then
         pr_input=$(printf 'REQUIRED PR TEMPLATE HEADINGS\n%s\n\n%s\n' "$required_headings" "$pr_input")
     fi
@@ -600,7 +618,7 @@ squad_pr() {
     # pattern, and PR_REQUIRED_HEADINGS reaches the pattern's filter through
     # squad_gen's environment.
     local required_headings
-    required_headings=$(pr_required_headings)
+    required_headings=$(pr_required_headings "${base_remote}/${base}")
     if [ -n "$required_headings" ]; then
         pr_input=$(printf 'REQUIRED PR TEMPLATE HEADINGS\n%s\n\n%s\n' "$required_headings" "$pr_input")
     fi

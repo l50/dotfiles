@@ -948,3 +948,92 @@ Body of the PR."
 	assert_success
 	assert grep -q "gh pr create" "$GH_LOG"
 }
+
+# pr_required_headings tests
+
+# make_template_repo creates a git repo in $BATS_TEST_TMPDIR/repo whose
+# committed PR template requires three headings, then leaves a working-tree
+# edit that keeps only the first, so the ref and the checkout disagree.
+make_template_repo() {
+	local repo="$BATS_TEST_TMPDIR/repo"
+	mkdir -p "$repo/.github"
+	git -C "$repo" init -q -b main
+	git -C "$repo" config user.email test@example.com
+	git -C "$repo" config user.name test
+	cat >"$repo/.github/pull_request_template.md" <<'TPL'
+## What this PR does:
+
+_(REQUIRED)_
+
+## Which issue(s) this PR fixes:
+
+_(REQUIRED)_
+
+## Optional notes
+
+_(fill-in or delete)_
+
+## AI / LLM Assistance
+
+_(REQUIRED)_
+TPL
+	git -C "$repo" add -A
+	git -C "$repo" commit -q -m "add template"
+	cat >"$repo/.github/pull_request_template.md" <<'TPL'
+## What this PR does:
+
+_(REQUIRED)_
+TPL
+	echo "$repo"
+}
+
+@test "pr_required_headings reads the working tree template without a ref" {
+	local repo
+	repo=$(make_template_repo)
+	cd "$repo"
+
+	run pr_required_headings
+
+	assert_success
+	assert_output "## What this PR does:"
+}
+
+@test "pr_required_headings prefers the template at the given ref" {
+	local repo
+	repo=$(make_template_repo)
+	cd "$repo"
+
+	run pr_required_headings main
+
+	assert_success
+	assert_line --index 0 "## What this PR does:"
+	assert_line --index 1 "## Which issue(s) this PR fixes:"
+	assert_line --index 2 "## AI / LLM Assistance"
+	refute_line "## Optional notes"
+}
+
+@test "pr_required_headings falls back to the working tree when the ref lacks a template" {
+	local repo
+	repo=$(make_template_repo)
+	cd "$repo"
+	git rm -q --cached .github/pull_request_template.md
+	git commit -q -m "drop template"
+
+	run pr_required_headings main
+
+	assert_success
+	assert_output "## What this PR does:"
+}
+
+@test "pr_required_headings prints nothing when no template exists" {
+	local repo
+	repo=$(make_template_repo)
+	cd "$repo"
+	git rm -q -f .github/pull_request_template.md
+	git commit -q -m "drop template"
+
+	run pr_required_headings main
+
+	assert_success
+	assert_output ""
+}
