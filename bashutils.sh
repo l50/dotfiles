@@ -861,7 +861,7 @@ process_files_in_commit() {
 
 # Generates a pull request description based on the commits since a specified base branch.
 # It uses the `git log` command to retrieve commit information and the `git diff` command to get the full diff.
-# The output is formatted and piped through `fabric` for further processing.
+# The output is formatted and piped through `squad_gen` for further processing.
 # Usage:
 #   generate_pr [base_branch]
 #
@@ -870,7 +870,15 @@ process_files_in_commit() {
 #
 # Output:
 #   Prints a formatted pull request description containing commit information and the full diff.
+#
+# Note:
+#   Prints only. To open or update the PR itself, use squad_pr. Requires
+#   squad_gen from git.sh, which the shell loads alongside this file.
 generate_pr() {
+    if ! command -v squad_gen > /dev/null 2>&1; then
+        echo "error: squad_gen is unavailable — source git.sh alongside this file" >&2
+        return 1
+    fi
     local base_branch="${1:-origin/main}"
     local commit_count
     commit_count=$(git rev-list --count "$base_branch"..HEAD)
@@ -885,7 +893,7 @@ generate_pr() {
         echo ""
         echo "=== FULL DIFF ==="
         git diff "$base_branch"...HEAD
-    } | fabric -p pr | fold -s -w 80
+    } | squad_gen pr | fold -s -w 80
 }
 
 alias networkedComputers="arp -a |grep -oP '\d+\.\d+\.\d+\.\d+'"

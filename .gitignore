@@ -6,3 +6,8 @@ WIP
 
 # Remote Taskfiles
 .task
+
+# unlazy completion-gate scaffolding
+.unlazy
+.unlazy-hook-state.json
+GATES.md

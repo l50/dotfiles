@@ -413,48 +413,6 @@ teardown() {
 	popd >/dev/null
 }
 
-# check_fabric tests
-
-@test "check_fabric succeeds when fabric is installed" {
-	# Mock command function
-	# shellcheck disable=SC2317,SC2329
-	command() {
-		# shellcheck disable=SC2317
-		if [[ "$2" == "fabric" ]]; then
-			# shellcheck disable=SC2317
-			return 0
-		fi
-		# shellcheck disable=SC2317
-		builtin command "$@"
-	}
-	export -f command
-
-	run check_fabric
-
-	assert_success
-}
-
-@test "check_fabric fails when fabric is not installed" {
-	# Mock command function
-	# shellcheck disable=SC2317,SC2329
-	command() {
-		# shellcheck disable=SC2317
-		if [[ "$2" == "fabric" ]]; then
-			# shellcheck disable=SC2317
-			return 1
-		fi
-		# shellcheck disable=SC2317
-		builtin command "$@"
-	}
-	export -f command
-
-	run check_fabric
-
-	assert_failure
-	assert_output --partial "error: fabric is not installed"
-	assert_output --partial "install it from: https://github.com/danielmiessler/fabric"
-}
-
 # check_squad tests
 
 @test "check_squad succeeds when squad is installed" {
@@ -497,37 +455,60 @@ teardown() {
 	assert_output --partial "install it from: https://github.com/CowDogMoo/squad"
 }
 
-@test "squad_gen fails for unknown pattern" {
-	run squad_gen no-such-pattern < /dev/null
+@test "squad_gen fails for an unknown text agent" {
+	run squad_gen no-such-agent < /dev/null
 
 	assert_failure
-	assert_output --partial "error: pattern not found"
+	assert_output --partial "error: text agent not found"
 }
 
-# fabric_commit tests
+# Points the agents dir at a throwaway location and reports which path
+# squad_gen resolved, by reading it back out of the "not found" error.
+resolved_agents_dir() {
+	run squad_gen no-such-agent < /dev/null
+	assert_failure
+}
 
-# Stubs a fabric pattern filter under a throwaway HOME and mocks every command the
-# fabric_* helpers shell out to, so they can run without touching the real repo or
-# GitHub. $1 is the pattern directory (commit or pr), $2 the text fabric should emit.
-# Each git and gh invocation is appended to $GIT_LOG / $GH_LOG so tests can assert on
-# what was (and was not) run.
-stub_fabric() {
-	export FABRIC_MSG="$2"
+@test "squad_gen resolves the agents dir from SQUAD_AGENTS_DIR" {
+	SQUAD_AGENTS_DIR="$BATS_TEST_TMPDIR/agents" resolved_agents_dir
+
+	assert_output --partial "$BATS_TEST_TMPDIR/agents/no-such-agent/system.md"
+}
+
+@test "squad_gen falls back to the default squad-agents checkout when unset" {
+	HOME="$BATS_TEST_TMPDIR/home" SQUAD_AGENTS_DIR="" resolved_agents_dir
+
+	assert_output --partial "$BATS_TEST_TMPDIR/home/cowdogmoo/squad-agents/no-such-agent"
+}
+
+@test "squad_gen lists only agent dirs that carry a filter.sh" {
+	mkdir -p "$BATS_TEST_TMPDIR/agents/commit" "$BATS_TEST_TMPDIR/agents/go-review"
+	printf 'x\n' > "$BATS_TEST_TMPDIR/agents/commit/system.md"
+	printf '#!/usr/bin/env bash\ncat\n' > "$BATS_TEST_TMPDIR/agents/commit/filter.sh"
+	chmod +x "$BATS_TEST_TMPDIR/agents/commit/filter.sh"
+	printf 'x\n' > "$BATS_TEST_TMPDIR/agents/go-review/system.md"
+
+	SQUAD_AGENTS_DIR="$BATS_TEST_TMPDIR/agents" run squad_gen
+
+	assert_failure
+	assert_output --partial "text agents: commit"
+	refute_output --partial "go-review"
+}
+
+# git/gh mocks
+
+# Mocks every command the squad_* helpers shell out to, so they can run without
+# touching the real repo or GitHub. Each git and gh invocation is appended to
+# $GIT_LOG / $GH_LOG so tests can assert on what was (and was not) run.
+stub_repo() {
 	export HOME="$BATS_TEST_TMPDIR/home"
 	export GIT_LOG="$BATS_TEST_TMPDIR/git.log"
 	export GH_LOG="$BATS_TEST_TMPDIR/gh.log"
 
-	mkdir -p "$HOME/.config/fabric/patterns/$1"
-	printf '#!/usr/bin/env bash\ncat\n' > "$HOME/.config/fabric/patterns/$1/filter.sh"
-	chmod +x "$HOME/.config/fabric/patterns/$1/filter.sh"
+	mkdir -p "$HOME"
 	: > "$GIT_LOG"
 	: > "$GH_LOG"
 
-	check_fabric() { return 0; }
-	fabric() {
-		cat > /dev/null
-		printf '%s' "$FABRIC_MSG"
-	}
 	gh() {
 		echo "gh $*" >> "$GH_LOG"
 		case "$*" in
@@ -551,8 +532,8 @@ stub_fabric() {
 		echo "git $*" >> "$GIT_LOG"
 		local entry
 		case "$1" in
-			# STUB_BIG_DIFF stands in for a diff too large to pipe into fabric, so the
-			# raw form has to outgrow the byte cap while --stat stays small.
+			# STUB_BIG_DIFF stands in for a diff too large to pipe to the model, so
+			# the raw form has to outgrow the byte cap while --stat stays small.
 			ds | diff)
 				if [[ -n "${STUB_BIG_DIFF:-}" && "$*" != *--stat* ]]; then
 					head -c 500000 /dev/zero | tr '\0' 'x'
@@ -598,12 +579,8 @@ stub_fabric() {
 		esac
 		return 0
 	}
-	export -f check_fabric fabric gh git
+	export -f gh git
 }
-
-stub_fabric_commit() { stub_fabric commit "$1"; }
-
-stub_fabric_pr() { stub_fabric pr "$1"; }
 
 # Point the mocked git config at a branch pushRemote / remote.pushDefault of $1, so
 # git_push_remote resolves to it. Wrapped in functions because a bare export inside a
@@ -628,10 +605,54 @@ stub_failing_fetch() { export STUB_FETCH_STATUS=1; }
 # MERGED). Leave unset for a branch with no PR at all.
 stub_pr_state() { export STUB_PR_STATE="$1"; }
 
-@test "fabric_commit aborts without committing when fabric returns an empty message" {
-	stub_fabric_commit "   "
+# Layers the squad-side pieces on top of stub_repo's git/gh mocks: a throwaway
+# squad-agents checkout holding one text agent, and a squad function that emits
+# $2 while recording its argv. $1 is the agent directory (commit or pr). The
+# result exercises the real squad_gen pipeline (agent lookup, frontmatter
+# strip, filter, sentinel guard) end to end without the squad CLI.
+stub_squad() {
+	stub_repo
+	export SQUAD_MSG="$2"
+	export SQUAD_AGENTS_DIR="$BATS_TEST_TMPDIR/agents"
+	export SQUAD_ARGS_LOG="$BATS_TEST_TMPDIR/squad-args.log"
 
-	run fabric_commit
+	mkdir -p "$SQUAD_AGENTS_DIR/$1"
+	printf -- '---\nname: %s\ndescription: "x"\ntools: "Bash"\n---\ntransform prompt\n' "$1" > "$SQUAD_AGENTS_DIR/$1/system.md"
+	printf '#!/usr/bin/env bash\ncat\n' > "$SQUAD_AGENTS_DIR/$1/filter.sh"
+	chmod +x "$SQUAD_AGENTS_DIR/$1/filter.sh"
+
+	check_squad() { return 0; }
+	squad() {
+		printf '%s\n' "$@" > "$SQUAD_ARGS_LOG"
+		cat > /dev/null
+		printf '%s\n' "$SQUAD_MSG"
+	}
+	export -f check_squad squad
+}
+
+stub_squad_commit() { stub_squad commit "$1"; }
+
+stub_squad_pr() { stub_squad pr "$1"; }
+
+@test "squad_gen strips the Claude-native frontmatter before injecting system.md" {
+	stub_squad_commit "fix: correct the thing"
+
+	run squad_gen commit <<< "diff --git a/x b/x"
+
+	assert_success
+	# The stub records squad's argv; the --system payload must start at the
+	# prompt body, not at the frontmatter fence.
+	run cat "$SQUAD_ARGS_LOG"
+	assert_output --partial "--system"
+	assert_output --partial "transform prompt"
+	refute_output --partial "name: commit"
+	refute_output --regexp "^---$"
+}
+
+@test "squad_commit aborts without committing when generation returns an empty message" {
+	stub_squad_commit "   "
+
+	run squad_commit
 
 	assert_failure
 	assert_output --partial "commit message is empty"
@@ -639,10 +660,10 @@ stub_pr_state() { export STUB_PR_STATE="$1"; }
 	refute grep -q "git push" "$GIT_LOG"
 }
 
-@test "fabric_commit pushes with an explicit refspec so a renamed upstream still works" {
-	stub_fabric_commit "fix: correct the thing"
+@test "squad_commit pushes with an explicit refspec so a renamed upstream still works" {
+	stub_squad_commit "fix: correct the thing"
 
-	run fabric_commit
+	run squad_commit
 
 	assert_success
 	assert grep -q "git commit --cleanup=verbatim -F -" "$GIT_LOG"
@@ -651,35 +672,35 @@ stub_pr_state() { export STUB_PR_STATE="$1"; }
 	assert grep -q "git push -u origin HEAD" "$GIT_LOG"
 }
 
-@test "fabric_commit pushes to the branch's pushRemote instead of origin" {
-	stub_fabric_commit "fix: correct the thing"
+@test "squad_commit pushes to the branch's pushRemote instead of origin" {
+	stub_squad_commit "fix: correct the thing"
 	# In a fork, origin is the read-only upstream and pushing there 403s.
 	stub_branch_push_remote fork
 
-	run fabric_commit
+	run squad_commit
 
 	assert_success
 	assert grep -q "git push -u fork HEAD" "$GIT_LOG"
 	refute grep -q "git push -u origin HEAD" "$GIT_LOG"
 }
 
-@test "fabric_commit falls back to remote.pushDefault when no branch pushRemote" {
-	stub_fabric_commit "fix: correct the thing"
+@test "squad_commit falls back to remote.pushDefault when no branch pushRemote" {
+	stub_squad_commit "fix: correct the thing"
 	stub_push_default fork
 
-	run fabric_commit
+	run squad_commit
 
 	assert_success
 	assert grep -q "git push -u fork HEAD" "$GIT_LOG"
 }
 
-@test "fabric_pr diffs against origin's base branch even when pushing elsewhere" {
-	stub_fabric_pr "feat: add a thing
+@test "squad_pr diffs against origin's base branch even when pushing elsewhere" {
+	stub_squad_pr "feat: add a thing
 
 Body of the PR."
 	stub_branch_push_remote fork
 
-	run fabric_pr
+	run squad_pr
 
 	assert_success
 	# The PR is opened against origin and baseRefName names a branch there, so the diff
@@ -691,8 +712,8 @@ Body of the PR."
 	assert grep -q "git push -u fork HEAD" "$GIT_LOG"
 }
 
-@test "fabric_pr diffs against the fork when gh opens PRs there" {
-	stub_fabric_pr "feat: add a thing
+@test "squad_pr diffs against the fork when gh opens PRs there" {
+	stub_squad_pr "feat: add a thing
 
 Body of the PR."
 	stub_branch_push_remote fork
@@ -702,31 +723,31 @@ Body of the PR."
 	stub_remotes "origin=https://github.com/upstream/dotfiles.git" \
 		"fork=https://github.com/l50/dotfiles.git"
 
-	run fabric_pr
+	run squad_pr
 
 	assert_success
 	assert grep -q "git diff fork/main\.\.\.HEAD" "$GIT_LOG"
 	refute grep -q "git diff origin/main" "$GIT_LOG"
 }
 
-@test "fabric_pr summarises with log and diffstat when the raw diff is too large to send" {
-	stub_fabric_pr "feat: add a thing
+@test "squad_pr summarises with log and diffstat when the raw diff is too large to send" {
+	stub_squad_pr "feat: add a thing
 
 Body of the PR."
 	# A fork sync carries thousands of commits, and piping that diff whole overruns
-	# fabric's context, so the body degrades to the commit list plus a diffstat rather
-	# than failing or truncating mid-hunk.
+	# the model's context, so the body degrades to the commit list plus a diffstat
+	# rather than failing or truncating mid-hunk.
 	stub_big_diff
 
-	run fabric_pr
+	run squad_pr
 
 	assert_success
 	assert grep -q "git log --oneline origin/main\.\.HEAD" "$GIT_LOG"
 	assert grep -q "git diff --stat origin/main\.\.\.HEAD" "$GIT_LOG"
 }
 
-@test "fabric_pr falls back to origin when the base repo's remote branch is unfetched" {
-	stub_fabric_pr "feat: add a thing
+@test "squad_pr falls back to origin when the base repo's remote branch is unfetched" {
+	stub_squad_pr "feat: add a thing
 
 Body of the PR."
 	stub_remotes "origin=https://github.com/upstream/dotfiles.git" \
@@ -735,21 +756,21 @@ Body of the PR."
 	# degrade to origin rather than take the whole PR down.
 	stub_missing_refs "fork/main"
 
-	run fabric_pr
+	run squad_pr
 
 	assert_success
 	assert grep -q "git diff origin/main\.\.\.HEAD" "$GIT_LOG"
 	refute grep -q "git diff fork/main" "$GIT_LOG"
 }
 
-@test "fabric_pr refreshes the base branch it diffs against" {
-	stub_fabric_pr "feat: add a thing
+@test "squad_pr refreshes the base branch it diffs against" {
+	stub_squad_pr "feat: add a thing
 
 Body of the PR."
 	stub_remotes "origin=https://github.com/upstream/dotfiles.git" \
 		"fork=https://github.com/l50/dotfiles.git"
 
-	run fabric_pr
+	run squad_pr
 
 	assert_success
 	# Pushing a feature branch never moves the base's remote-tracking ref, so without
@@ -759,15 +780,15 @@ Body of the PR."
 	assert grep -q "git diff fork/main\.\.\.HEAD" "$GIT_LOG"
 }
 
-@test "fabric_pr warns but still opens the PR when the base cannot be refreshed" {
-	stub_fabric_pr "feat: add a thing
+@test "squad_pr warns but still opens the PR when the base cannot be refreshed" {
+	stub_squad_pr "feat: add a thing
 
 Body of the PR."
 	# Offline, the stale base is still diffable, so a failed refresh degrades to a
 	# warning instead of taking the PR down.
 	stub_failing_fetch
 
-	run fabric_pr
+	run squad_pr
 
 	assert_success
 	assert_output --partial "could not refresh origin/main"
@@ -775,13 +796,13 @@ Body of the PR."
 	assert grep -q "gh pr create" "$GH_LOG"
 }
 
-@test "fabric_pr updates the PR in place when the branch has an open PR" {
-	stub_fabric_pr "feat: add a thing
+@test "squad_pr updates the PR in place when the branch has an open PR" {
+	stub_squad_pr "feat: add a thing
 
 Body of the PR."
 	stub_pr_state OPEN
 
-	run fabric_pr
+	run squad_pr
 
 	assert_success
 	assert_output --partial "Updated existing pull request"
@@ -789,8 +810,8 @@ Body of the PR."
 	refute grep -q "gh pr create" "$GH_LOG"
 }
 
-@test "fabric_pr opens a new PR when the branch's previous PR was closed" {
-	stub_fabric_pr "feat: add a thing
+@test "squad_pr opens a new PR when the branch's previous PR was closed" {
+	stub_squad_pr "feat: add a thing
 
 Body of the PR."
 	# gh pr view resolves the branch to its most relevant PR even after that PR
@@ -798,20 +819,20 @@ Body of the PR."
 	# rewrites the dead PR forever and the branch never gets a new one.
 	stub_pr_state CLOSED
 
-	run fabric_pr
+	run squad_pr
 
 	assert_success
 	assert grep -q "gh pr create" "$GH_LOG"
 	refute grep -q "gh pr edit" "$GH_LOG"
 }
 
-@test "fabric_pr does not edit an already-merged PR" {
-	stub_fabric_pr "feat: add a thing
+@test "squad_pr does not edit an already-merged PR" {
+	stub_squad_pr "feat: add a thing
 
 Body of the PR."
 	stub_pr_state MERGED
 
-	run fabric_pr
+	run squad_pr
 
 	assert_success
 	assert grep -q "gh pr create" "$GH_LOG"
@@ -819,7 +840,7 @@ Body of the PR."
 }
 
 @test "git_remote_for_repo falls back to origin when no remote matches" {
-	stub_fabric_pr "unused"
+	stub_squad_pr "unused"
 	stub_remotes "origin=https://github.com/upstream/dotfiles.git"
 
 	run git_remote_for_repo "l50/dotfiles"
@@ -829,7 +850,7 @@ Body of the PR."
 }
 
 @test "git_remote_for_repo matches an ssh remote URL" {
-	stub_fabric_pr "unused"
+	stub_squad_pr "unused"
 	stub_remotes "origin=https://github.com/upstream/dotfiles.git" \
 		"fork=git@github.com:l50/dotfiles.git"
 
@@ -837,32 +858,6 @@ Body of the PR."
 
 	assert_success
 	assert_output "fork"
-}
-
-# squad integration tests
-
-# Layers the squad-side pieces on top of stub_fabric's git/gh mocks: a
-# throwaway patterns hub, a text-transform agent dir, and a squad function
-# that emits $2. $1 is the pattern directory (commit or pr). The result
-# exercises the real squad_gen pipeline (pattern lookup, filter, sentinel
-# guard) end to end without the squad CLI.
-stub_squad() {
-	stub_fabric "$1" ""
-	export SQUAD_MSG="$2"
-	export FABRIC_PATTERNS_HUB="$BATS_TEST_TMPDIR/hub"
-	export SQUAD_AGENTS_REPO="$BATS_TEST_TMPDIR/agents"
-
-	mkdir -p "$FABRIC_PATTERNS_HUB/patterns/$1" "$SQUAD_AGENTS_REPO/text-transform"
-	echo "transform prompt" > "$FABRIC_PATTERNS_HUB/patterns/$1/system.md"
-	printf '#!/usr/bin/env bash\ncat\n' > "$FABRIC_PATTERNS_HUB/patterns/$1/filter.sh"
-	chmod +x "$FABRIC_PATTERNS_HUB/patterns/$1/filter.sh"
-
-	check_squad() { return 0; }
-	squad() {
-		cat > /dev/null
-		printf '%s\n' "$SQUAD_MSG"
-	}
-	export -f check_squad squad
 }
 
 @test "squad_gen rejects the NO INPUT sentinel" {
