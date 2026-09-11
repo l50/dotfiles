@@ -455,46 +455,44 @@ teardown() {
 	assert_output --partial "install it from: https://github.com/CowDogMoo/squad"
 }
 
-@test "squad_gen fails for unknown pattern" {
-	run squad_gen no-such-pattern < /dev/null
+@test "squad_gen fails for an unknown text agent" {
+	run squad_gen no-such-agent < /dev/null
 
 	assert_failure
-	assert_output --partial "error: pattern not found"
+	assert_output --partial "error: text agent not found"
 }
 
-# Points both hub variables at throwaway dirs and reports which one squad_gen
-# resolved, by reading the hub path back out of its "pattern not found" error.
-resolved_hub() {
-	run squad_gen no-such-pattern < /dev/null
+# Points the agents dir at a throwaway location and reports which path
+# squad_gen resolved, by reading it back out of the "not found" error.
+resolved_agents_dir() {
+	run squad_gen no-such-agent < /dev/null
 	assert_failure
 }
 
-@test "squad_gen resolves the hub from SQUAD_PATTERNS_HUB" {
-	SQUAD_PATTERNS_HUB="$BATS_TEST_TMPDIR/squadhub" resolved_hub
+@test "squad_gen resolves the agents dir from SQUAD_AGENTS_DIR" {
+	SQUAD_AGENTS_DIR="$BATS_TEST_TMPDIR/agents" resolved_agents_dir
 
-	assert_output --partial "$BATS_TEST_TMPDIR/squadhub/patterns/no-such-pattern"
+	assert_output --partial "$BATS_TEST_TMPDIR/agents/no-such-agent/system.md"
 }
 
-@test "squad_gen still honors FABRIC_PATTERNS_HUB when only it is set" {
-	# An override already exported in a shell or CI keeps working through the
-	# rename instead of silently falling back to the default path.
-	FABRIC_PATTERNS_HUB="$BATS_TEST_TMPDIR/fabhub" resolved_hub
+@test "squad_gen falls back to the default squad-agents checkout when unset" {
+	HOME="$BATS_TEST_TMPDIR/home" SQUAD_AGENTS_DIR="" resolved_agents_dir
 
-	assert_output --partial "$BATS_TEST_TMPDIR/fabhub/patterns/no-such-pattern"
+	assert_output --partial "$BATS_TEST_TMPDIR/home/cowdogmoo/squad-agents/no-such-agent"
 }
 
-@test "squad_gen prefers SQUAD_PATTERNS_HUB when both are set" {
-	SQUAD_PATTERNS_HUB="$BATS_TEST_TMPDIR/squadhub" \
-		FABRIC_PATTERNS_HUB="$BATS_TEST_TMPDIR/fabhub" resolved_hub
+@test "squad_gen lists only agent dirs that carry a filter.sh" {
+	mkdir -p "$BATS_TEST_TMPDIR/agents/commit" "$BATS_TEST_TMPDIR/agents/go-review"
+	printf 'x\n' > "$BATS_TEST_TMPDIR/agents/commit/system.md"
+	printf '#!/usr/bin/env bash\ncat\n' > "$BATS_TEST_TMPDIR/agents/commit/filter.sh"
+	chmod +x "$BATS_TEST_TMPDIR/agents/commit/filter.sh"
+	printf 'x\n' > "$BATS_TEST_TMPDIR/agents/go-review/system.md"
 
-	assert_output --partial "$BATS_TEST_TMPDIR/squadhub/patterns/no-such-pattern"
-	refute_output --partial "$BATS_TEST_TMPDIR/fabhub"
-}
+	SQUAD_AGENTS_DIR="$BATS_TEST_TMPDIR/agents" run squad_gen
 
-@test "squad_gen falls back to the default hub path when neither is set" {
-	HOME="$BATS_TEST_TMPDIR/home" SQUAD_PATTERNS_HUB="" FABRIC_PATTERNS_HUB="" resolved_hub
-
-	assert_output --partial "$BATS_TEST_TMPDIR/home/cowdogmoo/fabric-patterns-hub/patterns"
+	assert_failure
+	assert_output --partial "text agents: commit"
+	refute_output --partial "go-review"
 }
 
 # git/gh mocks
@@ -608,23 +606,24 @@ stub_failing_fetch() { export STUB_FETCH_STATUS=1; }
 stub_pr_state() { export STUB_PR_STATE="$1"; }
 
 # Layers the squad-side pieces on top of stub_repo's git/gh mocks: a throwaway
-# patterns hub, a text-transform agent dir, and a squad function that emits $2.
-# $1 is the pattern directory (commit or pr). The result exercises the real
-# squad_gen pipeline (pattern lookup, filter, sentinel guard) end to end without
-# the squad CLI.
+# squad-agents checkout holding one text agent, and a squad function that emits
+# $2 while recording its argv. $1 is the agent directory (commit or pr). The
+# result exercises the real squad_gen pipeline (agent lookup, frontmatter
+# strip, filter, sentinel guard) end to end without the squad CLI.
 stub_squad() {
 	stub_repo
 	export SQUAD_MSG="$2"
-	export SQUAD_PATTERNS_HUB="$BATS_TEST_TMPDIR/hub"
-	export SQUAD_AGENTS_REPO="$BATS_TEST_TMPDIR/agents"
+	export SQUAD_AGENTS_DIR="$BATS_TEST_TMPDIR/agents"
+	export SQUAD_ARGS_LOG="$BATS_TEST_TMPDIR/squad-args.log"
 
-	mkdir -p "$SQUAD_PATTERNS_HUB/patterns/$1" "$SQUAD_AGENTS_REPO/text-transform"
-	echo "transform prompt" > "$SQUAD_PATTERNS_HUB/patterns/$1/system.md"
-	printf '#!/usr/bin/env bash\ncat\n' > "$SQUAD_PATTERNS_HUB/patterns/$1/filter.sh"
-	chmod +x "$SQUAD_PATTERNS_HUB/patterns/$1/filter.sh"
+	mkdir -p "$SQUAD_AGENTS_DIR/$1"
+	printf -- '---\nname: %s\ndescription: "x"\ntools: "Bash"\n---\ntransform prompt\n' "$1" > "$SQUAD_AGENTS_DIR/$1/system.md"
+	printf '#!/usr/bin/env bash\ncat\n' > "$SQUAD_AGENTS_DIR/$1/filter.sh"
+	chmod +x "$SQUAD_AGENTS_DIR/$1/filter.sh"
 
 	check_squad() { return 0; }
 	squad() {
+		printf '%s\n' "$@" > "$SQUAD_ARGS_LOG"
 		cat > /dev/null
 		printf '%s\n' "$SQUAD_MSG"
 	}
@@ -634,6 +633,21 @@ stub_squad() {
 stub_squad_commit() { stub_squad commit "$1"; }
 
 stub_squad_pr() { stub_squad pr "$1"; }
+
+@test "squad_gen strips the Claude-native frontmatter before injecting system.md" {
+	stub_squad_commit "fix: correct the thing"
+
+	run squad_gen commit <<< "diff --git a/x b/x"
+
+	assert_success
+	# The stub records squad's argv; the --system payload must start at the
+	# prompt body, not at the frontmatter fence.
+	run cat "$SQUAD_ARGS_LOG"
+	assert_output --partial "--system"
+	assert_output --partial "transform prompt"
+	refute_output --partial "name: commit"
+	refute_output --regexp "^---$"
+}
 
 @test "squad_commit aborts without committing when generation returns an empty message" {
 	stub_squad_commit "   "

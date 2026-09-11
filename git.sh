@@ -155,21 +155,22 @@ check_squad() {
     fi
 }
 
-# squad_gen() transforms stdin using a pattern from the patterns hub, run by
-# squad's built-in pure-text transform (squad run --system with no --agent)
-# on the claude-code provider so the call is billed to the local Claude
-# subscription instead of an API key. The pattern's system.md is injected
-# via --system and its filter.sh post-processes the output, so pattern
-# content stays single-sourced in the hub repo.
+# squad_gen() transforms stdin with one of the text agents in squad-agents
+# (commit, pr, branch), run by squad's built-in pure-text transform (squad run
+# --system with no --agent) on the claude-code provider so the call is billed
+# to the local Claude subscription instead of an API key. The agent's
+# system.md is injected via --system (minus its Claude-native frontmatter,
+# which is host metadata rather than prompt) and its filter.sh post-processes
+# the output, so prompt content stays single-sourced in squad-agents.
 #
-# The hub supplies the one thing squad has no native equivalent for: a
-# deterministic output filter. squad's --agent path is for agentic runs that
-# modify files; commit/branch/pr are pure stdin-to-stdout transforms whose
-# output still needs code fences stripped, a duplicated title dropped, and
-# required PR headings enforced.
+# The filter is the one thing squad has no native equivalent for: a
+# deterministic output pass that strips code fences, drops a duplicated
+# title, enforces required PR headings, and removes attribution trailers.
+# squad's --agent path is for agentic runs that modify files; commit/branch/pr
+# are pure stdin-to-stdout transforms, so the transform mode is the right one.
 #
 # Usage:
-#   <input> | squad_gen <pattern>
+#   <input> | squad_gen <agent>
 #
 # Output:
 #   The transformed text on stdout.
@@ -179,35 +180,42 @@ check_squad() {
 #
 # Note:
 #   Requires squad >= the build that supports agentless --system runs.
-#   Override the hub location with SQUAD_PATTERNS_HUB. FABRIC_PATTERNS_HUB is
-#   still honored so an already-exported override keeps working.
+#   Override the squad-agents checkout with SQUAD_AGENTS_DIR (default
+#   ~/cowdogmoo/squad-agents). Any agent directory carrying a filter.sh is a
+#   text agent.
 squad_gen() {
-    local pattern=$1
-    local hub="${SQUAD_PATTERNS_HUB:-${FABRIC_PATTERNS_HUB:-$HOME/cowdogmoo/fabric-patterns-hub}}"
-    if [ -z "$pattern" ]; then
-        echo "usage: <input> | squad_gen <pattern>" >&2
-        [ -d "$hub/patterns" ] && echo "patterns: $(cd "$hub/patterns" && printf '%s ' */ | tr -d '/')" >&2
+    local name=$1
+    local agents="${SQUAD_AGENTS_DIR:-$HOME/cowdogmoo/squad-agents}"
+    local available
+    available=$(cd "$agents" 2> /dev/null && for d in */; do [ -f "$d/filter.sh" ] && printf '%s ' "${d%/}"; done)
+    if [ -z "$name" ]; then
+        echo "usage: <input> | squad_gen <agent>" >&2
+        [ -n "$available" ] && echo "text agents: $available" >&2
         return 1
     fi
-    local system="$hub/patterns/$pattern/system.md"
-    local filter="$hub/patterns/$pattern/filter.sh"
-    if [ ! -f "$system" ]; then
-        echo "error: pattern not found: $system" >&2
-        [ -d "$hub/patterns" ] && echo "patterns: $(cd "$hub/patterns" && printf '%s ' */ | tr -d '/')" >&2
+    local system="$agents/$name/system.md"
+    local filter="$agents/$name/filter.sh"
+    if [ ! -f "$system" ] || [ ! -x "$filter" ]; then
+        echo "error: text agent not found: $system" >&2
+        [ -n "$available" ] && echo "text agents: $available" >&2
         return 1
     fi
+    # system.md opens with YAML frontmatter (name/description/tools) so the same
+    # file loads as a Claude Code agent; squad's transform wants only the prompt.
+    local prompt
+    prompt=$(awk 'NR == 1 && /^---$/ { skip = 1; next } skip && /^---$/ { skip = 0; next } !skip' "$system")
     # squad's info logs (session banner, metrics) go to stderr; suppress them
     # so callers get only the transformed text. Re-run without 2>/dev/null to
     # debug a failing generation.
     local out
-    out=$(squad run --provider claude-code --system "$(cat "$system")" 2> /dev/null \
+    out=$(squad run --provider claude-code --system "$prompt" 2> /dev/null \
         | "$filter")
     # NO INPUT is the built-in transform's no-stdin sentinel; any line
     # matching it means the model treated the run as inputless (possibly with
     # prose around the sentinel), so fail instead of handing callers the
     # literal string to commit or publish.
     if printf '%s\n' "$out" | grep -qxE '[[:space:]]*NO INPUT[[:space:]]*'; then
-        echo "error: squad returned the NO INPUT sentinel — the model saw no usable input; retry or debug with '<input> | squad_gen $pattern'" >&2
+        echo "error: squad returned the NO INPUT sentinel — the model saw no usable input; retry or debug with '<input> | squad_gen $name'" >&2
         return 1
     fi
     printf '%s\n' "$out"
