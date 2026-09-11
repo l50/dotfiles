@@ -17,8 +17,8 @@ bats_require_minimum_version 1.5.0
 setup() {
 	[ -n "${SQUAD_SMOKE:-}" ] || skip "set SQUAD_SMOKE=1 to run live squad smoke tests"
 	command -v squad > /dev/null 2>&1 || skip "squad is not installed"
-	local hub="${FABRIC_PATTERNS_HUB:-$HOME/cowdogmoo/fabric-patterns-hub}"
-	[ -d "$hub/patterns/commit" ] || skip "fabric-patterns-hub is not cloned"
+	local hub="${SQUAD_PATTERNS_HUB:-${FABRIC_PATTERNS_HUB:-$HOME/cowdogmoo/fabric-patterns-hub}}"
+	[ -d "$hub/patterns/commit" ] || skip "patterns hub is not cloned"
 }
 
 @test "squad_gen commit generates a conventional commit message from a diff" {

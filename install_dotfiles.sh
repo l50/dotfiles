@@ -15,7 +15,8 @@
 #   --install-claude   Install and configure Claude Code CLI (requires Node).
 #   --skip-mise        Skip Mise tool manager (runs by default).
 #   --skip-go-task     Skip Go Task (runs by default).
-#   --skip-fabric      Skip Fabric AI framework (runs by default).
+#   --install-fabric   Install the Fabric AI framework (off by default; squad
+#                      has replaced it for commit/branch/PR generation).
 #
 # Jayson Grace <jayson.e.grace at gmail.com>
 # -----------------------------------------------------------------------------
@@ -26,7 +27,7 @@ INSTALL_ALLOY=false
 INSTALL_MISE=true
 INSTALL_GO_TASK=true
 INSTALL_CLAUDE=false
-INSTALL_FABRIC=true
+INSTALL_FABRIC=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -35,10 +36,10 @@ while [[ $# -gt 0 ]]; do
         --install-claude) INSTALL_CLAUDE=true ;;
         --skip-mise) INSTALL_MISE=false ;;
         --skip-go-task) INSTALL_GO_TASK=false ;;
-        --skip-fabric) INSTALL_FABRIC=false ;;
+        --install-fabric) INSTALL_FABRIC=true ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0 [--skip-ansible] [--install-alloy] [--install-claude] [--skip-mise] [--skip-go-task] [--skip-fabric]"
+            echo "Usage: $0 [--skip-ansible] [--install-alloy] [--install-claude] [--skip-mise] [--skip-go-task] [--install-fabric]"
             exit 1
             ;;
     esac
@@ -106,8 +107,10 @@ setup_ansible() {
 ${hostname} ansible_connection=local
 EOF
 
-    # Skip each playbook tag whose role is toggled off (mise/go_task/fabric run
-    # by default; alloy/claude are opt-in via their --install-* flags).
+    # Skip each playbook tag whose role is toggled off (mise/go_task run by
+    # default; alloy/claude/fabric are opt-in via their --install-* flags).
+    # Fabric is opt-in because squad now generates commits, branches, and PRs;
+    # the collection still ships the role for anyone who wants it.
     local skip_tags=()
     local entry
     for entry in "alloy:${INSTALL_ALLOY}" "mise:${INSTALL_MISE}" \
