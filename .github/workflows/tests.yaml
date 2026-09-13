@@ -127,7 +127,7 @@ jobs:
       - name: Install the necessary ansible collections
         run: |
           ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,7d4aa56c18ab4496a08a9d7e419746a69510f5bb
-          ansible-galaxy collection install git+https://github.com/grafana/grafana-ansible-collection.git,521b006dabf4f605e9663c6539bfdec653badb1b
+          ansible-galaxy collection install git+https://github.com/grafana/grafana-ansible-collection.git,4dc1f88ea8fb6442b028325c8d6df65f163618c8
 
       - name: Install the dotfiles
         env:
