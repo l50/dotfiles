@@ -71,7 +71,9 @@ jobs:
       - name: Install required packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y zsh jq curl xclip
+          # wamerican provides /usr/share/dict/words, which dictionary() falls back to
+          # when api.dictionaryapi.dev is unreachable.
+          sudo apt-get install -y zsh jq curl xclip wamerican
 
       - name: Set up Git
         run: |
