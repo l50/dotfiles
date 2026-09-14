@@ -137,6 +137,43 @@ pr_required_headings() {
     ' "$template"
 }
 
+# pr_allowed_types() prints the conventional-commit types the current repo's PR
+# title check accepts, one per line, or nothing when the repo does not restrict
+# them. Reads the `types:` block of an amannn/action-semantic-pull-request step
+# in .github/workflows, which is exactly what that check validates the title
+# against -- so a title built from this list cannot fail it.
+#
+# Usage:
+#   pr_allowed_types
+#
+# Output:
+#   The allowed type words, one per line (e.g. feat, fix, docs, chore).
+pr_allowed_types() {
+    local root workflow
+    root=$(git rev-parse --show-toplevel 2> /dev/null) || return 0
+    for workflow in "$root"/.github/workflows/*.y*ml; do
+        [ -f "$workflow" ] || continue
+        grep -q 'amannn/action-semantic-pull-request' "$workflow" || continue
+        awk '
+            /^[ \t]*types:[ \t]*\|/ { collecting = 1; indent = -1; next }
+            collecting {
+                line = $0
+                if (line ~ /^[ \t]*$/) next
+                match(line, /^[ \t]*/)
+                width = RLENGTH
+                if (indent < 0) indent = width
+                if (width < indent) { collecting = 0; next }
+                gsub(/^[ \t]+|[ \t\r]+$/, "", line)
+                # Stop at the next key rather than swallowing it as a type.
+                if (line ~ /:/) { collecting = 0; next }
+                if (line ~ /^#/) next
+                print line
+            }
+        ' "$workflow"
+        return 0
+    done
+}
+
 # check_squad() verifies that the squad tool is installed and available.
 #
 # Usage:
@@ -373,7 +410,14 @@ squad_pr() {
     if [ -n "$required_headings" ]; then
         pr_input=$(printf 'REQUIRED PR TEMPLATE HEADINGS\n%s\n\n%s\n' "$required_headings" "$pr_input")
     fi
-    pr_text=$(printf '%s\n' "$pr_input" | PR_REQUIRED_HEADINGS="$required_headings" squad_gen pr)
+    # A repo may also restrict which conventional-commit types its PR title
+    # check accepts. Supplying the list keeps the generated title inside it.
+    local allowed_types
+    allowed_types=$(pr_allowed_types)
+    if [ -n "$allowed_types" ]; then
+        pr_input=$(printf 'ALLOWED PR TITLE TYPES\n%s\n\n%s\n' "$allowed_types" "$pr_input")
+    fi
+    pr_text=$(printf '%s\n' "$pr_input" | PR_REQUIRED_HEADINGS="$required_headings" PR_ALLOWED_TYPES="$allowed_types" squad_gen pr)
     if [ -z "$pr_text" ]; then
         echo "error: PR text is empty"
         return 1
