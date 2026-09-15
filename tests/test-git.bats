@@ -9,6 +9,18 @@ bats_require_minimum_version 1.5.0
 export RUNNING_BATS_TEST=1
 
 setup() {
+	# Scrub git's environment before every test.
+	#
+	# pre-commit runs this suite from inside a `git commit`, which exports
+	# GIT_DIR, GIT_INDEX_FILE and friends pointing at the enclosing repository.
+	# Tests below run `git init`, `git add` and `git commit` inside temp dirs, and
+	# with those variables inherited git ignores the temp dir and operates on the
+	# real repository instead -- reinitializing it, staging stray files into its
+	# index, and recursing into pre-commit. Unset them so a test can only ever
+	# touch its own BATS_TEST_TMPDIR.
+	unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_OBJECT_DIRECTORY \
+		GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_COMMON_DIR GIT_PREFIX GIT_CONFIG
+
 	# Mock git and gh commands will be defined per test
 	export TEST_BRANCH="feature-branch"
 	export TEST_REPO="dreadnode/warpgate-templates"
@@ -942,4 +954,118 @@ Body of the PR."
 
 	assert_success
 	assert grep -q "gh pr create" "$GH_LOG"
+}
+
+# pr_allowed_types tests
+
+# Builds a throwaway git repo holding one workflow file, so pr_allowed_types
+# parses a real tree the way it does in a checkout. Reads the workflow body on
+# stdin and prints the repo path.
+make_repo_with_workflow() {
+	local dir="$BATS_TEST_TMPDIR/repo$RANDOM"
+	mkdir -p "$dir/.github/workflows"
+	git -C "$dir" init -q
+	cat >"$dir/.github/workflows/$1"
+	echo "$dir"
+}
+
+@test "pr_allowed_types extracts the types a semantic-pull-request check accepts" {
+	local dir
+	dir=$(make_repo_with_workflow lint.yml <<-'YAML'
+		jobs:
+		  validate-title:
+		    steps:
+		      - uses: amannn/action-semantic-pull-request@v6
+		        with:
+		          types: |
+		            feat
+		            fix
+		            docs
+		            chore
+		            dev
+		          requireScope: false
+	YAML
+	)
+
+	run bash -c "cd \"$dir\" && source \"$BATS_TEST_DIRNAME/../git.sh\" && pr_allowed_types"
+
+	assert_success
+	assert_output "feat
+fix
+docs
+chore
+dev"
+}
+
+@test "pr_allowed_types stops at the next key instead of swallowing scopes" {
+	local dir
+	dir=$(make_repo_with_workflow lint.yml <<-'YAML'
+		jobs:
+		  validate-title:
+		    steps:
+		      - uses: amannn/action-semantic-pull-request@v6
+		        with:
+		          types: |
+		            feat
+		          scopes: |
+		            deps
+		            auto
+	YAML
+	)
+
+	run bash -c "cd \"$dir\" && source \"$BATS_TEST_DIRNAME/../git.sh\" && pr_allowed_types"
+
+	assert_success
+	refute_output --partial "deps"
+	refute_output --partial "auto"
+	assert_output "feat"
+}
+
+@test "pr_allowed_types says nothing when no workflow restricts the types" {
+	local dir
+	dir=$(make_repo_with_workflow ci.yml <<-'YAML'
+		jobs:
+		  build:
+		    steps:
+		      - uses: actions/checkout@v6
+	YAML
+	)
+
+	run bash -c "cd \"$dir\" && source \"$BATS_TEST_DIRNAME/../git.sh\" && pr_allowed_types"
+
+	assert_success
+	assert_output ""
+}
+
+@test "pr_allowed_types says nothing outside a git repository" {
+	local dir="$BATS_TEST_TMPDIR/not-a-repo$RANDOM"
+	mkdir -p "$dir"
+
+	run bash -c "cd \"$dir\" && source \"$BATS_TEST_DIRNAME/../git.sh\" && pr_allowed_types"
+
+	assert_success
+	assert_output ""
+}
+
+@test "pr_allowed_types skips comments inside the types block" {
+	local dir
+	dir=$(make_repo_with_workflow lint.yml <<-'YAML'
+		jobs:
+		  validate-title:
+		    steps:
+		      - uses: amannn/action-semantic-pull-request@v6
+		        with:
+		          types: |
+		            feat
+		            # a note about the list
+		            fix
+	YAML
+	)
+
+	run bash -c "cd \"$dir\" && source \"$BATS_TEST_DIRNAME/../git.sh\" && pr_allowed_types"
+
+	assert_success
+	refute_output --partial "a note"
+	assert_output "feat
+fix"
 }
