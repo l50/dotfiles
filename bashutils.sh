@@ -199,13 +199,21 @@ tmux_sessions() {
     done
 }
 
-# Run tmux source-file ~/.tmux.conf on all panes
+# Reload ~/.tmux.conf across the tmux server and refresh all attached clients
 source_tmux_conf() {
-    session=$(tmux display-message -p "#S")
+    if ! command -v tmux >/dev/null 2>&1 || ! tmux list-sessions >/dev/null 2>&1; then
+        echo "No running tmux server found." >&2
+        return 1
+    fi
 
-    for pane in $(tmux list-panes -s -F "#{pane_id}"); do
-        tmux send-keys -t "$session.$pane" "tmux source-file ~/.tmux.conf" C-m
+    tmux source-file "${HOME}/.tmux.conf"
+    # Re-assert mouse tracking escape sequences on all connected client terminals
+    tmux set -g mouse off \; set -g mouse on
+    local client
+    for client in $(tmux list-clients -F '#{client_name}'); do
+        tmux refresh-client -t "${client}" -S
     done
+    echo "Reloaded ~/.tmux.conf and refreshed all tmux clients."
 }
 
 # Monitor ICMP traffic - great for OOB testing.
