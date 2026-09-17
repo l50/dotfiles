@@ -85,8 +85,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CI: true
         run: |
-          # Skip git pull in CI environment
-          sed -i 's/git pull origin main/echo "Skipping git pull in CI"/' install_dotfiles.sh
           bash ./install_dotfiles.sh --skip-ansible
 
       - name: Setup test environment
