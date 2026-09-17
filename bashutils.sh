@@ -201,7 +201,7 @@ tmux_sessions() {
 
 # Reload ~/.tmux.conf across the tmux server and refresh all attached clients
 source_tmux_conf() {
-    if ! command -v tmux >/dev/null 2>&1 || ! tmux list-sessions >/dev/null 2>&1; then
+    if ! command -v tmux > /dev/null 2>&1 || ! tmux list-sessions > /dev/null 2>&1; then
         echo "No running tmux server found." >&2
         return 1
     fi

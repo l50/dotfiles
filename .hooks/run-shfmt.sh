@@ -19,8 +19,9 @@ for file in "$@"; do
 
         # Compare original and formatted files
         if ! cmp -s "$file" "$temp_file"; then
-            # Files are different, replace original with formatted version
-            mv "$temp_file" "$file"
+            # Files are different, replace original with formatted version while preserving permissions
+            cat "$temp_file" > "$file"
+            rm "$temp_file"
             echo "Formatted $file"
             modified=1
         else
