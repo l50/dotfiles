@@ -64,9 +64,9 @@ jobs:
           bats-version: ${{ env.BATS_VERSION }}
 
       - name: Setup go-task
-        uses: pnorton5432/setup-task@eec4717ae80f02d1614a4fecfa4a55d507768696 # v1.0.0
+        uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
         with:
-          task-version: ${{ env.TASK_VERSION }}
+          version: ${{ env.TASK_VERSION }}
 
       - name: Install required packages
         run: |
