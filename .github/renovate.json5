@@ -1,31 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended",
-    "docker:enableMajor",
-    ":disableRateLimiting",
-    ":dependencyDashboard",
-    ":semanticCommits",
-    ":enablePreCommit",
-    ":automergeDigest",
-    "helpers:pinGitHubActionDigests"
-  ],
-  "dependencyDashboardTitle": "Renovate Dashboard 🤖",
-  "suppressNotifications": ["prIgnoreNotification"],
-  "rebaseWhen": "auto",
-  "commitBodyTable": true,
-  "pre-commit": {
-    "enabled": true
-  },
+  "extends": ["github>CowDogMoo/renovate-config"],
   "packageRules": [
-    {
-      "description": "Auto-merge GitHub Actions",
-      "matchManagers": ["github-actions"],
-      "matchDatasources": ["github-tags"],
-      "automerge": true,
-      "automergeType": "pr",
-      "matchUpdateTypes": ["major", "minor", "patch"]
-    },
     {
       "description": "Group shell script dependencies",
       "matchFileNames": [
@@ -41,34 +17,20 @@
     },
     {
       "description": "Group test dependencies",
-      "matchPaths": ["tests/**"],
+      "matchFileNames": ["tests/**"],
       "groupName": "test-dependencies"
-    },
-    {
-      "description": "Auto-merge Ruby dependencies",
-      "matchFileNames": ["mdstyle.rb"],
-      "automerge": true,
-      "automergeType": "pr",
-      "matchUpdateTypes": ["minor", "patch"]
-    },
-    {
-      "description": "Auto-merge pre-commit hooks",
-      "matchManagers": ["pre-commit"],
-      "automerge": true,
-      "automergeType": "pr",
-      "matchUpdateTypes": ["major", "minor", "patch"]
     }
   ],
   "npm": {
-    "fileMatch": [
-      "package\\.json$",
-      "tests/test_helper/bats-.*?/package\\.json$"
+    "managerFilePatterns": [
+      "/package\\.json$/",
+      "/tests/test_helper/bats-.*?/package\\.json$/"
     ]
   },
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["^files/default-python-packages$"],
+      "managerFilePatterns": ["/^files/default-python-packages$/"],
       "matchStrings": [
         "^(?<depName>[^=]+)==(?<currentValue>.+)$"
       ],
@@ -76,7 +38,7 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^files/default-golang-pkgs$"],
+      "managerFilePatterns": ["/^files/default-golang-pkgs$/"],
       "matchStrings": [
         "^(?<depName>[^@]+)@(?<currentValue>.+)$"
       ],
@@ -84,7 +46,7 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^files/default-ruby-gems$"],
+      "managerFilePatterns": ["/^files/default-ruby-gems$/"],
       "matchStrings": [
         "^(?<depName>[^ ]+) (?<currentValue>[^ ]+)$"
       ],
@@ -95,7 +57,7 @@
       // Tracking the branch tip by digest keeps CI reproducible while still surfacing
       // upstream movement as a reviewable PR instead of a surprise red build.
       "customType": "regex",
-      "fileMatch": ["^\\.github/workflows/tests\\.yaml$"],
+      "managerFilePatterns": ["/^\\.github/workflows/tests\\.yaml$/"],
       "matchStrings": [
         "ansible-galaxy collection install git\\+https://github\\.com/(?<depName>[^,\\s]+?)\\.git,(?<currentDigest>[0-9a-f]{40})"
       ],
