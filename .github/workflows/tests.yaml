@@ -132,6 +132,7 @@ jobs:
       - name: Install the dotfiles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WORKSTATION_ALLOW_MISSING_HOST_VARS: "true"
         run: |
           chmod +x install_dotfiles.sh
           if [[ "${{ matrix.os }}" == "macos-latest" ]]; then

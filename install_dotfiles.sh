@@ -131,6 +131,12 @@ EOF
         extra_args+=("--skip-tags" "${joined_tags}")
     fi
 
+    # CI runners have no host_vars for their throwaway hostname; let the
+    # caller opt in to role defaults explicitly. Real installs are unaffected.
+    if [[ "${WORKSTATION_ALLOW_MISSING_HOST_VARS:-false}" == true ]]; then
+        extra_args+=("-e" "workstation_allow_missing_host_vars=true")
+    fi
+
     # ${arr[@]+...} keeps the empty-array expansion safe under set -u on bash 3.2.
     ansible-playbook "${ANSIBLE_DIR}/playbooks/workstation/workstation.yml" \
         -i "${inventory_file}" \
