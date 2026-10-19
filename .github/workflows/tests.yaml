@@ -126,8 +126,8 @@ jobs:
       # turn this workflow red with no change on our side. Renovate bumps the digests.
       - name: Install the necessary ansible collections
         run: |
-          ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,3464798ead5c804c0a1f955d85772be50a5687c3
-          ansible-galaxy collection install git+https://github.com/grafana/grafana-ansible-collection.git,4dc1f88ea8fb6442b028325c8d6df65f163618c8
+          ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,a08e8753408c0a649a08ed162e3791e9ea87b1d6
+          ansible-galaxy collection install git+https://github.com/grafana/grafana-ansible-collection.git,ef0f4899e1d4f530e35c4660473ea5e02d1e8dda
 
       - name: Install the dotfiles
         env:
