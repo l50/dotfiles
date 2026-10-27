@@ -61,6 +61,44 @@ git_push_remote() {
     printf '%s\n' "${remote:-origin}"
 }
 
+# git_gh() runs git with its GitHub transport authenticated by the gh CLI:
+# GitHub SSH remotes are rewritten to HTTPS and gh supplies the token, so a
+# push or fetch works wherever "gh auth" does, including shells with no SSH
+# key loaded (agents, launchd jobs, CI).
+#
+# Usage:
+#   git_gh <git arguments>
+#
+# Output:
+#   Whatever the git command prints; returns git's exit status.
+#
+# Example:
+#   git_gh push -u origin HEAD
+#
+# Note:
+#   The settings go through GIT_CONFIG_COUNT/KEY/VALUE, appended after any
+#   the caller already set, so git's argv is unchanged. The empty helper entry
+#   clears earlier helpers (e.g. osxkeychain) the way "gh auth setup-git" does.
+#   Without a gh token this is plain git.
+git_gh() {
+    gh auth token > /dev/null 2>&1 || {
+        git "$@"
+        return
+    }
+    (
+        n=${GIT_CONFIG_COUNT:-0}
+        export "GIT_CONFIG_KEY_$n=url.https://github.com/.insteadOf" "GIT_CONFIG_VALUE_$n=git@github.com:"
+        n=$((n + 1))
+        export "GIT_CONFIG_KEY_$n=url.https://github.com/.insteadOf" "GIT_CONFIG_VALUE_$n=ssh://git@github.com/"
+        n=$((n + 1))
+        export "GIT_CONFIG_KEY_$n=credential.https://github.com.helper" "GIT_CONFIG_VALUE_$n="
+        n=$((n + 1))
+        export "GIT_CONFIG_KEY_$n=credential.https://github.com.helper" "GIT_CONFIG_VALUE_$n=!gh auth git-credential"
+        export GIT_CONFIG_COUNT=$((n + 1))
+        git "$@"
+    )
+}
+
 # git_remote_for_repo() prints the local remote whose URL points at the given
 # GitHub <owner>/<name>, defaulting to origin when nothing matches.
 #
@@ -327,7 +365,7 @@ squad_commit() {
     # Push with an explicit refspec: a bare "git push" fails when the local
     # branch tracks a differently-named upstream (e.g. after
     # "git checkout -b topic origin/main"), which aborts before pushing.
-    printf '%s\n' "$msg" | git commit --cleanup=verbatim -F - && git push -u "$(git_push_remote)" HEAD
+    printf '%s\n' "$msg" | git commit --cleanup=verbatim -F - && git_gh push -u "$(git_push_remote)" HEAD
 }
 
 # squad_pr() generates a PR title/body with squad on the Claude subscription
@@ -387,7 +425,7 @@ squad_pr() {
     # stale base pads the diff with commits already merged upstream and the
     # model then writes a PR describing someone else's work. Non-fatal so the
     # command still works offline, but warn, since the result is silently wrong.
-    if ! git fetch --quiet "$base_remote" "$base" 2> /dev/null; then
+    if ! git_gh fetch --quiet "$base_remote" "$base" 2> /dev/null; then
         echo "warning: could not refresh ${base_remote}/${base} — diff may include already-merged commits"
         echo
     fi
@@ -445,8 +483,8 @@ squad_pr() {
     # Push the branch. After a rebase/amend the remote has diverged, so fall
     # back to --force-with-lease (refuses if the remote moved unexpectedly).
     remote=$(git_push_remote)
-    if ! git push -u "$remote" HEAD 2> /dev/null; then
-        if ! git push --force-with-lease -u "$remote" HEAD; then
+    if ! git_gh push -u "$remote" HEAD 2> /dev/null; then
+        if ! git_gh push --force-with-lease -u "$remote" HEAD; then
             echo "error: Failed to push branch"
             return 1
         fi
