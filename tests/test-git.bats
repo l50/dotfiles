@@ -521,6 +521,7 @@ stub_repo() {
 	: > "$GIT_LOG"
 	: > "$GH_LOG"
 
+	# shellcheck disable=SC2317,SC2329
 	gh() {
 		echo "gh $*" >> "$GH_LOG"
 		case "$*" in
@@ -541,7 +542,8 @@ stub_repo() {
 		return 0
 	}
 	git() {
-		echo "git $*" >> "$GIT_LOG"
+		# git_gh hands its settings over in GIT_CONFIG_COUNT, so tag those calls
+		echo "git $*${GIT_CONFIG_COUNT:+ (gh auth)}" >> "$GIT_LOG"
 		local entry
 		case "$1" in
 			# STUB_BIG_DIFF stands in for a diff too large to pipe to the model, so
@@ -1068,4 +1070,63 @@ dev"
 	refute_output --partial "a note"
 	assert_output "feat
 fix"
+}
+
+# git_gh tests
+
+@test "squad_commit pushes through gh's credentials" {
+	stub_squad_commit "fix: correct the thing"
+
+	run squad_commit
+
+	assert_success
+	assert grep -qF "git push -u origin HEAD (gh auth)" "$GIT_LOG"
+}
+
+@test "squad_pr refreshes the base and pushes through gh's credentials" {
+	stub_squad_pr "feat: add a thing
+
+Body of the PR."
+
+	run squad_pr
+
+	assert_success
+	# An SSH origin with no key loaded fails both, and a failed refresh leaves the
+	# diff against a stale base that replays already-merged commits.
+	assert grep -qF "git fetch --quiet origin main (gh auth)" "$GIT_LOG"
+	assert grep -qF "git push -u origin HEAD (gh auth)" "$GIT_LOG"
+}
+
+@test "git_gh rewrites GitHub SSH remotes and authenticates with gh" {
+	# shellcheck disable=SC2317,SC2329
+	gh() { [[ "$*" == "auth token" ]]; }
+	# shellcheck disable=SC2317,SC2329
+	git() { env | grep '^GIT_CONFIG' | sort; }
+	export -f gh git
+
+	GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.pager GIT_CONFIG_VALUE_0=cat run git_gh fetch origin main
+
+	assert_success
+	# The caller's own entry survives and the gh settings are appended after it.
+	assert_line "GIT_CONFIG_COUNT=5"
+	assert_line "GIT_CONFIG_KEY_0=core.pager"
+	assert_line "GIT_CONFIG_KEY_1=url.https://github.com/.insteadOf"
+	assert_line "GIT_CONFIG_VALUE_1=git@github.com:"
+	assert_line "GIT_CONFIG_VALUE_2=ssh://git@github.com/"
+	assert_line "GIT_CONFIG_KEY_3=credential.https://github.com.helper"
+	assert_line "GIT_CONFIG_VALUE_3="
+	assert_line "GIT_CONFIG_VALUE_4=!gh auth git-credential"
+}
+
+@test "git_gh runs plain git when gh has no token" {
+	# shellcheck disable=SC2317,SC2329
+	gh() { return 1; }
+	# shellcheck disable=SC2317,SC2329
+	git() { echo "count=${GIT_CONFIG_COUNT:-unset} args=$*"; }
+	export -f gh git
+
+	run git_gh push -u origin HEAD
+
+	assert_success
+	assert_output "count=unset args=push -u origin HEAD"
 }
