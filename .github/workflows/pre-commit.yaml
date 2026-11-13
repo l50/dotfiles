@@ -22,7 +22,7 @@ concurrency:
 
 env:
   BATS_VERSION: 1.9.0
-  GO_VERSION: 1.27.3
+  GO_VERSION: 1.27.4
   PYTHON_VERSION: 3.14.10
   TASK_VERSION: 3.45.4
 
