@@ -49,7 +49,7 @@ jobs:
       # Pinned to a commit rather than main: an unrelated merge upstream would otherwise
       # turn this workflow red with no change on our side. Renovate bumps the digests.
       - name: Install workstation collection
-        run: ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,8a00b23505ca52e173820a3e875cc67c1e8eeb52
+        run: ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,7a16acbfc0bec3d0ed02a74714d55f7a5094227e
 
       - name: Install the dotfiles
         run: |
@@ -126,7 +126,7 @@ jobs:
       # turn this workflow red with no change on our side. Renovate bumps the digests.
       - name: Install the necessary ansible collections
         run: |
-          ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,8a00b23505ca52e173820a3e875cc67c1e8eeb52
+          ansible-galaxy collection install git+https://github.com/cowdogmoo/workstation.git,7a16acbfc0bec3d0ed02a74714d55f7a5094227e
           ansible-galaxy collection install git+https://github.com/grafana/grafana-ansible-collection.git,a7e5dceeec8faacf3f1e0263aaeb9c823e3c0555
 
       - name: Install the dotfiles
